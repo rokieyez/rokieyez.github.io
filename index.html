@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rokiz</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Cormorant:ital,wght@1,500&display=swap">
+  <style>
+    /* rokiz.net 대문 — 방(경로)들로 들어가는 입구.
+       서가 뒤의 방(/books)과 같은 밤의 세계관을 아주 옅게만 공유한다.
+       루트 사이트가 본격적으로 자라기 전까지의 소박한 대문. */
+    :root {
+      --dark: #171009;
+      --paper: #E9DFC9;
+      --dim: #9C8E74;
+      --brass: #E0B15E;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--dark);
+      color: var(--paper);
+      font-family: "Gowun Batang", "Noto Serif KR", serif;
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+    main { padding: 24px; }
+    .latin {
+      font-family: "Cormorant", serif;
+      font-style: italic;
+      font-size: 15px;
+      letter-spacing: .22em;
+      color: var(--dim);
+    }
+    h1 {
+      margin: 10px 0 6px;
+      font-size: clamp(34px, 7vw, 52px);
+      font-weight: 700;
+      letter-spacing: .06em;
+    }
+    .sub {
+      margin: 0 0 42px;
+      font-size: 14.5px;
+      color: var(--dim);
+      line-height: 1.7;
+    }
+    .doors {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      align-items: center;
+    }
+    .door {
+      display: inline-block;
+      padding: 13px 30px;
+      border: 1px solid rgba(224, 177, 94, .38);
+      border-radius: 3px;
+      color: var(--brass);
+      text-decoration: none;
+      font-size: 15.5px;
+      letter-spacing: .04em;
+      transition: background .3s, border-color .3s;
+    }
+    .door:hover, .door:focus-visible {
+      background: rgba(224, 177, 94, .08);
+      border-color: rgba(224, 177, 94, .7);
+      outline: none;
+    }
+    .door small {
+      display: block;
+      margin-top: 5px;
+      font-size: 11.5px;
+      color: var(--dim);
+      letter-spacing: .08em;
+    }
+    .soon {
+      font-size: 12.5px;
+      color: var(--dim);
+      opacity: .75;
+    }
+    footer {
+      position: fixed;
+      bottom: 18px;
+      left: 0; right: 0;
+      font-size: 11.5px;
+      color: var(--dim);
+      opacity: .6;
+      letter-spacing: .1em;
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      main { animation: rise .9s ease both; }
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: none; }
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <p class="latin">ROKIZ</p>
+  <h1>로키의 방</h1>
+  <p class="sub">문마다 다른 방이 있습니다 — 지금은 하나가 열려 있습니다.</p>
+  <div class="doors">
+    <a class="door" href="/books/">서가 뒤의 방
+      <small>1,300여 권의 장서가 꽂힌 밤의 서재</small>
+    </a>
+    <p class="soon">다른 방들은 아직 잠겨 있습니다</p>
+  </div>
+</main>
+<footer>rokiz.net</footer>
+</body>
+</html>
