@@ -2,5 +2,6 @@
 User-agent: *
 Allow: /
 
-# 서재의 지도 (책 한 권마다 한 줄)
+# 지도는 방마다 하나씩 — 대문과 서재
+Sitemap: https://www.rokiz.net/sitemap.xml
 Sitemap: https://www.rokiz.net/books/sitemap.xml
