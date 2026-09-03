@@ -107,6 +107,27 @@
       border-bottom: 1px solid rgba(224,177,94,.3);
     }
     .hint .unpick:hover, .hint .unpick:focus-visible { border-bottom-color: var(--brass); outline: none; }
+    /* 거르개 — 해와 결 */
+    .sift { margin: 0 0 24px; display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+    .sift button {
+      padding: 3px 10px; border: 1px solid rgba(224,177,94,.22); border-radius: 2px;
+      background: none; color: var(--dim); font: inherit; font-size: 12px;
+      letter-spacing: .04em; cursor: pointer; line-height: 1.7;
+    }
+    .sift button:hover, .sift button:focus-visible {
+      color: var(--brass); border-color: rgba(224,177,94,.5); outline: none;
+    }
+    .sift button[aria-pressed="true"] {
+      color: var(--dark); background: var(--brass); border-color: var(--brass);
+    }
+    .sift .gap { width: 6px; }
+    /* 목록에 붙는 결 */
+    ul.list .tags { display: inline; margin-left: 8px; }
+    ul.list .tags b {
+      display: inline-block; margin-right: 5px; font-weight: 400;
+      font-size: 10.5px; letter-spacing: .06em; color: var(--dim); opacity: .75;
+    }
+    ul.list .tags b::before { content: "#"; opacity: .55; }
     .empty { color: var(--dim); font-size: 14px; opacity: .8; }
 
     /* ── 글 한 편 ── */
@@ -184,6 +205,9 @@
 
   <!-- 목록과 글 한 편이 같은 자리를 나눠 쓴다 — 주소의 해시가 어느 쪽인지 정한다 -->
   <div id="listview">
+    <!-- 해와 결로 거른다. 글이 몇 편 없을 때는 나타나지 않는다 —
+         고를 것이 하나뿐인 거르개는 어수선하기만 하다. -->
+    <nav class="sift" id="sift" hidden></nav>
     <ul class="list" id="list"></ul>
     <p class="empty" id="none" hidden>아직 첫 글을 놓지 않았습니다.</p>
     <!-- 글이 한 묶음(50편)을 넘으면 나타난다 -->
@@ -205,6 +229,10 @@
     <label for="w-slug">주소</label>
     <input id="w-slug" class="slug" type="text" autocomplete="off" placeholder="제목에서 저절로 만들어집니다">
     <p class="hint">rokiz.net/notes/#<span id="w-slugpreview">주소</span></p>
+    <label for="w-tags">결</label>
+    <input id="w-tags" type="text" autocomplete="off" list="w-taglist"
+           placeholder="쉼표로 나눕니다 — 책, 아이들, 하루">
+    <datalist id="w-taglist"></datalist>
     <label for="w-book">이 글이 말하는 책</label>
     <input id="w-book" type="text" autocomplete="off" placeholder="제목 몇 글자 — 서재에서 찾습니다">
     <ul class="found" id="w-found" hidden></ul>
@@ -318,7 +346,7 @@ async function 싣기(이어서) {
   if (!이어서) { 받은수 = 0; 글들 = []; }
   try {
     const r = await fetch(
-      `${REST}?select=slug,title,body,published,published_at,created_at,book_id` +
+      `${REST}?select=slug,title,body,published,published_at,created_at,book_id,tags` +
       `&order=published_at.desc.nullslast,created_at.desc` +
       `&limit=${한묶음}&offset=${받은수}`,
       { headers: 머리() });
@@ -336,17 +364,61 @@ async function 싣기(이어서) {
 }
 
 
+/* 지금 걸려 있는 거르개. 주소의 해시에 남지 않는다 — 글 한 편이
+   해시를 쓰고 있어서다(#슬러그). 거르는 일은 잠깐의 몸짓이다. */
+let 고른해 = null, 고른결 = null;
+
+const 해of = (n) => String(n.published_at || n.created_at || "").slice(0, 4);
+const 통과 = (n) =>
+  (!고른해 || 해of(n) === 고른해) &&
+  (!고른결 || (n.tags || []).includes(고른결));
+
+function 거르개그리기() {
+  const el = $("sift");
+  el.textContent = "";
+  if (!Array.isArray(글들)) { el.hidden = true; return; }
+  const 해들 = [...new Set(글들.map(해of).filter(Boolean))].sort().reverse();
+  const 결들 = [...new Set(글들.flatMap((n) => n.tags || []))].sort((a, b) => a.localeCompare(b, "ko"));
+  /* 고를 것이 하나뿐인 거르개는 어수선하기만 하다 */
+  const 볼만한해 = 해들.length > 1 ? 해들 : [];
+  if (!볼만한해.length && !결들.length) { el.hidden = true; return; }
+
+  const 단추 = (글, 눌림, 누르면) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = 글;
+    b.setAttribute("aria-pressed", 눌림 ? "true" : "false");
+    b.addEventListener("click", () => { 누르면(); 그리기(); });
+    el.appendChild(b);
+  };
+
+  if (볼만한해.length) {
+    단추("모두", !고른해 && !고른결, () => { 고른해 = null; 고른결 = null; });
+    볼만한해.forEach((h) => 단추(`${h}년`, 고른해 === h, () => { 고른해 = 고른해 === h ? null : h; }));
+  }
+  if (결들.length) {
+    if (볼만한해.length) el.appendChild(Object.assign(document.createElement("span"), { className: "gap" }));
+    else 단추("모두", !고른해 && !고른결, () => { 고른해 = null; 고른결 = null; });
+    결들.forEach((t) => 단추(`#${t}`, 고른결 === t, () => { 고른결 = 고른결 === t ? null : t; }));
+  }
+  el.hidden = false;
+}
+
 function 그리기() {
   const 목록 = $("list"), 없음 = $("none");
   목록.textContent = "";
+  거르개그리기();
   if (글들 === null) {
     없음.hidden = false;
     없음.textContent = "글을 불러오지 못했습니다. 잠시 뒤에 다시 열어 보세요.";
     return;
   }
-  없음.hidden = 글들.length > 0;
-  없음.textContent = "아직 첫 글을 놓지 않았습니다.";
-  글들.forEach((n) => {
+  const 보일것 = 글들.filter(통과);
+  없음.hidden = 보일것.length > 0;
+  없음.textContent = 글들.length
+    ? "그 거르개에 걸리는 글이 없습니다."
+    : "아직 첫 글을 놓지 않았습니다.";
+  보일것.forEach((n) => {
     const li = document.createElement("li");
     const a = document.createElement("a");
     /* 발행한 글은 제 쪽(<슬러그>.html)으로 보낸다 — 자바스크립트 없이 열리고,
@@ -385,6 +457,17 @@ function 그리기() {
       t.appendChild(m);
     }
     li.appendChild(t);
+    /* 결 — 날짜 옆에 조용히. 누르면 그 결만 걸러 본다 */
+    if ((n.tags || []).length) {
+      const w = document.createElement("span");
+      w.className = "tags";
+      n.tags.forEach((t) => {
+        const b = document.createElement("b");
+        b.textContent = t;
+        w.appendChild(b);
+      });
+      t.appendChild(w);
+    }
     /* 첫 문장 — 제목만 있는 목록은 어떤 글인지 알려 주지 못한다 */
     const 맛 = String(n.body || "").replace(/\s+/g, " ").trim();
     if (맛) {
@@ -400,7 +483,16 @@ function 그리기() {
 
 /* 주소의 해시가 목록과 글 한 편 사이를 오간다 */
 function 해시읽기() {
-  const s = decodeURIComponent(location.hash.replace(/^#/, ""));
+  const 날것 = location.hash.replace(/^#/, "");
+  /* 글쪽의 결을 눌러 돌아온 길 — #결/<이름> */
+  if (날것.startsWith("결/")) {
+    고른결 = decodeURIComponent(날것.slice(2)) || null;
+    고른해 = null;
+    history.replaceState(null, "", location.pathname + location.search);
+    그리기();
+    return;
+  }
+  const s = decodeURIComponent(날것);
   const 글 = s && Array.isArray(글들) ? 글들.find((n) => n.slug === s) : null;
   $("listview").hidden = !!글;
   $("postview").hidden = !글;
@@ -559,6 +651,23 @@ $("form-code").addEventListener("submit", async (e) => {
 let 고치는중 = null;   // 고치고 있는 글의 slug (새 글이면 null)
 let 건책 = null;       // 이 글이 말하는 책의 id (안 걸었으면 null)
 
+/* 결은 쉼표로 나눈다. 앞뒤 빈칸과 겹치는 것은 걷고, 「#」을 붙여 쓴 것도
+   받아 준다 — 목록에서 #으로 보이니 그렇게 치는 것이 자연스럽다. */
+const 결읽기 = () => [...new Set(
+  $("w-tags").value.split(",")
+    .map((t) => t.trim().replace(/^#+/, ""))
+    .filter(Boolean))];
+
+/* 쓰던 결을 보여 준다 — 오타로 결이 갈라지는 것을 막는다 (서재의 시리즈 칸과 같은 뜻) */
+function 결목록채우기() {
+  const dl = $("w-taglist");
+  if (!dl || !Array.isArray(글들)) return;
+  dl.textContent = "";
+  [...new Set(글들.flatMap((n) => n.tags || []))]
+    .sort((a, b) => a.localeCompare(b, "ko"))
+    .forEach((t) => dl.appendChild(Object.assign(document.createElement("option"), { value: t })));
+}
+
 /* ── 이 글이 말하는 책 ───────────────────────────────────────────
    글방과 서재가 남남이었다 — 책을 읽고 쓴 글인데 그 책으로 가는 길이 없고,
    책 쪽에서도 그 책을 말한 글을 알 수 없었다. 여기서 한 권을 건다.
@@ -602,7 +711,12 @@ async function 책찾기(말) {
 async function 걸린책보이기(아는것) {
   const p = $("w-bookpick");
   p.textContent = "";
-  if (!건책) { p.textContent = "아직 걸지 않았습니다 — 비워 두어도 됩니다."; return; }
+  if (!건책) {
+    p.textContent = "아직 걸지 않았습니다 — 비워 두어도 됩니다.";
+    const 글 = Array.isArray(글들) ? 글들.find((n) => n.slug === 고치는중) : null;
+    그때읽던책(글?.published_at || 글?.created_at);
+    return;
+  }
   let b = 아는것;
   if (!b) {
     const r = await fetch(`${서재REST}?select=id,title,author&id=eq.${건책}&limit=1`,
@@ -623,6 +737,33 @@ $("more").addEventListener("click", () => {
   싣기(true).finally(() => { $("more").disabled = false; });
 });
 
+/* 그때 펼쳐 두었던 책 — 서재는 갈피를 옮긴 시각(bookmark_at)을 안다.
+   글을 쓰던 무렵에 손에 들려 있던 책이 있으면 한 번 권해 본다. 고르는 것은
+   사람이다: 책 이야기가 아닌 글도 있으니 자동으로 걸지 않는다. */
+async function 그때읽던책(때) {
+  if (건책) return;                       // 이미 걸어 두었으면 참견하지 않는다
+  const 언제 = 때 || new Date().toISOString();
+  const r = await fetch(
+    `${서재REST}?select=id,title,author,bookmark_at` +
+    `&bookmark_at=not.is.null&bookmark_at=lte.${encodeURIComponent(언제)}` +
+    `&order=bookmark_at.desc&limit=1`,
+    { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 } }).catch(() => null);
+  if (!r?.ok) return;
+  const [b] = await r.json();
+  if (!b) return;
+  /* 두 주가 넘게 지난 갈피는 「그때 읽던 책」이라 하기 어렵다 */
+  const 날 = (new Date(언제) - new Date(b.bookmark_at)) / 86400000;
+  if (날 > 14) return;
+  const p = $("w-bookpick");
+  p.append(" ");
+  const 권 = document.createElement("button");
+  권.type = "button";
+  권.className = "unpick";
+  권.textContent = `그때 「${b.title}」을 펼쳐 두었습니다 — 걸까요?`;
+  권.addEventListener("click", () => { 건책 = b.id; 걸린책보이기(b); });
+  p.appendChild(권);
+}
+
 $("w-book").addEventListener("input", (e) => {
   clearTimeout(찾는손);
   const 말 = e.target.value;
@@ -637,6 +778,8 @@ function 책상채우기(글) {
   $("w-slug").value = 글?.slug || "";
   $("w-body").value = 글?.body || "";
   $("w-publish").textContent = 글?.published ? "내린다" : "발행한다";
+  $("w-tags").value = (글?.tags || []).join(", ");
+  결목록채우기();
   건책 = 글?.book_id || null;
   $("w-book").value = "";
   $("w-found").hidden = true;
@@ -669,6 +812,7 @@ async function 저장(발행할까) {
   const 발행 = 발행할까 === null ? (지금글?.published || false) : 발행할까;
   const 몸 = {
     owner_id: 세션.user.id, slug, title, body, published: 발행, book_id: 건책,
+    tags: 결읽기(),
     // 처음 발행한 때는 한 번만 적는다 — 고칠 때마다 날짜가 바뀌면 안 된다
     published_at: 발행 ? (지금글?.published_at || new Date().toISOString()) : null,
   };
@@ -690,7 +834,11 @@ async function 저장(발행할까) {
   말("w-say", 발행 ? "발행했습니다." : "초고로 간직했습니다.", "good");
   고치는중 = slug;
   await 싣기();
-  location.hash = "#" + encodeURIComponent(slug);
+  /* 갈아 끼운다 — 저장할 때마다 한 칸씩 쌓이면 글 한 편 쓰는 동안
+     히스토리가 열댓 칸 불어난다. replaceState 는 hashchange 를 울리지
+     않으므로 화면은 손으로 맞춰 준다. */
+  history.replaceState(null, "", location.pathname + location.search +
+                       "#" + encodeURIComponent(slug));
 }
 
 $("w-save").addEventListener("click", () => 저장(false));
@@ -704,7 +852,9 @@ $("w-delete").addEventListener("click", async () => {
   const r = await fetch(`${REST}?slug=eq.${encodeURIComponent(고치는중)}`,
     { method: "DELETE", headers: 머리() });
   if (!r.ok) { 말("w-say", `지우지 못했습니다 (${r.status})`, "bad"); return; }
-  location.hash = "";
+  밀어넣음 = false;
+  history.replaceState(null, "", location.pathname + location.search);
+  해시읽기();
   책상채우기(null);
   await 싣기();
   말("w-say", "지웠습니다.", "good");

@@ -90,6 +90,7 @@ const 쪽만들기 = (n, 앞, 뒤, 책) => {
     publisher: { "@type": "Organization", name: "로키즈의 방", url: `${집}/` },
     image: 얼굴,
     ...(요약 ? { description: 요약 } : {}),
+    ...((n.tags || []).length ? { keywords: n.tags.join(", ") } : {}),
   };
   return `<!doctype html>
 <html lang="ko">
@@ -144,6 +145,11 @@ const 쪽만들기 = (n, 앞, 뒤, 책) => {
   time { display: block; margin-bottom: 40px; font-size: 12px;
          color: var(--dim); opacity: .8; letter-spacing: .06em; }
   p { margin: 0 0 18px; font-size: 15.5px; }
+  /* 결 — 날짜 밑에 조용히. 누르면 글방에서 그 결만 걸러 본다 */
+  .tags { margin: -32px 0 40px; font-size: 11.5px; letter-spacing: .06em; }
+  .tags a { color: var(--dim); border-bottom-color: rgba(156,142,116,.28); }
+  .tags a::before { content: "#"; opacity: .55; }
+  .tags a:hover, .tags a:focus-visible { color: var(--brass); border-bottom-color: var(--brass); }
   /* 이웃한 글 — 다 읽고 나면 갈 곳이 목록뿐이었다.
      글이 하나뿐이면 두 자리 다 비고, 그때는 아무것도 그려지지 않는다. */
   .near {
@@ -187,6 +193,8 @@ const 쪽만들기 = (n, 앞, 뒤, 책) => {
   <p class="latin">SCRIPTA</p>
   <h1>${esc(n.title)}</h1>
   <time datetime="${esc(String(n.published_at).slice(0, 10))}">${날짜(n.published_at)}</time>
+  ${(n.tags || []).length ? `<p class="tags">${(n.tags || [])
+      .map((t) => `<a href="./#결/${encodeURIComponent(t)}">${esc(t)}</a>`).join(" ")}</p>` : ""}
   ${문단(n.body)}
 ${책 ? `<aside class="bookcard">
     ${책.cover_url && !/\/noimg/i.test(책.cover_url)
@@ -209,7 +217,7 @@ ${책 ? `<aside class="bookcard">
 
 /* ── 지음 ─────────────────────────────────────────────────────────── */
 const r = await fetch(
-  `${서버}?select=slug,title,body,published_at,updated_at,book_id&order=published_at.desc`,
+  `${서버}?select=slug,title,body,published_at,updated_at,book_id,tags&order=published_at.desc`,
   { headers: { apikey: 열쇠, Authorization: `Bearer ${열쇠}` } });
 if (!r.ok) throw new Error(`글방을 읽지 못했습니다 (${r.status}) ${await r.text()}`);
 const 글들 = (await r.json()).filter((n) => n.published_at);
