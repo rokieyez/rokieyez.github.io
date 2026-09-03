@@ -11,7 +11,10 @@
   <!-- rokiz.net 은 www 로 301 되지만, 어느 주소로 걸어 들어오든 한 쪽을 가리킨다 -->
   <link rel="canonical" href="https://www.rokiz.net/">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/books/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <!-- 서재의 오늘을 물으러 간다 — 손잡기를 미리 터 둔다 -->
+  <link rel="preconnect" href="https://gaeumegwhxxnfvrhbknp.supabase.co" crossorigin>
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="rokiz.net">
   <meta property="og:locale" content="ko_KR">
@@ -30,13 +33,15 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Cormorant:ital,wght@1,500&display=swap">
   <style>
     /* rokiz.net 대문 — 방(경로)들로 들어가는 입구.
-       서가 뒤의 방(/books)과 같은 밤의 세계관을 아주 옅게만 공유한다.
-       루트 사이트가 본격적으로 자라기 전까지의 소박한 대문. */
+       서가 뒤의 방(/books)과 같은 밤의 세계관을 아주 옅게만 공유한다. */
     :root {
       --dark: #171009;
       --paper: #E9DFC9;
       --dim: #9C8E74;
       --brass: #E0B15E;
+      /* 커서가 있는 자리 — 램프가 그리로 따라간다 (js 가 고쳐 쓴다) */
+      --mx: 50%;
+      --my: 34%;
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
@@ -53,8 +58,20 @@
       grid-template-rows: 1fr auto;
       place-items: center;
       text-align: center;
+      position: relative;
+      overflow-x: hidden;
     }
-    main { padding: 24px; }
+    /* 램프 — 손이 가는 곳으로 따라온다. 손가락뿐인 기계에서는 가운데 그대로 */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(46% 38% at var(--mx) var(--my),
+                  rgba(224, 177, 94, .10), transparent 70%);
+      transition: background .45s ease-out;
+    }
+    main { padding: 24px; position: relative; }
     .latin {
       font-family: "Cormorant", serif;
       font-style: italic;
@@ -69,44 +86,92 @@
       letter-spacing: .06em;
     }
     .sub {
-      margin: 0 0 42px;
+      margin: 0 0 10px;
       font-size: 14.5px;
       color: var(--dim);
       line-height: 1.7;
     }
+    /* 서재가 오늘 자기 상태를 스스로 말한다 — 정적 문구가 아니라 셈에서 나온다.
+       못 물어보면 이 줄은 그냥 없다 (빈 자리가 남지 않게 hidden 으로 시작). */
+    .today {
+      margin: 0 0 36px;
+      font-size: 12.5px;
+      color: var(--dim);
+      opacity: .8;
+      letter-spacing: .02em;
+      min-height: 1.2em;
+    }
+    .today[hidden] { display: none; }
+
+    /* 방들 — 진짜 문처럼 세운다. 열린 문은 안쪽에서 빛이 새고,
+       잠긴 문은 열쇠구멍만 희미하다. */
     .doors {
       display: flex;
-      flex-direction: column;
-      gap: 14px;
-      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 18px;
     }
     .door {
-      display: inline-block;
-      padding: 13px 30px;
-      border: 1px solid rgba(224, 177, 94, .38);
-      border-radius: 3px;
+      position: relative;
+      display: block;
+      width: 152px;
+      padding: 26px 16px 20px;
+      border: 1px solid rgba(224, 177, 94, .34);
+      border-radius: 60px 60px 4px 4px;   /* 위가 둥근 문 */
       color: var(--brass);
       text-decoration: none;
-      font-size: 15.5px;
-      letter-spacing: .04em;
-      transition: background .3s, border-color .3s;
+      transition: background .35s, border-color .35s, transform .35s;
     }
-    .door:hover, .door:focus-visible {
-      background: rgba(224, 177, 94, .08);
-      border-color: rgba(224, 177, 94, .7);
-      outline: none;
+    .door b {
+      display: block;
+      font-size: 15.5px;
+      font-weight: 400;
+      letter-spacing: .04em;
     }
     .door small {
       display: block;
-      margin-top: 5px;
+      margin-top: 6px;
       font-size: 11.5px;
       color: var(--dim);
-      letter-spacing: .08em;
+      letter-spacing: .06em;
+      line-height: 1.6;
+      /* 한글은 기본값이면 아무 글자 사이에서나 꺾인다 — 152px 짜리 문 안에서
+         「그대로」가 「그대 / 로」로 갈라졌다. 어절 단위로만 꺾는다 */
+      word-break: keep-all;
+      overflow-wrap: break-word;
     }
-    .soon {
-      font-size: 12.5px;
-      color: var(--dim);
-      opacity: .75;
+    /* 문손잡이 */
+    .door::after {
+      content: "";
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: rgba(224, 177, 94, .5);
+    }
+    .door:hover, .door:focus-visible {
+      background: rgba(224, 177, 94, .08);
+      border-color: rgba(224, 177, 94, .72);
+      outline: none;
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .door:hover, .door:focus-visible { transform: translateY(-2px); }
+    }
+    /* 잠긴 문 — 누를 수 없고, 열쇠구멍만 보인다 */
+    .door.locked {
+      border-style: dashed;
+      border-color: rgba(224, 177, 94, .16);
+      color: rgba(224, 177, 94, .34);
+      cursor: default;
+    }
+    .door.locked small { color: rgba(156, 142, 116, .55); }
+    .door.locked::after { background: rgba(224, 177, 94, .16); }
+    .door.locked .hole {
+      display: block;
+      width: 19px;
+      margin: 0 auto 9px;
+      opacity: .45;
     }
     footer {
       padding: 0 0 18px;
@@ -115,6 +180,8 @@
       opacity: .6;
       letter-spacing: .1em;
     }
+    footer a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(156,142,116,.3); }
+    footer a:hover, footer a:focus-visible { color: var(--brass); outline: none; }
     @media (prefers-reduced-motion: no-preference) {
       main { animation: rise .9s ease both; }
       @keyframes rise {
@@ -122,30 +189,99 @@
         to   { opacity: 1; transform: none; }
       }
     }
+    @media (max-width: 420px) {
+      .doors { gap: 12px; }
+      .door { width: 100%; max-width: 260px; border-radius: 40px 40px 4px 4px; padding: 20px 16px 16px; }
+    }
   </style>
   <!-- 이 집이 누구의 것이고 어떤 방이 있는지 — 검색 결과의 얼굴을 정한다 -->
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"WebSite","name":"로키즈의 방",
    "alternateName":"rokiz.net","url":"https://www.rokiz.net/","inLanguage":"ko",
    "description":"문마다 다른 방이 있습니다 — 로키즈의 개인 사이트.",
-   "hasPart":{"@type":"WebSite","name":"서가 뒤의 방",
-     "url":"https://www.rokiz.net/books/",
-     "description":"한 사람의 장서를 그대로 옮겨 담은 밤의 서재."}}
+   "hasPart":[
+     {"@type":"WebSite","name":"서가 뒤의 방","url":"https://www.rokiz.net/books/",
+      "description":"한 사람의 장서를 그대로 옮겨 담은 밤의 서재."},
+     {"@type":"WebPage","name":"지금","url":"https://www.rokiz.net/now/",
+      "description":"요즘 읽는 것과 만드는 것."}]}
   </script>
 </head>
 <body>
 <main>
   <p class="latin">ROKIZ</p>
   <h1>로키즈의 방</h1>
-  <p class="sub">문마다 다른 방이 있습니다 — 지금은 하나가 열려 있습니다.</p>
+  <p class="sub">문마다 다른 방이 있습니다 — 지금은 둘이 열려 있습니다.</p>
+  <p class="today" id="today" hidden></p>
   <div class="doors">
-    <a class="door" href="/books/">서가 뒤의 방
-      <!-- 권수는 적지 않는다 — 장서는 계속 늘고, 정적 파일의 숫자는 반드시 거짓이 된다 -->
-      <small>한 사람의 장서를 그대로 옮겨 담은 밤의 서재</small>
+    <a class="door" href="/books/">
+      <b>서가 뒤의 방</b>
+      <!-- 권수는 적지 않는다 — 장서는 계속 늘고, 정적 파일의 숫자는 반드시 거짓이 된다.
+           오늘의 숫자는 위의 .today 줄이 서재에 직접 물어 온다 -->
+      <small>한 사람의 장서를 그대로<br>옮겨 담은 밤의 서재</small>
     </a>
-    <p class="soon">다른 방들은 아직 잠겨 있습니다</p>
+    <a class="door" href="/now/">
+      <b>지금</b>
+      <small>요즘 읽는 것과<br>만드는 것</small>
+    </a>
+    <div class="door locked" aria-hidden="true">
+      <svg class="hole" viewBox="0 0 34 46">
+        <circle cx="17" cy="15" r="8" fill="none" stroke="currentColor" stroke-width="2.4"/>
+        <path d="M12.5 22 L21.5 22 L19.5 41 L14.5 41 Z" fill="none" stroke="currentColor" stroke-width="2.4"/>
+      </svg>
+      <b>잠긴 문</b>
+      <small>아직 아무것도<br>놓이지 않았습니다</small>
+    </div>
   </div>
 </main>
-<footer>rokiz.net</footer>
+<footer>rokiz.net · <a href="/books/">서재</a> · <a href="/now/">지금</a></footer>
+
+<script>
+/* 램프가 손을 따라온다 — 마우스가 있는 기계에서만.
+   손가락뿐인 기계(폰)에서는 빛이 가운데 머문다: 손가락은 늘 화면을 덮고
+   있어 따라다니게 하면 빛이 손 밑에 숨는다. */
+if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
+    !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  addEventListener("pointermove", (e) => {
+    document.documentElement.style.setProperty("--mx", (e.clientX / innerWidth * 100).toFixed(1) + "%");
+    document.documentElement.style.setProperty("--my", (e.clientY / innerHeight * 100).toFixed(1) + "%");
+  }, { passive: true });
+}
+
+/* 밤에는 문 뒤에 불이 켜진다 — 탭의 작은 얼굴이 시각을 따라 바뀐다.
+   해가 진 뒤(18시~6시)면 열쇠구멍으로 빛이 샌다. 보는 사람의 시계를 따른다. */
+(function () {
+  const 시 = new Date().getHours();
+  if (시 >= 18 || 시 < 6) {
+    const l = document.querySelector('link[rel="icon"]');
+    if (l) l.href = "/favicon-night.svg";
+  }
+})();
+
+/* 서재의 오늘 — 권수와 읽은 권수를 서재에 직접 묻는다.
+   몸통 없이 세기만 하는 질의(Prefer: count=exact + Range: 0-0)라 오가는 것이
+   헤더뿐이다. 무료 요금제의 전송량을 축내지 않으려는 것 — 서재에서 하루
+   3.9GB 를 흘려 본 적이 있다 (books/CLAUDE.md 의 Egress 규칙).
+   못 물어보면 이 줄은 아예 나타나지 않는다. 대문이 서재 때문에 멈추면 안 된다. */
+(async function () {
+  const 집 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/books";
+  const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
+  const 머리 = { apikey: 열쇠, Authorization: "Bearer " + 열쇠, Prefer: "count=exact", Range: "0-0" };
+  const 세기 = async (질의) => {
+    const r = await fetch(집 + "?select=id" + 질의, { method: "HEAD", headers: 머리 });
+    const m = /\/(\d+)$/.exec(r.headers.get("content-range") || "");
+    return m ? Number(m[1]) : null;
+  };
+  try {
+    const [전부, 읽음] = await Promise.all([
+      세기(""),
+      세기("&read_status=eq." + encodeURIComponent("읽음")),
+    ]);
+    if (!전부) return;
+    const el = document.getElementById("today");
+    el.textContent = `서재에 ${전부.toLocaleString()}권이 서 있고, 그중 ${(읽음 || 0).toLocaleString()}권을 읽어 냈습니다`;
+    el.hidden = false;
+  } catch { /* 서재가 자고 있어도 대문은 열려 있어야 한다 */ }
+})();
+</script>
 </body>
 </html>

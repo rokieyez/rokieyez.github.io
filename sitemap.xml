@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 로키즈의 방 — 이 저장소가 가진 쪽만 적는다.
      /books/ 아래 544권은 그쪽 저장소가 스스로 지도를 지으므로
-     robots.txt 가 두 지도를 나란히 가리킨다. 방을 새로 열면 여기 한 줄. -->
+     robots.txt 가 두 지도를 나란히 가리킨다. 방을 새로 열면 여기 한 줄.
+     아직 비어 있는 방(/notes/)은 넣지 않는다 — 빈 쪽을 색인시킬 이유가 없다. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.rokiz.net/</loc>
     <lastmod>2026-09-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/now/</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>

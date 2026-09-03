@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- rokiz.net — 밤. 문 뒤에 불이 켜져 있어 열쇠구멍으로 빛이 샌다 -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="42%" r="52%">
+      <stop offset="0" stop-color="#E0B15E" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#E0B15E" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="8" fill="#171009"/>
+  <rect width="64" height="64" rx="8" fill="url(#glow)"/>
+  <circle cx="32" cy="26" r="9" fill="#F5D48A"/>
+  <path d="M27 32 L37 32 L34.5 48 L29.5 48 Z" fill="#F5D48A"/>
+</svg>
