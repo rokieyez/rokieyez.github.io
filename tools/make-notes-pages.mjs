@@ -57,6 +57,12 @@ const 문단 = (글) => String(글 || "")
 const 쪽만들기 = (n, 앞, 뒤) => {
   const 주소 = `${집}/notes/${encodeURIComponent(n.slug)}.html`;
   const 요약 = String(n.body || "").replace(/\s+/g, " ").trim().slice(0, 155) || n.title;
+  /* 글마다 다른 얼굴 — tools/make-notes-cards.mjs 가 구운 카드가 있으면
+     그것을 건다. 없으면 집의 og.png 로 돌아간다: 카드를 아직 안 구웠다고
+     미리보기가 아예 없는 것보다는 낫다. */
+  const 얼굴 = 카드있음.has(n.slug)
+    ? `${집}/notes/card/${encodeURIComponent(n.slug)}.png`
+    : `${집}/og.png`;
   const 표식 = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -67,7 +73,7 @@ const 쪽만들기 = (n, 앞, 뒤) => {
     ...(n.updated_at && n.updated_at !== n.published_at ? { dateModified: n.updated_at } : {}),
     author: { "@type": "Person", name: "로키즈" },
     publisher: { "@type": "Organization", name: "로키즈의 방", url: `${집}/` },
-    image: `${집}/og.png`,
+    image: 얼굴,
     ...(요약 ? { description: 요약 } : {}),
   };
   return `<!doctype html>
@@ -90,14 +96,14 @@ const 쪽만들기 = (n, 앞, 뒤) => {
 <meta property="og:title" content="${esc(n.title)}">
 <meta property="og:description" content="${esc(요약)}">
 <meta property="og:url" content="${주소}">
-<meta property="og:image" content="${집}/og.png">
+<meta property="og:image" content="${얼굴}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="article:published_time" content="${esc(n.published_at)}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(n.title)}">
 <meta name="twitter:description" content="${esc(요약)}">
-<meta name="twitter:image" content="${집}/og.png">
+<meta name="twitter:image" content="${얼굴}">
 <script type="application/ld+json">${JSON.stringify(표식).replace(/</g, "\\u003c")}</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Cormorant:ital,wght@1,500&display=swap">
 <style>
@@ -172,6 +178,12 @@ if (!r.ok) throw new Error(`글방을 읽지 못했습니다 (${r.status}) ${awa
 const 글들 = (await r.json()).filter((n) => n.published_at);
 
 await mkdir(자리, { recursive: true });
+
+/* 구워 둔 카드 목록 — 글쪽의 og:image 를 무엇으로 걸지 여기서 정한다 */
+const 카드있음 = new Set(
+  (await readdir(join(자리, "card")).catch(() => []))
+    .filter((f) => f.endsWith(".png"))
+    .map((f) => f.slice(0, -4)));
 
 /* 내린 글의 쪽은 남겨 두지 않는다 — 없는 글이 검색에 남는 것이
    빈 링크보다 나쁘다. index.html 은 목록이므로 건드리지 않는다. */
