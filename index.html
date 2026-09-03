@@ -468,6 +468,16 @@ if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
    그다음에 옮겨 간다. 새 탭·가운데 클릭·모션 감경은 건드리지 않는다:
    그건 「지금 여기서 보겠다」는 뜻이 아니다. */
 let 떠난다 = false;   // 이 쪽에서 나가는 일은 한 번뿐이다
+
+/* 폰의 크롬은 뒤로 가기 때 쪽을 다시 돌리지 않고 **되살린다**(bfcache).
+   그러면 스크립트가 다시 안 돌아 「떠난다」가 true 인 채로 남고 — 문이
+   전부 죽는다. 열린 채 굳은 문의 자국(opening)도 그대로 남는다.
+   되살아난 것이라면 둘 다 걷는다. */
+addEventListener("pageshow", (e) => {
+  if (!e.persisted) return;
+  떠난다 = false;
+  document.querySelectorAll("a.door.opening").forEach((문) => 문.classList.remove("opening"));
+});
 if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
   document.querySelectorAll("a.door").forEach((문) => {
     문.addEventListener("click", (e) => {
