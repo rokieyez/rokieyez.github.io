@@ -54,7 +54,7 @@ const 문단 = (글) => String(글 || "")
   .map((덩) => `<p>${덩.split("\n").map(esc).join("<br>")}</p>`)
   .join("\n    ");
 
-const 쪽만들기 = (n) => {
+const 쪽만들기 = (n, 앞, 뒤) => {
   const 주소 = `${집}/notes/${encodeURIComponent(n.slug)}.html`;
   const 요약 = String(n.body || "").replace(/\s+/g, " ").trim().slice(0, 155) || n.title;
   const 표식 = {
@@ -123,6 +123,20 @@ const 쪽만들기 = (n) => {
   time { display: block; margin-bottom: 40px; font-size: 12px;
          color: var(--dim); opacity: .8; letter-spacing: .06em; }
   p { margin: 0 0 18px; font-size: 15.5px; }
+  /* 이웃한 글 — 다 읽고 나면 갈 곳이 목록뿐이었다.
+     글이 하나뿐이면 두 자리 다 비고, 그때는 아무것도 그려지지 않는다. */
+  .near {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    margin: 46px 0 0; padding-top: 22px; border-top: 1px solid rgba(224,177,94,.14);
+  }
+  .near a { display: block; font-size: 14px; line-height: 1.6; border: 0; }
+  .near a:hover, .near a:focus-visible { color: #F0CE8C; outline: none; }
+  .near i {
+    display: block; font-style: normal; margin-bottom: 3px;
+    font-size: 11px; letter-spacing: .1em; color: var(--dim); opacity: .7;
+  }
+  .near .next { text-align: right; }
+  @media (max-width: 460px) { .near { grid-template-columns: 1fr; } .near .next { text-align: left; } }
   .back { display: inline-block; margin-top: 30px; font-size: 13px; }
   a { color: var(--brass); text-decoration: none;
       border-bottom: 1px solid rgba(224,177,94,.32); padding-bottom: 1px; }
@@ -138,7 +152,11 @@ const 쪽만들기 = (n) => {
   <h1>${esc(n.title)}</h1>
   <time datetime="${esc(String(n.published_at).slice(0, 10))}">${날짜(n.published_at)}</time>
   ${문단(n.body)}
-  <p><a class="back" href="./">← 글 목록</a></p>
+${앞 || 뒤 ? `<nav class="near">
+    ${뒤 ? `<a class="prev" href="${encodeURIComponent(뒤.slug)}.html"><i>이전 글</i>${esc(뒤.title)}</a>` : "<span></span>"}
+    ${앞 ? `<a class="next" href="${encodeURIComponent(앞.slug)}.html"><i>다음 글</i>${esc(앞.title)}</a>` : "<span></span>"}
+  </nav>` : ""}
+  <p><a class="back" href="./">글 목록</a></p>
 </article>
 <footer>rokiz.net · <a href="/">대문</a> · <a href="/books/">서재</a> · <a href="/now/">지금</a></footer>
 </body>
@@ -166,8 +184,11 @@ for (const f of await readdir(자리).catch(() => [])) {
   }
 }
 
-for (const n of 글들) {
-  await writeFile(join(자리, `${n.slug}.html`), 쪽만들기(n), "utf8");
+/* 글들은 새것부터 온다 — 바로 앞자리가 더 새 글(다음 글),
+   바로 뒷자리가 더 옛 글(이전 글)이다 */
+for (let i = 0; i < 글들.length; i++) {
+  await writeFile(join(자리, `${글들[i].slug}.html`),
+                  쪽만들기(글들[i], 글들[i - 1], 글들[i + 1]), "utf8");
 }
 console.log(`${글들.length}편의 글을 쪽으로 구웠습니다 → notes/`);
 글들.forEach((n) => console.log(`  ${n.slug}.html — ${n.title}`));

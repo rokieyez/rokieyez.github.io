@@ -51,6 +51,20 @@
   time { display: block; margin-bottom: 40px; font-size: 12px;
          color: var(--dim); opacity: .8; letter-spacing: .06em; }
   p { margin: 0 0 18px; font-size: 15.5px; }
+  /* 이웃한 글 — 다 읽고 나면 갈 곳이 목록뿐이었다.
+     글이 하나뿐이면 두 자리 다 비고, 그때는 아무것도 그려지지 않는다. */
+  .near {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    margin: 46px 0 0; padding-top: 22px; border-top: 1px solid rgba(224,177,94,.14);
+  }
+  .near a { display: block; font-size: 14px; line-height: 1.6; border: 0; }
+  .near a:hover, .near a:focus-visible { color: #F0CE8C; outline: none; }
+  .near i {
+    display: block; font-style: normal; margin-bottom: 3px;
+    font-size: 11px; letter-spacing: .1em; color: var(--dim); opacity: .7;
+  }
+  .near .next { text-align: right; }
+  @media (max-width: 460px) { .near { grid-template-columns: 1fr; } .near .next { text-align: left; } }
   .back { display: inline-block; margin-top: 30px; font-size: 13px; }
   a { color: var(--brass); text-decoration: none;
       border-bottom: 1px solid rgba(224,177,94,.32); padding-bottom: 1px; }
@@ -70,7 +84,8 @@
     <p>밤 11시가 넘은 시각인데도 아내는 둘째를 데리고 한강으로 나갔다.</p>
     <p>'만남이 있으면 헤어짐도 있는법이야.'</p>
     <p>받아들일 수 있을까?</p>
-  <p><a class="back" href="./">← 글 목록</a></p>
+
+  <p><a class="back" href="./">글 목록</a></p>
 </article>
 <footer>rokiz.net · <a href="/">대문</a> · <a href="/books/">서재</a> · <a href="/now/">지금</a></footer>
 </body>

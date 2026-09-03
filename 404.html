@@ -51,6 +51,19 @@
     a:hover, a:focus-visible {
       background: rgba(224,177,94,.08); border-color: rgba(224,177,94,.72); outline: none;
     }
+    /* 짐작한 목록 — 어느 방에서 길을 잃었는지 알 때만 나온다 */
+    .guess {
+      margin: 26px 0 0; padding: 20px 0 0; list-style: none;
+      border-top: 1px solid rgba(224,177,94,.14); text-align: left;
+      max-width: 34ch; margin-left: auto; margin-right: auto;
+    }
+    .guess li { margin: 0 0 9px; font-size: 13.5px; }
+    .guess a {
+      display: inline; padding: 0; border: 0; border-radius: 0; font-size: inherit;
+      border-bottom: 1px solid rgba(224,177,94,.26);
+    }
+    .guess a:hover, .guess a:focus-visible { background: none; border-bottom-color: var(--brass); }
+    .guess time { display: block; font-size: 11px; color: var(--dim, #9C8E74); opacity: .6; }
     /* 방으로 가는 길은 테두리 없이 — 「대문으로」가 여전히 첫 걸음이다 */
     .rooms { margin: 22px 0 0; font-size: 13px; color: var(--dim, #9C8E74); }
     .rooms a {
@@ -70,11 +83,46 @@
   </svg>
   <p class="latin">IANUA CLAUSA</p>
   <h1>잠긴 문입니다</h1>
-  <p>이 주소에는 아무 방도 없습니다.<br>열려 있는 문은 이쪽입니다.</p>
-  <a href="/">대문으로</a>
+  <p id="say">이 주소에는 아무 방도 없습니다.<br>열려 있는 문은 이쪽입니다.</p>
+  <a id="first" href="/">대문으로</a>
   <p class="rooms"><a href="/books/">서가 뒤의 방</a> · <a href="/now/">지금</a> · <a href="/notes/">글</a></p>
+  <!-- 글방에서 길을 잃었으면 여기 그 방의 글 목록이 온다 -->
+  <ul class="guess" id="guess" hidden></ul>
 </main>
 <script>
+  /* 어느 방에서 길을 잃었는지는 주소가 말해 준다. 「아무 방도 없습니다」로
+     끝내지 않고, 그 방에 정말 있는 것들을 여기 데려온다.
+     못 물어보면 조용히 아무것도 하지 않는다 — 잠긴 문은 그대로도 쓸모가 있다. */
+  (function () {
+    var 길 = location.pathname;
+    if (길.indexOf("/notes/") !== 0) return;
+    document.getElementById("say").innerHTML =
+      "글방에 그런 글은 없습니다.<br>있는 글은 이것들입니다.";
+    document.getElementById("first").textContent = "글방으로";
+    document.getElementById("first").href = "/notes/";
+    var 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
+    fetch("https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/notes" +
+          "?select=slug,title,published_at&order=published_at.desc&limit=8",
+          { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 } })
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (글들) {
+        if (!글들.length) return;
+        var ul = document.getElementById("guess");
+        글들.forEach(function (n) {
+          var li = document.createElement("li");
+          var a = document.createElement("a");
+          a.href = "/notes/" + encodeURIComponent(n.slug) + ".html";
+          a.textContent = n.title;
+          var t = document.createElement("time");
+          var d = new Date(n.published_at);
+          t.textContent = d.getFullYear() + "년 " + (d.getMonth() + 1) + "월 " + d.getDate() + "일";
+          li.appendChild(a); li.appendChild(t); ul.appendChild(li);
+        });
+        ul.hidden = false;
+      })
+      .catch(function () { /* 조용히 */ });
+  })();
+
   /* 열쇠구멍 뒤의 불이 손을 따라온다 — 마우스가 있는 기계에서만.
      손가락뿐인 기계에서는 손이 늘 화면을 덮어 빛이 그 밑에 숨는다. */
   if (matchMedia("(hover: hover) and (pointer: fine)").matches &&

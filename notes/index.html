@@ -55,6 +55,13 @@
                 border-bottom: 1px solid rgba(224,177,94,.28); padding-bottom: 1px; }
     ul.list a:hover, ul.list a:focus-visible { border-bottom-color: var(--brass); outline: none; }
     ul.list time { display: block; font-size: 12px; color: var(--dim); opacity: .75; letter-spacing: .06em; }
+    /* 제목만으로는 어떤 글인지 모른다 — 첫 문장을 한 줄 딸려 보낸다.
+       두 줄까지만 보이고 넘치면 잘린다: 목록은 목록이어야 한다. */
+    ul.list .peek {
+      margin: 5px 0 0; font-size: 13px; line-height: 1.75; color: var(--dim); opacity: .8;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    ul.list .mins { margin-left: 7px; opacity: .6; }
     ul.list .draft {
       display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 2px;
       font-size: 10.5px; letter-spacing: .08em; color: var(--dark); background: var(--brass); opacity: .8;
@@ -149,7 +156,7 @@
     <h2 id="p-title"></h2>
     <time id="p-when"></time>
     <div id="p-body"></div>
-    <p><a class="back plain" href="#">← 글 목록</a></p>
+    <p><a class="back plain" id="back" href="#">← 글 목록</a></p>
   </article>
 
   <!-- 주인의 책상 — 로그인해야 나타난다 -->
@@ -312,7 +319,24 @@ function 그리기() {
     const t = document.createElement("time");
     t.dateTime = (n.published_at || n.created_at || "").slice(0, 10);
     t.textContent = 날짜(n.published_at || n.created_at);
+    /* 읽는 데 걸리는 시간 — 한국어는 분당 500자 어림. 아주 짧은 글에
+       「1분」이 붙으면 오히려 우스우니 300자 아래는 적지 않는다. */
+    const 자 = String(n.body || "").replace(/\s/g, "").length;
+    if (자 >= 300) {
+      const m = document.createElement("span");
+      m.className = "mins";
+      m.textContent = `· ${Math.max(1, Math.round(자 / 500))}분`;
+      t.appendChild(m);
+    }
     li.appendChild(t);
+    /* 첫 문장 — 제목만 있는 목록은 어떤 글인지 알려 주지 못한다 */
+    const 맛 = String(n.body || "").replace(/\s+/g, " ").trim();
+    if (맛) {
+      const pk = document.createElement("p");
+      pk.className = "peek";
+      pk.textContent = 맛.slice(0, 140);
+      li.appendChild(pk);
+    }
     목록.appendChild(li);
   });
   해시읽기();
@@ -338,7 +362,33 @@ function 해시읽기() {
   }
   if (열려있나()) 책상채우기(글 || null);
 }
-addEventListener("hashchange", 해시읽기);
+addEventListener("hashchange", () => {
+  /* 해시가 비었다는 것은 사람이 뒤로 가기를 눌러 목록으로 돌아왔다는 뜻 —
+     우리가 밀어 넣었던 항목은 그 뒤로 가기가 써 버렸으니 빚을 지운다. */
+  if (!location.hash) 밀어넣음 = false;
+  해시읽기();
+});
+
+/* 히스토리에 우리가 밀어 넣은 항목이 있나. 초고를 열면 목록의 링크(#슬러그)가
+   한 칸을 쌓는데, 「글 목록」으로 돌아갈 때 해시만 비우면 그 칸이 그대로
+   남는다 — 그러면 다음 뒤로 가기가 직전 쪽이 아니라 같은 쪽으로 간다
+   (서재에서 같은 병을 고쳤다, 2026-09-03). 되감아서 갚는다. */
+let 밀어넣음 = false;
+addEventListener("click", (e) => {
+  const a = e.target.closest?.("ul.list a[href^='#']");
+  if (a) 밀어넣음 = true;      // 초고를 여는 링크 — 브라우저가 한 칸 쌓는다
+});
+$("back").addEventListener("click", (e) => {
+  e.preventDefault();
+  if (밀어넣음) { 밀어넣음 = false; history.back(); }
+  else {
+    /* 주소로 곧장 들어왔다 — 되감을 칸이 없다. 여기서 location.hash = "" 를
+       쓰면 그것이 또 한 칸을 쌓아 같은 병을 만든다. 갈아 끼우고 손으로 그린다
+       (replaceState 는 hashchange 를 울리지 않는다). */
+    history.replaceState(null, "", location.pathname + location.search);
+    해시읽기();
+  }
+});
 
 /* ── 문 · 책상 (주인만) ───────────────────────────────────────────── */
 let sb = null;              // supabase 라이브러리 — 필요할 때만 싣는다
@@ -470,7 +520,11 @@ function 주소미리보기() {
 }
 $("w-title").addEventListener("input", 주소미리보기);
 $("w-slug").addEventListener("input", 주소미리보기);
-$("w-new").addEventListener("click", () => { location.hash = ""; 책상채우기(null); });
+$("w-new").addEventListener("click", () => {
+  밀어넣음 = false;
+  history.replaceState(null, "", location.pathname + location.search);
+  해시읽기(); 책상채우기(null);
+});
 
 async function 저장(발행할까) {
   const title = $("w-title").value.trim();
