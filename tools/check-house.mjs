@@ -11,6 +11,10 @@
  *   ② 쪽마다의 규칙 — 제목·설명·canonical·og·테마색·구조화 표식
  *   ③ canonical 이 지도의 loc 과 글자 그대로 같은가
  *   ④ 쪽 안의 안쪽 링크가 다 살아 있나
+ *   ⑤ 지어 둔 것이 뒤처지지 않았나 — 이 집에서 무엇을 만드는 일은 전부
+ *      손이다(글쪽·카드·지도·피드). 도구를 안 돌리면 발행한 글이 검색에
+ *      아예 없고, 새로 꽂은 책도 마찬가지다. 그런데 그것을 알려 주는
+ *      것이 없었다. 여기서 DB 와 견주어 잡는다.
  *
  * 쓰는 법:
  *   node tools/check-house.mjs           집 쪽만 (빠르다)
@@ -33,12 +37,24 @@ const 티 = (곳, 말) => 흠.push(`${곳} — ${말}`);
 const 방들 = [
   { 이름: "대문",     길: "/",                            표식: 1 },
   { 이름: "지금",     길: "/now/",                        표식: 1 },
-  { 이름: "지난 지금", 길: "/now/2026-09.html",            표식: 1, 색인안함: true },
   { 이름: "글방",     길: "/notes/",                      표식: 1 },
   { 이름: "서재",     길: "/books/",                      표식: 1 },
   { 이름: "책 목록",   길: "/books/b/",                     표식: 1 },
   { 이름: "잠긴 문",   길: "/이런-쪽은-없습니다",             상태: 404, 색인안함: true, 건너뜀: true },
 ];
+
+/* 지난 지금(now/<연도>-<달>.html)은 늘어난다. 손으로 적어 두면 다음 달 것을
+   잊고, 그러면 점검이 그 쪽을 아예 안 본다. 지도에서 찾아 넣는다. */
+async function 갈무리찾기() {
+  try {
+    const r = await fetch(집 + "/sitemap.xml");
+    if (!r.ok) return;
+    for (const m of (await r.text()).matchAll(/<loc>[^<]*(\/now\/\d{4}-\d{2}\.html)<\/loc>/g)) {
+      방들.splice(2, 0, { 이름: `갈무리 ${m[1].slice(5, 12)}`, 길: m[1], 표식: 1, 색인안함: true });
+    }
+  } catch { /* 지도를 못 읽으면 아래에서 흠으로 잡힌다 */ }
+}
+await 갈무리찾기();
 
 async function 받기(길) {
   const r = await fetch(집 + 길, { redirect: "follow" });
@@ -132,6 +148,73 @@ for (const 방 of 방들) {
   }
 }
 console.log(`  걸어 본 길 ${본곳.size} · 죽은 링크 ${죽음}`);
+
+/* ── ⑤ 지어 둔 것이 뒤처지지 않았나 ──────────────────────────────
+   이 집에서 만드는 일은 전부 손이다. 글을 발행하고 도구를 안 돌리면
+   그 글은 검색에도 미리보기에도 없다 — 발행했는데 아무도 못 읽는다.
+   DB 가 진실이고 지도·피드는 그 그림자이므로, 둘을 견주면 잡힌다. */
+console.log("\n── 뒤처진 것 ──");
+const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
+const REST = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1";
+const 머리 = { apikey: 열쇠, Authorization: "Bearer " + 열쇠 };
+
+/* 몸통 없이 세기만 하는 질의 — 오가는 것이 헤더뿐이다 */
+async function 세기(표, 조건 = "") {
+  const r = await fetch(`${REST}/${표}?select=id${조건}`,
+    { method: "HEAD", headers: { ...머리, Prefer: "count=exact", Range: "0-0" } });
+  const m = /\/(\d+)$/.exec(r.headers.get("content-range") || "");
+  return m ? Number(m[1]) : null;
+}
+
+try {
+  /* 글 — 발행한 편수와 지도에 오른 글쪽 수 */
+  const 발행 = await 세기("notes", "&published_at=not.is.null");
+  const 글쪽 = 모든곳.filter((u) => /\/notes\/[^/]+\.html$/.test(u)).length;
+  console.log(`  글    발행 ${발행}편 · 지도의 글쪽 ${글쪽}장`);
+  if (발행 !== null && 발행 !== 글쪽) {
+    티("글방", `발행 ${발행}편인데 글쪽은 ${글쪽}장 — ` +
+       "make-notes-cards · make-notes-pages · make-feed 를 돌리세요");
+  }
+
+  /* 책 — 서가의 권수와 지도에 오른 나눔 쪽 수 (지도에는 목록 쪽 하나가 더 있다) */
+  const 권 = await 세기("books");
+  const 나눔 = 모든곳.filter((u) => /\/books\/b\/[^/]+\.html$/.test(u)).length;
+  console.log(`  책    서가 ${권}권 · 지도의 나눔 쪽 ${나눔}장`);
+  if (권 !== null && 권 !== 나눔) {
+    티("서재", `서가 ${권}권인데 나눔 쪽은 ${나눔}장 — ` +
+       "서재 저장소에서 make-book-pages.mjs 를 돌리세요");
+  }
+} catch (e) {
+  console.log(`  (DB 에 묻지 못했습니다: ${e.message} — 뒤처짐은 건너뜁니다)`);
+}
+
+/* 피드 — 집 피드는 손으로 지으므로 서재 피드보다 옛것이 되기 쉽다 */
+try {
+  const 때 = async (u) => {
+    const t = await (await fetch(집 + u)).text();
+    return (/<updated>([^<]+)<\/updated>/.exec(t) || [])[1] || null;
+  };
+  const [집때, 서재때] = await Promise.all([때("/feed.xml"), 때("/books/feed.xml")]);
+  console.log(`  피드  집 ${집때?.slice(0, 10)} · 서재 ${서재때?.slice(0, 10)}`);
+  if (집때 && 서재때 && new Date(집때) < new Date(서재때)) {
+    티("집 피드", `서재 피드(${서재때.slice(0, 10)})보다 옛것입니다(${집때.slice(0, 10)}) — ` +
+       "make-feed.mjs 를 돌리세요");
+  }
+} catch (e) { 티("피드", e.message); }
+
+/* 대문의 「지금은 N이 열려 있습니다」가 실제 문 개수와 맞는가.
+   한 번 어긋난 적이 있다 — og 와 twitter 만 「하나」에서 멈춰 있었다. */
+try {
+  const h = (await 받기("/")).글;
+  const 문수 = (h.match(/<a class="door"/g) || []).length;
+  const 수사 = { 1: "하나가", 2: "둘이", 3: "셋이", 4: "넷이", 5: "다섯이" }[문수];
+  const 말들 = [...h.matchAll(/지금은 ([^ ]+) 열려 있습니다/g)].map((m) => m[1]);
+  console.log(`  대문  문 ${문수}개 · 「${[...new Set(말들)].join("」「")}」`);
+  for (const 말 of new Set(말들)) {
+    if (수사 && 말 !== 수사) 티("대문", `문은 ${문수}개인데 「${말} 열려 있습니다」라고 적혀 있습니다`);
+  }
+  if (말들.length < 3) 티("대문", `그 문장이 ${말들.length}곳에만 있습니다 — 본문·og·twitter 셋이어야`);
+} catch (e) { 티("대문", e.message); }
 
 /* ── 끝 ──────────────────────────────────────────────────────── */
 if (흠.length) {

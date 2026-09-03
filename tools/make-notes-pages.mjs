@@ -23,6 +23,7 @@
  * 쓰는 법:  node tools/make-notes-pages.mjs
  */
 import { writeFile, readdir, rm, mkdir } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -258,22 +259,36 @@ console.log(`${글들.length}편의 글을 쪽으로 구웠습니다 → notes/`
 /* ── 집 지도 ──────────────────────────────────────────────────────
    /books/ 아래 544권은 그쪽 저장소가 스스로 지도를 지으므로 여기 적지 않는다.
    robots.txt 가 두 지도를 나란히 가리킨다. 방을 새로 열면 아래 한 줄. */
+/* lastmod 는 「이 쪽이 마지막으로 바뀐 날」이다. 도구를 돌린 날을 적으면
+   글 한 편을 올릴 때마다 대문과 지금까지 「바뀌었다」고 말하게 된다 —
+   거짓 신호가 되풀이되면 검색엔진은 이 값 자체를 무시한다.
+   git 이 그 파일의 마지막 손길을 정확히 알고 있으니 그것을 쓴다.
+   git 이 없거나 아직 안 담긴 파일이면 오늘로 돌아간다. */
 const 오늘 = new Date().toISOString().slice(0, 10);
+const 바뀐날 = (파일) => {
+  try {
+    const d = execFileSync("git", ["log", "-1", "--format=%cs", "--", 파일],
+                           { cwd: 뿌리, encoding: "utf8" }).trim();
+    return d || 오늘;
+  } catch { return 오늘; }
+};
 const 방 = [
-  { 곳: `${집}/`,       때: 오늘, 잦기: "monthly", 무게: "1.0" },
-  { 곳: `${집}/now/`,   때: 오늘, 잦기: "weekly",  무게: "0.8" },
-  { 곳: `${집}/notes/`, 때: 글들[0] ? String(글들[0].published_at).slice(0, 10) : 오늘,
+  { 곳: `${집}/`,       때: 바뀐날("index.html"),       잦기: "monthly", 무게: "1.0" },
+  { 곳: `${집}/now/`,   때: 바뀐날("now/index.html"),   잦기: "weekly",  무게: "0.8" },
+  /* 글방은 목록이라 새 글이 놓이면 실제로 달라진다 — 파일보다 글이 정확하다 */
+  { 곳: `${집}/notes/`, 때: 글들[0] ? String(글들[0].published_at).slice(0, 10)
+                                    : 바뀐날("notes/index.html"),
     잦기: "weekly", 무게: "0.8" },
 ];
 /* 지난 갈무리(now/<연도>-<달>.html)도 한 쪽씩 걸어 둔다 */
 for (const f of (await readdir(join(뿌리, "now")).catch(() => [])).sort().reverse()) {
   if (!/^\d{4}-\d{2}\.html$/.test(f)) continue;
-  방.push({ 곳: `${집}/now/${f}`, 때: `${f.replace(".html", "")}-01`,
+  방.push({ 곳: `${집}/now/${f}`, 때: 바뀐날(`now/${f}`),
             잦기: "yearly", 무게: "0.4" });
 }
 const 글쪽 = 글들.map((n) => ({
   곳: `${집}/notes/${encodeURIComponent(n.slug)}.html`,
-  때: String(n.updated_at || n.published_at).slice(0, 10),
+  때: String(n.updated_at || n.published_at).slice(0, 10),   // 글은 DB 가 안다
   잦기: "yearly", 무게: "0.7",
 }));
 const 지도 = `<?xml version="1.0" encoding="UTF-8"?>
