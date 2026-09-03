@@ -21,6 +21,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.rokiz.net/now/2026-09.html</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
     <loc>https://www.rokiz.net/notes/%EC%8B%9C%EC%A0%88-%EC%9D%B8%EC%97%B0.html</loc>
     <lastmod>2026-09-03</lastmod>
     <changefreq>yearly</changefreq>
