@@ -21,7 +21,7 @@
   <meta property="og:site_name" content="rokiz.net">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:title" content="로키즈의 방">
-  <meta property="og:description" content="문마다 다른 방이 있습니다 — 지금은 하나가 열려 있습니다.">
+  <meta property="og:description" content="문마다 다른 방이 있습니다 — 지금은 셋이 열려 있습니다.">
   <meta property="og:url" content="https://www.rokiz.net/">
   <!-- 링크를 나눌 때 보이는 얼굴 — 없으면 카톡·슬랙이 회색 상자를 띄운다 -->
   <meta property="og:image" content="https://www.rokiz.net/og.png">
@@ -30,7 +30,7 @@
   <meta property="og:image:alt" content="밤빛 바탕의 열쇠구멍과 「로키즈의 방」">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="로키즈의 방">
-  <meta name="twitter:description" content="문마다 다른 방이 있습니다 — 지금은 하나가 열려 있습니다.">
+  <meta name="twitter:description" content="문마다 다른 방이 있습니다 — 지금은 셋이 열려 있습니다.">
   <meta name="twitter:image" content="https://www.rokiz.net/og.png">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Cormorant:ital,wght@1,500&display=swap">
   <style>
@@ -283,7 +283,7 @@
 <main>
   <p class="latin">ROKIZ</p>
   <h1>로키즈의 방</h1>
-  <p class="sub">문마다 다른 방이 있습니다 — 지금은 둘이 열려 있습니다.</p>
+  <p class="sub">문마다 다른 방이 있습니다 — 지금은 셋이 열려 있습니다.</p>
   <!-- 셈은 그 방의 문 안으로 갔다 (아래 .door em). 여기 남는 것은
        서재 안쪽까지 들어가야 보이던 「지금 펼쳐 둔 책」 한 문장뿐이다 -->
   <p class="nowline" id="nowline" hidden></p>
@@ -300,20 +300,17 @@
       <small>요즘 읽는 것과<br>만드는 것</small>
       <em id="d-now" hidden></em>
     </a>
-    <!-- 이름이 붙은 잠긴 문 — 열 자리가 정해져 있으면 다시 올 이유가 된다.
-         notes/ 에 틀은 이미 서 있고 첫 글만 기다린다. 글이 올라오면
-         이 <div> 를 <a class="door" href="/notes/"> 로 바꾸면 문이 열린다. -->
-    <div class="door locked" aria-hidden="true">
-      <svg class="hole" viewBox="0 0 34 46">
-        <circle cx="17" cy="15" r="8" fill="none" stroke="currentColor" stroke-width="2.4"/>
-        <path d="M12.5 22 L21.5 22 L19.5 41 L14.5 41 Z" fill="none" stroke="currentColor" stroke-width="2.4"/>
-      </svg>
+    <!-- 2026년 9월 3일, 첫 글 「시절 인연」이 놓이면서 열린 문.
+         .door.locked 규칙은 지우지 않았다 — 다음에 또 짓다 만 방이 생기면
+         그때 잠긴 문으로 이름부터 걸어 두려는 것이다. -->
+    <a class="door" href="/notes/">
       <b>글</b>
-      <small>첫 문장을<br>기다리는 중</small>
-    </div>
+      <small>문장으로 남겨 둔<br>것들</small>
+      <em id="d-notes" hidden></em>
+    </a>
   </div>
 </main>
-<footer>rokiz.net · <a href="/books/">서재</a> · <a href="/now/">지금</a></footer>
+<footer>rokiz.net · <a href="/books/">서재</a> · <a href="/now/">지금</a> · <a href="/notes/">글</a></footer>
 
 <script>
 /* 램프가 손을 따라온다 — 마우스가 있는 기계에서만.
@@ -432,6 +429,36 @@ if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
     }
     el.hidden = false;
   } catch { /* 없으면 없는 대로 */ }
+})();
+
+/* 글 문 안의 셈 — 몇 편이 놓였고 마지막이 언제였나.
+   Prefer: count=exact 를 얹으면 한 번의 부름으로 최근 한 편과 전체 편수를
+   함께 받는다 (편수는 헤더에 온다). 초고는 오지 않는다 — 공개 열쇠라
+   RLS 가 발행한 것만 내준다. */
+(async function () {
+  const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
+  try {
+    const r = await fetch(
+      "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/notes" +
+      "?select=published_at&order=published_at.desc&limit=1",
+      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠,
+                   Prefer: "count=exact" } });
+    if (!r.ok) return;
+    const m = /\/(\d+)$/.exec(r.headers.get("content-range") || "");
+    const 편 = m ? Number(m[1]) : 0;
+    if (!편) return;
+    const [n] = await r.json();
+    let 말 = `${편}편`;
+    if (n?.published_at) {
+      const 날 = (Date.now() - new Date(n.published_at)) / 86400000;
+      말 += " · " + (날 < 1 ? "오늘 놓임" : 날 < 2 ? "어제 놓임"
+                   : 날 < 30 ? `${Math.floor(날)}일 전` : 날 < 365 ? `${Math.floor(날 / 30)}달 전`
+                   : `${Math.floor(날 / 365)}해 전`);
+    }
+    const el = document.getElementById("d-notes");
+    el.textContent = 말;
+    el.hidden = false;
+  } catch { /* 글방이 조용해도 문은 열려 있어야 한다 */ }
 })();
 
 /* 문은 열리고 나서 방으로 보낸다 — 누르면 안쪽으로 열리는 0.38초를 보고

@@ -8,9 +8,6 @@
   <meta name="theme-color" content="#171009">
   <meta name="color-scheme" content="dark">
   <link rel="canonical" href="https://www.rokiz.net/notes/">
-  <!-- 아직 발행된 글이 없다. 빈 방이 검색에 뜨면 「잠긴 문」과 다를 것이 없으므로,
-       첫 글을 발행하고 대문에 문을 걸 때 이 줄을 지운다. -->
-  <meta name="robots" content="noindex">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="manifest" href="/manifest.webmanifest">
@@ -61,6 +58,11 @@
       display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 2px;
       font-size: 10.5px; letter-spacing: .08em; color: var(--dark); background: var(--brass); opacity: .8;
     }
+    ul.list .edit {
+      margin-left: 8px; font-size: 11px; letter-spacing: .06em;
+      color: var(--dim); opacity: .7;
+    }
+    ul.list .edit:hover, ul.list .edit:focus-visible { color: var(--brass); opacity: 1; outline: none; }
     .empty { color: var(--dim); font-size: 14px; opacity: .8; }
 
     /* ── 글 한 편 ── */
@@ -283,7 +285,12 @@ function 그리기() {
   글들.forEach((n) => {
     const li = document.createElement("li");
     const a = document.createElement("a");
-    a.href = "#" + encodeURIComponent(n.slug);
+    /* 발행한 글은 제 쪽(<슬러그>.html)으로 보낸다 — 자바스크립트 없이 열리고,
+       검색·미리보기가 따라 들어올 수 있는 진짜 링크다. 초고는 쪽이 없으므로
+       이 쪽 안(해시)에서만 펼친다. */
+    a.href = n.published
+      ? encodeURIComponent(n.slug) + ".html"
+      : "#" + encodeURIComponent(n.slug);
     a.textContent = n.title;
     li.appendChild(a);
     if (!n.published) {
@@ -291,6 +298,15 @@ function 그리기() {
       b.className = "draft";
       b.textContent = "초고";
       li.appendChild(b);
+    }
+    /* 주인에게는 고칠 손잡이를 하나 더 준다 — 발행한 글의 링크가 정적 쪽으로
+       가 버려서, 이것이 없으면 올린 글을 다시 열 길이 없다. */
+    if (세션 && n.published) {
+      const e = document.createElement("a");
+      e.className = "edit";
+      e.href = "#" + encodeURIComponent(n.slug);
+      e.textContent = "고치기";
+      li.appendChild(e);
     }
     const t = document.createElement("time");
     t.dateTime = (n.published_at || n.created_at || "").slice(0, 10);

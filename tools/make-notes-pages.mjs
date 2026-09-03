@@ -1,0 +1,207 @@
+/* 발행한 글을 정적 쪽으로 굽고, 집 지도를 다시 그린다
+ *   → notes/<슬러그>.html, sitemap.xml
+ *
+ * 왜 필요한가:
+ *   글은 Supabase 의 notes 표에 살고, 화면은 자바스크립트로 그린다.
+ *   그런데 링크 미리보기를 만드는 쪽(카카오톡·슬랙)과 검색엔진은
+ *   자바스크립트를 돌리지 않는다 — 글을 아무리 발행해도 그들 눈에는
+ *   빈 쪽 하나뿐이다. 서재가 책마다 나눔 쪽을 두는 것과 같은 까닭이다.
+ *
+ * 무엇을 만드나:
+ *   글 한 편이 통째로 든 쪽. 제목·날짜·본문이 진짜 글자로 있고,
+ *   og 태그와 ld+json(BlogPosting)이 붙는다.
+ *
+ * 초고는 굽지 않는다:
+ *   공개 열쇠로 부르므로 RLS 가 발행한 글만 내준다 — 여기서 거를 것이
+ *   없다. 내린 글의 쪽은 다음 실행 때 지워진다.
+ *
+ * 지도도 여기서 짓는 까닭:
+ *   집 지도에 들어갈 쪽 중 손으로 못 세는 것은 글뿐이다. 글을 굽는 자리에서
+ *   같이 그리면 지도가 뒤처질 일이 없다 — 서재가 나눔 쪽과 지도를 한 도구로
+ *   짓는 것과 같다. 방(/, /now/)은 손으로 여는 것이니 아래 목록에 적어 둔다.
+ *
+ * 쓰는 법:  node tools/make-notes-pages.mjs
+ */
+import { writeFile, readdir, rm, mkdir } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+/* 알림 글이 끊겨도 하던 일은 끝낸다 (`| head` 로 잘려도 파일은 온전하게) */
+process.stdout.on("error", (e) => { if (e.code !== "EPIPE") throw e; });
+
+const 뿌리 = join(dirname(fileURLToPath(import.meta.url)), "..");
+const 자리 = join(뿌리, "notes");
+const 집 = "https://www.rokiz.net";
+const 서버 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/notes";
+const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
+
+const esc = (s) => String(s ?? "")
+  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;");
+
+const 날짜 = (iso) => {
+  const d = new Date(iso);
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+};
+
+/* 본문은 평문이다 — 빈 줄이 문단의 경계, 한 줄 바꿈은 그대로 살린다.
+   화면(notes/index.html)의 문단() 과 같은 규칙이어야 두 곳이 다르게
+   보이지 않는다. 글자는 반드시 이스케이프해서 넣는다. */
+const 문단 = (글) => String(글 || "")
+  .split(/\n{2,}/)
+  .map((덩) => 덩.trim())
+  .filter(Boolean)
+  .map((덩) => `<p>${덩.split("\n").map(esc).join("<br>")}</p>`)
+  .join("\n    ");
+
+const 쪽만들기 = (n) => {
+  const 주소 = `${집}/notes/${encodeURIComponent(n.slug)}.html`;
+  const 요약 = String(n.body || "").replace(/\s+/g, " ").trim().slice(0, 155) || n.title;
+  const 표식 = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: n.title,
+    url: 주소,
+    inLanguage: "ko",
+    datePublished: n.published_at,
+    ...(n.updated_at && n.updated_at !== n.published_at ? { dateModified: n.updated_at } : {}),
+    author: { "@type": "Person", name: "로키즈" },
+    publisher: { "@type": "Organization", name: "로키즈의 방", url: `${집}/` },
+    image: `${집}/og.png`,
+    ...(요약 ? { description: 요약 } : {}),
+  };
+  return `<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(n.title)} — 로키즈의 방</title>
+<meta name="description" content="${esc(요약)}">
+<meta name="theme-color" content="#171009">
+<meta name="color-scheme" content="dark">
+<link rel="canonical" href="${주소}">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/atom+xml" title="로키즈의 방" href="/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="rokiz.net">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="${esc(n.title)}">
+<meta property="og:description" content="${esc(요약)}">
+<meta property="og:url" content="${주소}">
+<meta property="og:image" content="${집}/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="article:published_time" content="${esc(n.published_at)}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(n.title)}">
+<meta name="twitter:description" content="${esc(요약)}">
+<meta name="twitter:image" content="${집}/og.png">
+<script type="application/ld+json">${JSON.stringify(표식).replace(/</g, "\\u003c")}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Cormorant:ital,wght@1,500&display=swap">
+<style>
+  :root { --dark:#171009; --paper:#E9DFC9; --dim:#9C8E74; --brass:#E0B15E; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    background: var(--dark); color: var(--paper);
+    font-family: "Gowun Batang", "Noto Serif KR", serif; line-height: 1.9;
+    display: grid; grid-template-rows: 1fr auto; place-items: start center;
+    word-break: keep-all; overflow-wrap: break-word;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none;
+    background: radial-gradient(48% 34% at 50% 10%, rgba(224,177,94,.08), transparent 70%);
+  }
+  /* 글은 읽으라고 있는 것이다 — 한 줄이 62자를 넘지 않게 */
+  article { position: relative; padding: 56px 24px 32px; max-width: 62ch; width: 100%; }
+  .latin { font-family: "Cormorant", serif; font-style: italic;
+           font-size: 13px; letter-spacing: .22em; color: var(--dim); margin: 0 0 8px; }
+  h1 { margin: 0 0 6px; font-size: clamp(26px, 5.5vw, 36px); font-weight: 700;
+       letter-spacing: .04em; line-height: 1.45; }
+  time { display: block; margin-bottom: 40px; font-size: 12px;
+         color: var(--dim); opacity: .8; letter-spacing: .06em; }
+  p { margin: 0 0 18px; font-size: 15.5px; }
+  .back { display: inline-block; margin-top: 30px; font-size: 13px; }
+  a { color: var(--brass); text-decoration: none;
+      border-bottom: 1px solid rgba(224,177,94,.32); padding-bottom: 1px; }
+  a:hover, a:focus-visible { border-bottom-color: var(--brass); outline: none; }
+  footer { padding: 0 24px 28px; font-size: 11.5px; color: var(--dim);
+           opacity: .6; letter-spacing: .1em; text-align: center; }
+  footer a { border-bottom-color: rgba(156,142,116,.3); color: inherit; }
+</style>
+</head>
+<body>
+<article>
+  <p class="latin">SCRIPTA</p>
+  <h1>${esc(n.title)}</h1>
+  <time datetime="${esc(String(n.published_at).slice(0, 10))}">${날짜(n.published_at)}</time>
+  ${문단(n.body)}
+  <p><a class="back" href="./">← 글 목록</a></p>
+</article>
+<footer>rokiz.net · <a href="/">대문</a> · <a href="/books/">서재</a> · <a href="/now/">지금</a></footer>
+</body>
+</html>
+`;
+};
+
+/* ── 지음 ─────────────────────────────────────────────────────────── */
+const r = await fetch(
+  `${서버}?select=slug,title,body,published_at,updated_at&order=published_at.desc`,
+  { headers: { apikey: 열쇠, Authorization: `Bearer ${열쇠}` } });
+if (!r.ok) throw new Error(`글방을 읽지 못했습니다 (${r.status}) ${await r.text()}`);
+const 글들 = (await r.json()).filter((n) => n.published_at);
+
+await mkdir(자리, { recursive: true });
+
+/* 내린 글의 쪽은 남겨 두지 않는다 — 없는 글이 검색에 남는 것이
+   빈 링크보다 나쁘다. index.html 은 목록이므로 건드리지 않는다. */
+const 살아있음 = new Set(글들.map((n) => `${n.slug}.html`));
+살아있음.add("index.html");
+for (const f of await readdir(자리).catch(() => [])) {
+  if (f.endsWith(".html") && !살아있음.has(f)) {
+    await rm(join(자리, f));
+    console.log(`  내린 글의 쪽을 지웠습니다: ${f}`);
+  }
+}
+
+for (const n of 글들) {
+  await writeFile(join(자리, `${n.slug}.html`), 쪽만들기(n), "utf8");
+}
+console.log(`${글들.length}편의 글을 쪽으로 구웠습니다 → notes/`);
+글들.forEach((n) => console.log(`  ${n.slug}.html — ${n.title}`));
+
+/* ── 집 지도 ──────────────────────────────────────────────────────
+   /books/ 아래 544권은 그쪽 저장소가 스스로 지도를 지으므로 여기 적지 않는다.
+   robots.txt 가 두 지도를 나란히 가리킨다. 방을 새로 열면 아래 한 줄. */
+const 오늘 = new Date().toISOString().slice(0, 10);
+const 방 = [
+  { 곳: `${집}/`,       때: 오늘, 잦기: "monthly", 무게: "1.0" },
+  { 곳: `${집}/now/`,   때: 오늘, 잦기: "weekly",  무게: "0.8" },
+  { 곳: `${집}/notes/`, 때: 글들[0] ? String(글들[0].published_at).slice(0, 10) : 오늘,
+    잦기: "weekly", 무게: "0.8" },
+];
+/* 지난 갈무리(now/<연도>-<달>.html)도 한 쪽씩 걸어 둔다 */
+for (const f of (await readdir(join(뿌리, "now")).catch(() => [])).sort().reverse()) {
+  if (!/^\d{4}-\d{2}\.html$/.test(f)) continue;
+  방.push({ 곳: `${집}/now/${f}`, 때: `${f.replace(".html", "")}-01`,
+            잦기: "yearly", 무게: "0.4" });
+}
+const 글쪽 = 글들.map((n) => ({
+  곳: `${집}/notes/${encodeURIComponent(n.slug)}.html`,
+  때: String(n.updated_at || n.published_at).slice(0, 10),
+  잦기: "yearly", 무게: "0.7",
+}));
+const 지도 = `<?xml version="1.0" encoding="UTF-8"?>
+<!-- 손으로 고치지 마세요 — tools/make-notes-pages.mjs 가 짓습니다.
+     방을 새로 열면 그 도구의 「방」 목록에 한 줄 더합니다. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${[...방, ...글쪽].map((u) => `  <url>
+    <loc>${u.곳}</loc>
+    <lastmod>${u.때}</lastmod>
+    <changefreq>${u.잦기}</changefreq>
+    <priority>${u.무게}</priority>
+  </url>`).join("\n")}
+</urlset>
+`;
+await writeFile(join(뿌리, "sitemap.xml"), 지도, "utf8");
+console.log(`집 지도에 ${방.length + 글쪽.length}곳을 담았습니다 → sitemap.xml`);

@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 로키즈의 방 — 이 저장소가 가진 쪽만 적는다.
-     /books/ 아래 544권은 그쪽 저장소가 스스로 지도를 지으므로
-     robots.txt 가 두 지도를 나란히 가리킨다. 방을 새로 열면 여기 한 줄.
-     아직 비어 있는 방(/notes/)은 넣지 않는다 — 빈 쪽을 색인시킬 이유가 없다. -->
+<!-- 손으로 고치지 마세요 — tools/make-notes-pages.mjs 가 짓습니다.
+     방을 새로 열면 그 도구의 「방」 목록에 한 줄 더합니다. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.rokiz.net/</loc>
@@ -15,5 +13,17 @@
     <lastmod>2026-09-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/notes/</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/notes/%EC%8B%9C%EC%A0%88-%EC%9D%B8%EC%97%B0.html</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>

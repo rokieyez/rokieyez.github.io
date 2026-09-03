@@ -85,7 +85,8 @@ async function 글() {
       .filter((n) => n.published_at)
       .map((n) => ({
         제목: n.title,
-        주소: `${집}/notes/#${encodeURIComponent(n.slug)}`,
+        // 글마다 제 쪽이 있다 (tools/make-notes-pages.mjs 가 굽는다)
+        주소: `${집}/notes/${encodeURIComponent(n.slug)}.html`,
         때: new Date(n.published_at).toISOString(),
         글: String(n.body || "").replace(/\s+/g, " ").slice(0, 300) || "새 글.",
         갈래: "notes",
