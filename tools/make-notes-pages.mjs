@@ -130,6 +130,8 @@ const 쪽만들기 = (n, 앞, 뒤, 책) => {
 <meta name="twitter:description" content="${esc(요약)}">
 <meta name="twitter:image" content="${얼굴}">
 <script type="application/ld+json">${JSON.stringify(표식).replace(/</g, "\\u003c")}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Cormorant:ital,wght@1,500&display=swap">
 <style>
   :root { --dark:#171009; --paper:#E9DFC9; --dim:#9C8E74; --brass:#E0B15E; }
