@@ -22,7 +22,7 @@
  *
  * 쓰는 법:  node tools/make-notes-pages.mjs
  */
-import { writeFile, readdir, rm, mkdir } from "node:fs/promises";
+import { writeFile, readFile, readdir, rm, mkdir } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -267,6 +267,43 @@ for (let i = 0; i < 글들.length; i++) {
 }
 console.log(`${글들.length}편의 글을 쪽으로 구웠습니다 → notes/`);
 글들.forEach((n) => console.log(`  ${n.slug}.html — ${n.title}`));
+
+/* ── 목록의 씨앗 (notes/index.html) ────────────────────────────────
+   글방은 서재(Supabase)에 물어 목록을 그린다. 그래서 서재가 답하지 않거나
+   자바스크립트가 꺼져 있으면 방이 통째로 빈다 — 발행한 글이 바로 옆에
+   <슬러그>.html 로 놓여 있는데도. 「못 읽은 것은 목록이지 글이 아니다.」
+   화면의 그리기() 가 만드는 <li> 와 같은 꼴로 구워 둔다. 두 곳이 다르면
+   서재가 답하는 순간 목록이 눈에 띄게 덜컹인다.
+   **초고는 굽지 않는다** — 글들은 이미 published_at 이 있는 것만 남았다. */
+{
+  const 씨앗 = 글들.map((n) => {
+    const 맛 = String(n.body || "").replace(/\s+/g, " ").trim();
+    const 자 = String(n.body || "").replace(/\s/g, "").length;
+    const 결 = (n.tags || []).map((t) => `<b>${esc(t)}</b>`).join("");
+    return `      <li><a href="${encodeURIComponent(n.slug)}.html">${esc(n.title)}</a>`
+      + `<time datetime="${esc(String(n.published_at).slice(0, 10))}">${날짜(n.published_at)}`
+      + (자 >= 300 ? `<span class="mins">· ${Math.max(1, Math.round(자 / 500))}분</span>` : "")
+      + (결 ? `<span class="tags">${결}</span>` : "")
+      + `</time>`
+      + (맛 ? `<p class="peek">${esc(맛.slice(0, 140))}</p>` : "")
+      + `</li>`;
+  }).join("\n");
+
+  const 방쪽 = join(자리, "index.html");
+  const 옛 = await readFile(방쪽, "utf8");
+  const 틀 = /(<!--구운목록-->)[\s\S]*?(<!--\/구운목록-->)/;
+  if (!틀.test(옛)) {
+    console.warn("  notes/index.html 에서 구운목록 자리를 찾지 못했습니다 — 씨앗을 건너뜁니다");
+  } else {
+    const 새 = 옛.replace(틀, `$1\n${씨앗}\n    $2`);
+    if (새 !== 옛) {
+      await writeFile(방쪽, 새, "utf8");
+      console.log(`  목록의 씨앗 ${글들.length}줄을 구웠습니다 → notes/index.html`);
+    } else {
+      console.log("  목록의 씨앗은 이미 최신입니다");
+    }
+  }
+}
 
 /* ── 집 지도 ──────────────────────────────────────────────────────
    /books/ 아래 544권은 그쪽 저장소가 스스로 지도를 지으므로 여기 적지 않는다.

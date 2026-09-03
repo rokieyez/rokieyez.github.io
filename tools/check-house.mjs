@@ -177,6 +177,33 @@ try {
        "make-notes-cards · make-notes-pages · make-feed 를 돌리세요");
   }
 
+  /* 구워 둔 목록 — 글방이 서재에 닿지 못하거나 자바스크립트가 꺼졌을 때
+     펴는 갈무리다. 갈무리가 뒤처지면 「지금은 이것뿐입니다」라고 하면서
+     옛 목록을 보여 주게 된다 — 아무것도 안 보여 주는 것보다 나쁘다.
+     편수만 세지 않고 슬러그가 다 있는지도 본다 (편수가 같아도 다른 글일 수 있다). */
+  try {
+    const 방 = await (await fetch(집 + "/notes/")).text();
+    const 씨 = /<!--구운목록-->([\s\S]*?)<!--\/구운목록-->/.exec(방);
+    if (!씨) {
+      티("글방", "notes/index.html 에 구운목록 자리가 없습니다 — " +
+         "make-notes-pages.mjs 가 갈무리를 굽지 못합니다");
+    } else {
+      const 구운슬러그 = new Set([...씨[1].matchAll(/<li><a href="([^"]+)\.html"/g)]
+        .map((m) => decodeURIComponent(m[1])));
+      const r = await fetch(`${REST}/notes?select=slug&published_at=not.is.null`, { headers: 머리 });
+      const 진짜 = r.ok ? (await r.json()).map((n) => n.slug) : [];
+      const 빠진 = 진짜.filter((s2) => !구운슬러그.has(s2));
+      console.log(`  갈무리 구운 목록 ${구운슬러그.size}줄 · 발행 ${진짜.length}편`);
+      if (빠진.length || 구운슬러그.size !== 진짜.length) {
+        티("글방", `구운 목록이 뒤처졌습니다 (${구운슬러그.size}줄 / 발행 ${진짜.length}편` +
+           (빠진.length ? `, 빠진 글: ${빠진.slice(0, 3).join(", ")}` : "") +
+           ") — make-notes-pages.mjs 를 돌리세요");
+      }
+    }
+  } catch (e) {
+    티("글방", `구운 목록을 살피지 못했습니다 (${e.message})`);
+  }
+
   /* 책 — 서가의 권수와 지도에 오른 나눔 쪽 수 (지도에는 목록 쪽 하나가 더 있다) */
   const 권 = await 세기("books");
   const 나눔 = 모든곳.filter((u) => /\/books\/b\/[^/]+\.html$/.test(u)).length;

@@ -123,12 +123,19 @@
     .sift .gap { width: 6px; }
     /* 목록에 붙는 결 */
     ul.list .tags { display: inline; margin-left: 8px; }
+    /* 결은 <time> 안에 산다 — 거기 이미 opacity .85 가 걸려 있으므로
+       여기서 또 .85 를 주면 곱해져 .72 가 되고 대비가 3.61 로 내려앉는다
+       (2026-09-03 확인). 흐리게 하는 일은 부모 한 곳에서만 한다.
+       「#」도 마찬가지 이유로 제 투명도를 갖지 않는다. */
     ul.list .tags b {
       display: inline-block; margin-right: 5px; font-weight: 400;
-      font-size: 10.5px; letter-spacing: .06em; color: var(--dim); opacity: .85;
+      font-size: 10.5px; letter-spacing: .06em; color: var(--dim);
     }
-    ul.list .tags b::before { content: "#"; opacity: .55; }
+    ul.list .tags b::before { content: "#"; }
     .empty { color: var(--dim); font-size: 14px; opacity: .85; }
+    /* 갈무리를 편 자리의 한 줄 — 「없다」가 아니라 「지금은 이것뿐이다」라는 말이다 */
+    .empty.kept { border-left: 2px solid rgba(200,168,110,.4);
+                  padding: 6px 0 6px 11px; margin: 0 0 18px; font-size: 13px; }
 
     /* ── 글 한 편 ── */
     article h2 { margin: 0 0 6px; font-size: clamp(24px, 5vw, 32px); font-weight: 700;
@@ -216,7 +223,14 @@
     <!-- 해와 결로 거른다. 글이 몇 편 없을 때는 나타나지 않는다 —
          고를 것이 하나뿐인 거르개는 어수선하기만 하다. -->
     <nav class="sift" id="sift" hidden></nav>
-    <ul class="list" id="list"></ul>
+    <!-- 목록의 씨앗 — tools/make-notes-pages.mjs 가 발행한 글을 여기 구워 둔다.
+         이 방은 서재(Supabase)에 물어 목록을 그리는데, 서재가 답하지 않거나
+         자바스크립트가 꺼져 있으면 방이 통째로 빈다 — 정작 글은 옆에
+         <슬러그>.html 로 놓여 있는데도. 구워 둔 목록이 그 빈자리를 메운다.
+         초고는 굽지 않는다 (남의 눈에 보여서는 안 되는 글이다). -->
+    <ul class="list" id="list"><!--구운목록-->
+      <li><a href="%EC%8B%9C%EC%A0%88-%EC%9D%B8%EC%97%B0.html">시절 인연</a><time datetime="2026-09-03">2026년 9월 3일<span class="tags"><b>아이들</b><b>하루</b></span></time><p class="peek">둘째가 가장 친한 친구에게서 받은 문자메세지 '... 그래서 우리 셋의 대답은 노야' 절교에 가까운 뉘앙스 밤 11시가 넘은 시각인데도 아내는 둘째를 데리고 한강으로 나갔다. '만남이 있으면 헤어짐도 있는법이야.' 받아들일 수 있을까?</p></li>
+    <!--/구운목록--></ul>
     <p class="empty" id="none" hidden>아직 첫 글을 놓지 않았습니다.</p>
     <!-- 글이 한 묶음(50편)을 넘으면 나타난다 -->
     <p><button class="brass quiet" id="more" type="button" hidden>지난 글 더 보기</button></p>
@@ -344,6 +358,12 @@ function 문단(글, 자리) {
 /* ── 읽기 ─────────────────────────────────────────────────────────── */
 let 글들 = [];
 
+/* 구워 둔 목록을 손에 쥔 채로 시작한다 — 서재가 답하지 않을 때 되돌릴
+   자리다. 자바스크립트가 살아 있는 한 첫 그림에서 지워지므로, 여기서
+   먼저 붙들어 두지 않으면 영영 사라진다. */
+const 구운목록 = $("list").innerHTML;
+const 구운편수 = ($("list").children.length);
+
 /* 한 번에 받는 편수. 목록은 본문까지 통째로 받는데(첫 문장 미리보기에 쓴다)
    한도가 없으면 글이 쌓일수록 목록 한 번에 모든 글의 전문이 실려 온다.
    50편이면 대략 50KB — 그 뒤는 「더 보기」가 이어 받는다. */
@@ -417,10 +437,28 @@ function 그리기() {
   목록.textContent = "";
   거르개그리기();
   if (글들 === null) {
+    /* 서재가 답하지 않았다. 예전에는 여기서 방을 통째로 비웠는데, 발행한
+       글은 바로 옆에 <슬러그>.html 로 놓여 있으므로 그건 거짓말에 가깝다 —
+       못 읽은 것은 목록이지 글이 아니다. 구워 둔 목록을 되돌리고,
+       그것이 갈무리라는 사실을 밝힌다. (초고는 구워 두지 않으므로
+       주인이 보더라도 남의 눈에 보일 글은 없다.) */
     없음.hidden = false;
-    없음.textContent = "글을 불러오지 못했습니다. 잠시 뒤에 다시 열어 보세요.";
+    if (구운편수) {
+      목록.innerHTML = 구운목록;
+      $("sift").hidden = true;            // 거를 밑천이 없다 — 결·해 단추를 걷는다
+      없음.textContent = "서재에 닿지 못해, 갈무리해 둔 목록을 폅니다"
+        + " — 발행한 글은 그대로 열립니다.";
+      없음.classList.add("kept");
+      /* 이 한 줄은 목록 위에 와야 한다 — 다 읽고 나서야 「갈무리였다」고
+         알게 되면 늦다. (#listview 는 흐름 배치라 order 가 듣지 않는다) */
+      목록.parentNode.insertBefore(없음, 목록);
+    } else {
+      없음.textContent = "글을 불러오지 못했습니다. 잠시 뒤에 다시 열어 보세요.";
+    }
     return;
   }
+  없음.classList.remove("kept");
+  if (없음.nextElementSibling === 목록) 목록.after(없음);   // 제자리로 돌린다
   const 보일것 = 글들.filter(통과);
   없음.hidden = 보일것.length > 0;
   없음.textContent = 글들.length

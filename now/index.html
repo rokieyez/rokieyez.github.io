@@ -109,6 +109,17 @@
    "description":"요즘 읽는 것과 만드는 것.",
    "isPartOf":{"@type":"WebSite","name":"로키즈의 방","url":"https://www.rokiz.net/"}}
   </script>
+  <!-- 자바스크립트가 꺼져 있으면 두 목록은 영영 채워지지 않는다. 그런데
+       그 자리에는 「서재에 물어보는 중…」이 적혀 있어, 묻는 이가 아무도
+       없는데 묻는 중이라고 말한다 — 끝나지 않는 기다림은 빈자리보다 나쁘다.
+       그 줄을 걷고 아래의 <noscript> 한 줄로 갈음한다.
+       (머리의 <noscript> 안에는 style 을 둘 수 있다) -->
+  <noscript><style>
+    #reading, #shelved { display: none }
+    .noscript-note { margin: 0 0 10px; padding: 8px 0 8px 11px; font-size: 13px;
+                     color: var(--dim); border-left: 2px solid rgba(200,168,110,.4); }
+    .noscript-note a { color: var(--brass) }
+  </style></noscript>
 </head>
 <body>
 <main>
@@ -123,6 +134,9 @@
     <!-- 서재의 「읽는 중」 책을 그대로 가져온다. 손으로 옮겨 적으면
          반드시 어긋난다 — 서재에서 책을 덮는 순간 여기도 같이 덮인다. -->
     <ul id="reading"><li class="empty">서재에 물어보는 중…</li></ul>
+    <noscript><p class="noscript-note">이 줄은 서재에 직접 물어 채웁니다 —
+      자바스크립트가 꺼져 있어 묻지 못했습니다.
+      <a href="/books/">서가 뒤의 방</a>에서 바로 보실 수 있습니다.</p></noscript>
   </section>
 
   <section>
@@ -143,6 +157,8 @@
          담 너머로 부를 것도 없고, 서재가 「새로 들어온 것」을 정하는 규칙을
          여기서 되풀이하지 않아도 된다 — 규칙 사본을 늘리지 않는 편이 낫다. -->
     <ul id="shelved"><li class="empty">서재의 피드를 읽는 중…</li></ul>
+    <noscript><p class="noscript-note">서재의 <a href="/books/feed.xml">피드</a>를
+      읽어 채우는 자리입니다 — 자바스크립트 없이도 그 주소는 그대로 열립니다.</p></noscript>
   </section>
 
   <section>
