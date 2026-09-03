@@ -194,7 +194,7 @@
       font-style: normal;
       font-size: 11px;
       color: var(--brass);
-      opacity: .62;
+      opacity: .85;
       letter-spacing: .04em;
     }
     .door em[hidden] { display: none; }
@@ -262,10 +262,18 @@
       padding: 0 0 18px;
       font-size: 11.5px;
       color: var(--dim);
-      opacity: .6;
+      opacity: .85;
       letter-spacing: .1em;
     }
     footer a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(156,142,116,.3); }
+    /* 손가락이 닿는 자리를 넓힌다 — 보이는 크기는 그대로 두고 ::after 로만.
+       바닥글 링크는 글자 크기 그대로라 12×18 밖에 안 됐다 (WCAG 2.2 의
+       최소는 24×24). 서재가 사다리 눈금과 서표 닫기에 쓴 것과 같은 방법이다. */
+    footer a { position: relative; }
+    footer a::after {
+      content: ""; position: absolute;
+      left: -7px; right: -7px; top: -9px; bottom: -9px;
+    }
     footer a:hover, footer a:focus-visible { color: var(--brass); outline: none; }
     @media (prefers-reduced-motion: no-preference) {
       main { animation: rise .9s ease both; }

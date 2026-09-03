@@ -143,7 +143,7 @@ const 쪽만들기 = (n, 앞, 뒤, 책) => {
   h1 { margin: 0 0 6px; font-size: clamp(26px, 5.5vw, 36px); font-weight: 700;
        letter-spacing: .04em; line-height: 1.45; }
   time { display: block; margin-bottom: 40px; font-size: 12px;
-         color: var(--dim); opacity: .8; letter-spacing: .06em; }
+         color: var(--dim); opacity: .85; letter-spacing: .06em; }
   p { margin: 0 0 18px; font-size: 15.5px; }
   /* 결 — 날짜 밑에 조용히. 누르면 글방에서 그 결만 걸러 본다 */
   .tags { margin: -32px 0 40px; font-size: 11.5px; letter-spacing: .06em; }
@@ -160,7 +160,7 @@ const 쪽만들기 = (n, 앞, 뒤, 책) => {
   .near a:hover, .near a:focus-visible { color: #F0CE8C; outline: none; }
   .near i {
     display: block; font-style: normal; margin-bottom: 3px;
-    font-size: 11px; letter-spacing: .1em; color: var(--dim); opacity: .7;
+    font-size: 11px; letter-spacing: .1em; color: var(--dim); opacity: .85;
   }
   .near .next { text-align: right; }
   @media (max-width: 460px) { .near { grid-template-columns: 1fr; } .near .next { text-align: left; } }
@@ -177,15 +177,19 @@ const 쪽만들기 = (n, 앞, 뒤, 책) => {
   .bookcard .t i { display: block; font-style: normal; font-size: 12.5px; color: var(--dim); opacity: .85; }
   .bookcard .lbl {
     display: block; margin-bottom: 3px;
-    font-size: 10.5px; letter-spacing: .12em; color: var(--dim); opacity: .7;
+    font-size: 10.5px; letter-spacing: .12em; color: var(--dim); opacity: .85;
   }
   .back { display: inline-block; margin-top: 30px; font-size: 13px; }
   a { color: var(--brass); text-decoration: none;
       border-bottom: 1px solid rgba(224,177,94,.32); padding-bottom: 1px; }
   a:hover, a:focus-visible { border-bottom-color: var(--brass); outline: none; }
   footer { padding: 0 24px 28px; font-size: 11.5px; color: var(--dim);
-           opacity: .6; letter-spacing: .1em; text-align: center; }
+           opacity: .85; letter-spacing: .1em; text-align: center; }
   footer a { border-bottom-color: rgba(156,142,116,.3); color: inherit; }
+  /* 손가락이 닿는 자리를 넓힌다 — 보이는 크기는 그대로 두고 ::after 로만
+     (WCAG 2.2 의 최소는 24×24, 바닥글 글자는 그보다 작다) */
+  footer a { position: relative; }
+  footer a::after { content: ""; position: absolute; left: -7px; right: -7px; top: -9px; bottom: -9px; }
 </style>
 </head>
 <body>

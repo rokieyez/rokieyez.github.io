@@ -54,21 +54,21 @@
     ul.list a { font-size: 16.5px; color: var(--brass); text-decoration: none;
                 border-bottom: 1px solid rgba(224,177,94,.28); padding-bottom: 1px; }
     ul.list a:hover, ul.list a:focus-visible { border-bottom-color: var(--brass); outline: none; }
-    ul.list time { display: block; font-size: 12px; color: var(--dim); opacity: .75; letter-spacing: .06em; }
+    ul.list time { display: block; font-size: 12px; color: var(--dim); opacity: .85; letter-spacing: .06em; }
     /* 제목만으로는 어떤 글인지 모른다 — 첫 문장을 한 줄 딸려 보낸다.
        두 줄까지만 보이고 넘치면 잘린다: 목록은 목록이어야 한다. */
     ul.list .peek {
-      margin: 5px 0 0; font-size: 13px; line-height: 1.75; color: var(--dim); opacity: .8;
+      margin: 5px 0 0; font-size: 13px; line-height: 1.75; color: var(--dim); opacity: .85;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-    ul.list .mins { margin-left: 7px; opacity: .6; }
+    ul.list .mins { margin-left: 7px; }
     ul.list .draft {
       display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 2px;
       font-size: 10.5px; letter-spacing: .08em; color: var(--dark); background: var(--brass); opacity: .8;
     }
     ul.list .edit {
       margin-left: 8px; font-size: 11px; letter-spacing: .06em;
-      color: var(--dim); opacity: .7;
+      color: var(--dim); opacity: .85;
     }
     ul.list .edit:hover, ul.list .edit:focus-visible { color: var(--brass); opacity: 1; outline: none; }
     /* 서재에서 찾아온 책들 — 눌러 고른다 */
@@ -86,7 +86,7 @@
     .found button:hover, .found button:focus-visible {
       background: rgba(224,177,94,.1); outline: none;
     }
-    .found button i { display: block; font-style: normal; font-size: 11.5px; color: var(--dim); opacity: .8; }
+    .found button i { display: block; font-style: normal; font-size: 11.5px; color: var(--dim); opacity: .85; }
     /* 걸어 둔 책 — 글 아래에 서는 카드 */
     .bookcard {
       display: flex; gap: 14px; align-items: flex-start;
@@ -99,7 +99,7 @@
     .bookcard .t i { display: block; font-style: normal; font-size: 12px; color: var(--dim); opacity: .85; }
     .bookcard .lbl {
       display: block; margin-bottom: 4px;
-      font-size: 10.5px; letter-spacing: .12em; color: var(--dim); opacity: .7;
+      font-size: 10.5px; letter-spacing: .12em; color: var(--dim); opacity: .85;
     }
     .hint .unpick {
       margin-left: 8px; padding: 0; background: none; border: 0;
@@ -125,16 +125,16 @@
     ul.list .tags { display: inline; margin-left: 8px; }
     ul.list .tags b {
       display: inline-block; margin-right: 5px; font-weight: 400;
-      font-size: 10.5px; letter-spacing: .06em; color: var(--dim); opacity: .75;
+      font-size: 10.5px; letter-spacing: .06em; color: var(--dim); opacity: .85;
     }
     ul.list .tags b::before { content: "#"; opacity: .55; }
-    .empty { color: var(--dim); font-size: 14px; opacity: .8; }
+    .empty { color: var(--dim); font-size: 14px; opacity: .85; }
 
     /* ── 글 한 편 ── */
     article h2 { margin: 0 0 6px; font-size: clamp(24px, 5vw, 32px); font-weight: 700;
                  letter-spacing: .03em; line-height: 1.45; }
     article time { display: block; margin-bottom: 34px; font-size: 12px;
-                   color: var(--dim); opacity: .8; letter-spacing: .06em; }
+                   color: var(--dim); opacity: .85; letter-spacing: .06em; }
     article p { margin: 0 0 18px; font-size: 15.5px; }
     .back { display: inline-block; margin-top: 26px; font-size: 13px; }
 
@@ -143,7 +143,7 @@
     a.plain:hover, a.plain:focus-visible { border-bottom-color: var(--brass); outline: none; }
 
     /* ── 열쇠 · 문 ── */
-    .keyrow { margin-top: 44px; font-size: 11.5px; color: var(--dim); opacity: .55; }
+    .keyrow { margin-top: 44px; font-size: 11.5px; color: var(--dim); opacity: .85; }
     .keyrow button {
       background: none; border: 0; color: inherit; font: inherit; cursor: pointer;
       padding: 4px 2px; letter-spacing: .08em;
@@ -187,11 +187,19 @@
                color: var(--brass); letter-spacing: .16em; opacity: .85; }
     .desk textarea { min-height: 260px; resize: vertical; }
     .desk .slug { font-family: ui-monospace, monospace; font-size: 12.5px; }
-    .hint { margin: -8px 0 14px; font-size: 11.5px; color: var(--dim); opacity: .75; }
+    .hint { margin: -8px 0 14px; font-size: 11.5px; color: var(--dim); opacity: .85; }
 
     footer { padding: 0 24px 28px; font-size: 11.5px; color: var(--dim);
-             opacity: .6; letter-spacing: .1em; text-align: center; }
+             opacity: .85; letter-spacing: .1em; text-align: center; }
     footer a { color: inherit; border-bottom: 1px solid rgba(156,142,116,.3); }
+    /* 손가락이 닿는 자리를 넓힌다 — 보이는 크기는 그대로 두고 ::after 로만.
+       바닥글 링크는 글자 크기 그대로라 12×18 밖에 안 됐다 (WCAG 2.2 의
+       최소는 24×24). 서재가 사다리 눈금과 서표 닫기에 쓴 것과 같은 방법이다. */
+    footer a { position: relative; }
+    footer a::after {
+      content: ""; position: absolute;
+      left: -7px; right: -7px; top: -9px; bottom: -9px;
+    }
     @media (prefers-reduced-motion: no-preference) {
       main { animation: rise .8s ease both; }
       @keyframes rise { from { opacity:0; transform: translateY(8px) } to { opacity:1; transform:none } }
