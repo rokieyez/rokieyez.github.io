@@ -154,6 +154,18 @@
       color: var(--brass);
       text-decoration: none;
       transition: background .35s, border-color .35s, transform .35s;
+      /* 폰에서 탭하면 브라우저가 제 손으로 반짝이는 판을 하나 덧그린다.
+         그 판은 요소의 **네모난 상자**를 따르므로, 위가 둥근 이 문 위에
+         네모가 한순간 떠올랐다. 끄고, 아래에서 문 모양 그대로 눌리게 한다. */
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* 눌린 동안의 문 — 하이라이트를 껐으니 이것이 대신 대답한다.
+       전이를 걸지 않는 것은 손가락이 닿는 순간 바로 보여야 하기 때문이다.
+       border-radius 를 따르므로 네모가 아니라 문 모양으로 눌린다. */
+    .door:active {
+      transition: none;
+      background: rgba(224, 177, 94, .11);
+      border-color: rgba(224, 177, 94, .66);
     }
     .door b {
       display: block;
