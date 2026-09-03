@@ -12,7 +12,8 @@
   <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preconnect" href="https://gaeumegwhxxnfvrhbknp.supabase.co" crossorigin>
-  <link rel="alternate" type="application/atom+xml" title="서가 뒤의 방" href="/books/feed.xml">
+  <!-- 집 전체를 구독한다 — 서재만 원하면 /books/feed.xml -->
+  <link rel="alternate" type="application/atom+xml" title="로키즈의 방" href="/feed.xml">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="rokiz.net">
   <meta property="og:locale" content="ko_KR">
@@ -72,6 +73,13 @@
       box-shadow: 0 2px 10px rgba(0,0,0,.4);
     }
     li.withcover .t { min-width: 0; }
+    /* 갈피 막대 — 「520쪽 중 1쪽」을 눈으로도. 1% 아래로는 내려가지 않는다
+       (0% 는 「아직 안 펼침」과 구별이 안 된다 — 서재의 규칙과 같다) */
+    .prog {
+      display: block; height: 3px; max-width: 260px; margin-top: 7px;
+      background: rgba(224,177,94,.13); border-radius: 2px; overflow: hidden;
+    }
+    .prog i { display: block; height: 100%; background: rgba(224,177,94,.6); }
     li i { font-style: normal; color: var(--dim); font-size: 12.5px; }
     a { color: var(--brass); text-decoration: none; border-bottom: 1px solid rgba(224,177,94,.32); }
     a:hover, a:focus-visible { border-bottom-color: var(--brass); outline: none; }
@@ -177,8 +185,11 @@
       const 갈피 = (b.bookmark_page && b.page_count)
         ? ` — ${b.page_count}쪽 중 ${b.bookmark_page}쪽` : "";
       const 표지 = 진짜표지(b.cover_url);
+      const 막대 = (b.bookmark_page && b.page_count)
+        ? `<span class="prog"><i style="width:${
+            Math.max(1, Math.round(b.bookmark_page / b.page_count * 100))}%"></i></span>` : "";
       const 글 = `<b><a href="/books/#book/${esc(b.id)}">${esc(b.title || "무제")}</a></b>` +
-                 `<i> ${esc(b.author || "지은이 미상")}${esc(갈피)}</i>`;
+                 `<i> ${esc(b.author || "지은이 미상")}${esc(갈피)}</i>${막대}`;
       if (!표지) return `<li>${글}</li>`;
       return `<li class="withcover">` +
         `<img src="${esc(표지)}" alt="" loading="lazy" decoding="async"` +

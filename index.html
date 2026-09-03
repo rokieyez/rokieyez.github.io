@@ -13,6 +13,8 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="manifest" href="/manifest.webmanifest">
+  <!-- 집 전체를 구독한다 — 서재의 책, 지난 지금, 새 글이 한 줄기로 온다 -->
+  <link rel="alternate" type="application/atom+xml" title="로키즈의 방" href="/feed.xml">
   <!-- 서재의 오늘을 물으러 간다 — 손잡기를 미리 터 둔다 -->
   <link rel="preconnect" href="https://gaeumegwhxxnfvrhbknp.supabase.co" crossorigin>
   <meta property="og:type" content="website">
@@ -94,15 +96,40 @@
     /* 서재가 오늘 자기 상태를 스스로 말한다 — 정적 문구가 아니라 셈에서 나온다.
        못 물어보면 이 줄은 그냥 없다 (빈 자리가 남지 않게 hidden 으로 시작). */
 
-    /* 지금 펼쳐 둔 책 — 서재 안쪽까지 들어가야 보이던 것을 대문으로 올린다 */
+    /* 지금 펼쳐 둔 책 — 서재 안쪽까지 들어가야 보이던 것을 대문으로 올린다.
+       표지 한 장이 곁들면 대문의 얼굴이 책을 덮을 때마다 달라진다. */
     .nowline {
-      margin: 0 0 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 13px;
+      margin: 4px 0 34px;
       font-size: 12.5px;
       color: var(--brass);
-      opacity: .62;
+      opacity: .68;
       letter-spacing: .02em;
       word-break: keep-all;
+      text-align: left;
     }
+    .nowline img {
+      width: 38px;
+      flex: 0 0 38px;
+      border-radius: 2px;
+      background: rgba(224, 177, 94, .06);
+      box-shadow: 0 2px 9px rgba(0, 0, 0, .45);
+    }
+    .nowline .t { max-width: 30ch; }
+    /* 갈피 막대 — 「520쪽 중 1쪽」을 눈으로도 보이게. 1% 아래로는 내려가지
+       않는다 (0% 는 「아직 안 펼침」과 구별이 안 된다 — 서재의 규칙과 같다) */
+    .nowline .prog {
+      display: block;
+      height: 3px;
+      margin-top: 6px;
+      background: rgba(224, 177, 94, .14);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .nowline .prog i { display: block; height: 100%; background: rgba(224, 177, 94, .62); }
     .nowline[hidden] { display: none; }
     .doors:first-child { margin-top: 0; }
 
@@ -156,6 +183,11 @@
       letter-spacing: .04em;
     }
     .door em[hidden] { display: none; }
+    .door em .prog {
+      display: block; height: 3px; margin-top: 5px;
+      background: rgba(224, 177, 94, .14); border-radius: 2px; overflow: hidden;
+    }
+    .door em .prog i { display: block; height: 100%; background: rgba(224, 177, 94, .5); }
 
     /* 문손잡이 */
     .door::after {
@@ -335,7 +367,7 @@ if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
      필요한 칸만 골라 받아 오가는 것이 몇백 바이트를 넘지 않는다. */
   try {
     const r = await fetch(
-      집 + "?select=title,bookmark_page,page_count&read_status=eq." +
+      집 + "?select=id,title,bookmark_page,page_count,cover_url&read_status=eq." +
       encodeURIComponent("읽는 중") + "&order=bookmark_at.desc&limit=1",
       { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 } });
     if (!r.ok) return;
@@ -344,8 +376,34 @@ if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
     const 쪽 = (b.bookmark_page && b.page_count)
       ? ` — ${b.page_count}쪽 중 ${b.bookmark_page}쪽` : "";
     const el = document.getElementById("nowline");
-    el.textContent = `지금은 「${b.title}」를 펼쳐 두었습니다${쪽}`;
+    el.textContent = "";
+
+    /* 알라딘은 표지가 없을 때 「No Image」 그림 주소를 돌려준다 — 그걸 걸면
+       회색 안내판이 붙는다. 표지가 없는 것으로 친다 (서재와 같은 규칙). */
+    const 표지 = b.cover_url && !/\/noimg/i.test(b.cover_url) ? b.cover_url : null;
+    if (표지) {
+      const im = new Image();
+      im.src = 표지; im.alt = ""; im.loading = "lazy"; im.decoding = "async";
+      im.onerror = () => im.remove();   // 죽은 주소면 그림만 걷고 글은 남긴다
+      el.appendChild(im);
+    }
+    const t = document.createElement("span");
+    t.className = "t";
+    t.textContent = `지금은 「${b.title}」를 펼쳐 두었습니다${쪽}`;
+    /* 갈피 막대 — 쪽수를 둘 다 알 때만. 1% 아래로는 내려가지 않는다 */
+    if (b.bookmark_page && b.page_count) {
+      const bar = document.createElement("span");
+      bar.className = "prog";
+      const i = document.createElement("i");
+      i.style.width = Math.max(1, Math.round(b.bookmark_page / b.page_count * 100)) + "%";
+      bar.appendChild(i);
+      t.appendChild(bar);
+    }
+    el.appendChild(t);
     el.hidden = false;
+    /* 문 안의 「지금」에도 같은 막대를 얹는다 — 문 앞에서 진도가 보인다 */
+    window.__갈피 = (b.bookmark_page && b.page_count)
+      ? Math.max(1, Math.round(b.bookmark_page / b.page_count * 100)) : null;
   } catch { /* 없으면 없는 대로 */ }
 
   /* 「지금」 문 안에는 그 쪽이 마지막으로 움직인 때를 적는다 — 서재의 갈피
@@ -364,6 +422,14 @@ if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
              : `${Math.floor(날 / 365)}해 전`;
     const el = document.getElementById("d-now");
     el.textContent = 말;
+    if (window.__갈피) {
+      const bar = document.createElement("span");
+      bar.className = "prog";
+      const i = document.createElement("i");
+      i.style.width = window.__갈피 + "%";
+      bar.appendChild(i);
+      el.appendChild(bar);
+    }
     el.hidden = false;
   } catch { /* 없으면 없는 대로 */ }
 })();
