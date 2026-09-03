@@ -262,14 +262,18 @@ try {
    대신 git 에게 묻는다. 얕은 클론에서는 알 수 없으므로 조용히 건너뛴다. */
 try {
   const { execFileSync } = await import("node:child_process");
-  const 잰다 = (파일) => {
-    const d = execFileSync("git", ["log", "-1", "--format=%cs", "--", 파일],
-                           { encoding: "utf8" }).trim();
-    return d ? Math.round((Date.now() - new Date(d)) / 86400000) : null;
-  };
-  const 깊이 = execFileSync("git", ["rev-list", "--count", "HEAD"], { encoding: "utf8" }).trim();
-  if (Number(깊이) <= 1) {
-    console.log("  지금     얕은 클론이라 묵은 날을 셀 수 없습니다 (fetch-depth: 0)");
+  /* git 이 없거나 저장소 밖이면 stderr 로 「깃 저장소가 아닙니다」를 쏟는다.
+     받아 와서 돌리는 자리(서재 저장소)가 바로 그런 곳이라, 결과에 아무
+     영향이 없는 오류 글이 로그에 남아 사람을 놀라게 한다 — 삼킨다. */
+  const 조용히 = { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] };
+  const 잰다 = (파일) =>
+    (execFileSync("git", ["log", "-1", "--format=%cs", "--", 파일], 조용히).trim() || null)
+      && Math.round((Date.now() - new Date(
+           execFileSync("git", ["log", "-1", "--format=%cs", "--", 파일], 조용히).trim())) / 86400000);
+  const 깊이 = execFileSync("git", ["rev-list", "--count", "HEAD"], 조용히).trim();
+  if (!깊이 || Number(깊이) <= 1) {
+    console.log("  지금     히스토리가 없어 묵은 날을 셀 수 없습니다 " +
+                "(루트 저장소에서 fetch-depth: 0 으로 돌 때만 셉니다)");
   } else {
     const 묵음 = 잰다("now/index.html");
     console.log(`  지금     ${묵음}일째 그대로`);
