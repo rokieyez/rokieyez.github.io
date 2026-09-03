@@ -32,7 +32,8 @@ process.stdout.on("error", (e) => { if (e.code !== "EPIPE") throw e; });
 const 뿌리 = join(dirname(fileURLToPath(import.meta.url)), "..");
 const 자리 = join(뿌리, "notes");
 const 집 = "https://www.rokiz.net";
-const 서버 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/notes";
+const 집서버 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1";
+const 서버 = 집서버 + "/notes";
 const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
 
 const esc = (s) => String(s ?? "")
@@ -54,7 +55,20 @@ const 문단 = (글) => String(글 || "")
   .map((덩) => `<p>${덩.split("\n").map(esc).join("<br>")}</p>`)
   .join("\n    ");
 
-const 쪽만들기 = (n, 앞, 뒤) => {
+/* 서재의 나눔 쪽 이름. post-libros/tools/make-book-pages.mjs 의 슬러그몸() ·
+   js/app.js 의 shareSlug() 와 글자 그대로 같은 규칙이어야 한다 — 어긋나면
+   없는 파일을 가리킨다. (서재의 404 가 뒤의 여덟 자를 주워 살려 주긴 한다) */
+function 책슬러그(b) {
+  const 몸 = String(b.title || "무제")
+    .replace(/[\u2018\u2019\u201C\u201D\u300C\u300D\u300E\u300F]/g, "")
+    .replace(/[^0-9A-Za-z\uAC00-\uD7A3\u3131-\u314E\u314F-\u3163]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40)
+    .replace(/-+$/, "") || "무제";
+  return `${몸}-${b.id.slice(0, 8)}`;
+}
+
+const 쪽만들기 = (n, 앞, 뒤, 책) => {
   const 주소 = `${집}/notes/${encodeURIComponent(n.slug)}.html`;
   const 요약 = String(n.body || "").replace(/\s+/g, " ").trim().slice(0, 155) || n.title;
   /* 글마다 다른 얼굴 — tools/make-notes-cards.mjs 가 구운 카드가 있으면
@@ -143,6 +157,21 @@ const 쪽만들기 = (n, 앞, 뒤) => {
   }
   .near .next { text-align: right; }
   @media (max-width: 460px) { .near { grid-template-columns: 1fr; } .near .next { text-align: left; } }
+  /* 이 글이 말하는 책 — 글방과 서재를 잇는 한 칸 */
+  .bookcard {
+    display: flex; gap: 15px; align-items: flex-start;
+    margin: 40px 0 0; padding: 16px 17px;
+    border: 1px solid rgba(224,177,94,.18); border-radius: 3px;
+    background: rgba(224,177,94,.03);
+  }
+  .bookcard img { width: 58px; border-radius: 2px; flex: none; }
+  .bookcard .t { font-size: 15px; line-height: 1.65; }
+  .bookcard .t a { border-bottom-color: rgba(224,177,94,.3); }
+  .bookcard .t i { display: block; font-style: normal; font-size: 12.5px; color: var(--dim); opacity: .85; }
+  .bookcard .lbl {
+    display: block; margin-bottom: 3px;
+    font-size: 10.5px; letter-spacing: .12em; color: var(--dim); opacity: .7;
+  }
   .back { display: inline-block; margin-top: 30px; font-size: 13px; }
   a { color: var(--brass); text-decoration: none;
       border-bottom: 1px solid rgba(224,177,94,.32); padding-bottom: 1px; }
@@ -158,7 +187,14 @@ const 쪽만들기 = (n, 앞, 뒤) => {
   <h1>${esc(n.title)}</h1>
   <time datetime="${esc(String(n.published_at).slice(0, 10))}">${날짜(n.published_at)}</time>
   ${문단(n.body)}
-${앞 || 뒤 ? `<nav class="near">
+${책 ? `<aside class="bookcard">
+    ${책.cover_url && !/\/noimg/i.test(책.cover_url)
+      ? `<img src="${esc(책.cover_url)}" alt="" loading="lazy" decoding="async">` : ""}
+    <span class="t"><span class="lbl">이 글이 말하는 책</span>
+      <a href="/books/b/${encodeURIComponent(책슬러그(책))}.html">${esc(책.title)}</a>
+      <i>${esc([책.author || "지은이 미상", 책.publisher, 책.published_year].filter(Boolean).join(" · "))}</i></span>
+  </aside>` : ""}
+  ${앞 || 뒤 ? `<nav class="near">
     ${뒤 ? `<a class="prev" href="${encodeURIComponent(뒤.slug)}.html"><i>이전 글</i>${esc(뒤.title)}</a>` : "<span></span>"}
     ${앞 ? `<a class="next" href="${encodeURIComponent(앞.slug)}.html"><i>다음 글</i>${esc(앞.title)}</a>` : "<span></span>"}
   </nav>` : ""}
@@ -172,10 +208,23 @@ ${앞 || 뒤 ? `<nav class="near">
 
 /* ── 지음 ─────────────────────────────────────────────────────────── */
 const r = await fetch(
-  `${서버}?select=slug,title,body,published_at,updated_at&order=published_at.desc`,
+  `${서버}?select=slug,title,body,published_at,updated_at,book_id&order=published_at.desc`,
   { headers: { apikey: 열쇠, Authorization: `Bearer ${열쇠}` } });
 if (!r.ok) throw new Error(`글방을 읽지 못했습니다 (${r.status}) ${await r.text()}`);
 const 글들 = (await r.json()).filter((n) => n.published_at);
+
+/* 글이 말하는 책 — 서재에서 한 번에 받아 온다. 글마다 따로 묻지 않는다
+   (544권짜리 표를 글 수만큼 두드릴 까닭이 없다). */
+const 책id = [...new Set(글들.map((n) => n.book_id).filter(Boolean))];
+const 책들 = new Map();
+if (책id.length) {
+  const r2 = await fetch(
+    `${집서버}/books?select=id,title,author,publisher,published_year,cover_url` +
+    `&id=in.(${책id.join(",")})`,
+    { headers: { apikey: 열쇠, Authorization: `Bearer ${열쇠}` } }).catch(() => null);
+  if (r2?.ok) for (const b of await r2.json()) 책들.set(b.id, b);
+  else console.warn("  서재에 책을 묻지 못했습니다 — 책 없이 글쪽을 짓습니다");
+}
 
 await mkdir(자리, { recursive: true });
 
@@ -200,7 +249,8 @@ for (const f of await readdir(자리).catch(() => [])) {
    바로 뒷자리가 더 옛 글(이전 글)이다 */
 for (let i = 0; i < 글들.length; i++) {
   await writeFile(join(자리, `${글들[i].slug}.html`),
-                  쪽만들기(글들[i], 글들[i - 1], 글들[i + 1]), "utf8");
+                  쪽만들기(글들[i], 글들[i - 1], 글들[i + 1],
+                          글들[i].book_id ? 책들.get(글들[i].book_id) : null), "utf8");
 }
 console.log(`${글들.length}편의 글을 쪽으로 구웠습니다 → notes/`);
 글들.forEach((n) => console.log(`  ${n.slug}.html — ${n.title}`));
