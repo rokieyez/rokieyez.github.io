@@ -256,6 +256,31 @@ try {
   if (d < 14) 티("인증서", `${d}일 남았습니다 — GitHub Pages 가 스스로 갈지 못하고 있습니다`);
 } catch (e) { console.log(`  인증서   보지 못했습니다 (${e.message})`); }
 
+/* 「지금」은 낡으면 안 되는 쪽이다. 그런데 손으로만 바뀌므로, 반년쯤
+   손대지 않아도 화면은 태연히 「지금은 …하고 있습니다」라고 말한다.
+   쪽에 「언제 적었나」를 박아 두면 그것부터 낡으니(README 의 규칙),
+   대신 git 에게 묻는다. 얕은 클론에서는 알 수 없으므로 조용히 건너뛴다. */
+try {
+  const { execFileSync } = await import("node:child_process");
+  const 잰다 = (파일) => {
+    const d = execFileSync("git", ["log", "-1", "--format=%cs", "--", 파일],
+                           { encoding: "utf8" }).trim();
+    return d ? Math.round((Date.now() - new Date(d)) / 86400000) : null;
+  };
+  const 깊이 = execFileSync("git", ["rev-list", "--count", "HEAD"], { encoding: "utf8" }).trim();
+  if (Number(깊이) <= 1) {
+    console.log("  지금     얕은 클론이라 묵은 날을 셀 수 없습니다 (fetch-depth: 0)");
+  } else {
+    const 묵음 = 잰다("now/index.html");
+    console.log(`  지금     ${묵음}일째 그대로`);
+    /* 90일: 「지금」이 석 달째 같은 말을 하고 있으면 그것은 지금이 아니다 */
+    if (묵음 !== null && 묵음 > 90) {
+      티("지금", `${묵음}일째 손대지 않았습니다 — /now/ 는 낡으면 안 되는 쪽입니다 ` +
+         "(고치기 전에 now/<연도>-<달>.html 로 갈무리하세요)");
+    }
+  }
+} catch { /* git 이 없으면 셀 것이 없다 */ }
+
 /* 공개 열쇠가 여러 곳에 흩어져 있다 — 하나만 갈고 나머지를 잊으면
    그 쪽만 조용히 죽는다. 살아 있는 쪽들이 같은 열쇠를 쓰는지 본다. */
 try {
