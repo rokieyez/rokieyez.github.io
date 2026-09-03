@@ -189,7 +189,10 @@
         to   { opacity: 1; transform: none; }
       }
     }
-    @media (max-width: 420px) {
+    /* 문 세 짝이 한 줄에 서려면 152×3 + 틈 36 + 여백 48 = 540px 이 든다.
+       그보다 좁으면 둘만 서고 잠긴 문 하나가 다음 줄에 혼자 남아 어긋난다
+       (430px 짜리 큰 폰에서 실제로 그랬다) — 아예 세로로 쌓는다. */
+    @media (max-width: 560px) {
       .doors { gap: 12px; }
       .door { width: 100%; max-width: 260px; border-radius: 40px 40px 4px 4px; padding: 20px 16px 16px; }
     }
