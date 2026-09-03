@@ -1,0 +1,38 @@
+# 배포가 끝나면 집이 한 채로 서 있는지 견준다
+#
+# 왜 자동으로 돌리나: 저장소 둘이 한 도메인을 나눠 쓴다. 방을 하나씩
+# 고치다 보면 이쪽에만 theme-color 를 넣거나 저쪽 canonical 만 인코딩을
+# 빠뜨리는 일이 생긴다 — 눈으로는 방 하나씩만 보이지만 로봇과 손님은
+# 집 전체를 걸어 다닌다. 2026-09-03 에 손으로 견주다 다섯 곳을 찾았다.
+#
+# 실패하면 빨간불이 뜬다. 배포를 막지는 않는다 — 이미 나간 뒤에 보는
+# 것이라 되돌릴 수 없고, 알아차리는 것이 이 워크플로의 일이다.
+name: 집이 한 채인가
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 아무도 손대지 않아도 이레에 한 번은 걸어 본다 — 서재 저장소가
+    # 따로 배포되므로 이쪽 push 만으로는 그 변화를 못 본다
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: check-house
+  cancel-in-progress: true
+
+jobs:
+  # job 의 열쇠(id)는 영문·숫자·-·_ 만 받는다 — 보이는 이름만 우리말로
+  check-house:
+    name: 견준다
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 배포가 끝나기를 기다린다
+        run: sleep 120
+      - name: 방마다의 규칙을 견준다
+        run: node tools/check-house.mjs
