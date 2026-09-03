@@ -99,6 +99,17 @@
      (WCAG 2.2 의 최소는 24×24, 바닥글 글자는 그보다 작다) */
   footer a { position: relative; }
   footer a::after { content: ""; position: absolute; left: -7px; right: -7px; top: -9px; bottom: -9px; }
+  /* ── 키보드로 걷는 사람 (2026-09-03) ────────────────────────────
+     이 집은 곳곳에서 outline 을 끄고 제 방식으로 대답한다 — 문은 살짝
+     들리고, 테가 밝아지고, 글자 색이 바뀐다. 그 대답은 그대로 두되,
+     **어디서든 반드시 보이는 고리**를 하나 깐다. outline:none 을
+     하나씩 걷는 대신 한 줄로 덮는 까닭은, 새 단추를 만들 때마다
+     또 꺼질 자리이기 때문이다. !important 는 여기서 옳다.
+     마우스로 누른 사람에게는 뜨지 않는다 (:focus 가 아니라 :focus-visible). */
+  :focus-visible {
+    outline: 2px solid var(--brass) !important;
+    outline-offset: 2px;
+  }
 </style>
 </head>
 <body>
