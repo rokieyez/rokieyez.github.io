@@ -1,0 +1,33 @@
+# 배포가 끝나면 검색엔진에 알린다 (IndexNow — 빙·Yandex·Seznam)
+#
+# 구글과 네이버는 이 규약을 쓰지 않는다. 그쪽은 사람이 Search Console ·
+# 서치어드바이저에 지도를 제출해야 하고, 그건 자동으로 못 한다.
+#
+# 왜 기다리나: push 직후에는 GitHub Pages 가 아직 옛 파일을 내준다.
+# 갓 만든 지도를 읽으려면 배포가 끝날 때까지 기다려야 한다.
+name: 바뀐 곳을 알린다
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:      # 손으로도 돌릴 수 있게
+
+# 배포가 겹치면 마지막 것만 알리면 된다
+concurrency:
+  group: indexnow
+  cancel-in-progress: true
+
+jobs:
+  # job 의 열쇠(id)는 영문·숫자·-·_ 만 받는다 — 보이는 이름만 우리말로
+  indexnow:
+    name: 알린다
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 배포가 끝나기를 기다린다
+        run: sleep 120
+      - name: 지도의 주소를 알린다
+        run: node tools/indexnow.mjs
