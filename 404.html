@@ -13,15 +13,28 @@
   <style>
     /* 없는 주소로 들어온 사람에게 — 오류 대신 잠긴 문을 보여준다.
        루트에 두면 이 도메인 전체의 404 를 GitHub Pages 가 이 파일로 답한다. */
-    :root { --dark:#171009; --paper:#E9DFC9; --dim:#9C8E74; --brass:#E0B15E; }
+    :root {
+      --dark:#171009; --paper:#E9DFC9; --dim:#9C8E74; --brass:#E0B15E;
+      /* 손이 있는 자리 — 열쇠구멍 뒤의 불이 그리로 따라온다 */
+      --mx: 50%; --my: 42%;
+    }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body {
       margin: 0; background: var(--dark); color: var(--paper);
       font-family: "Gowun Batang", "Noto Serif KR", serif;
       display: grid; place-items: center; text-align: center;
+      position: relative; overflow: hidden;
     }
-    main { padding: 24px; }
+    /* 잠긴 문 뒤에도 불은 켜져 있다 — 열쇠구멍이 그려진 이 쪽이야말로
+       빛이 새는 자리다. 손을 따라 그 빛이 움직인다. */
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none;
+      background: radial-gradient(38% 32% at var(--mx) var(--my),
+                  rgba(224,177,94,.11), transparent 70%);
+      transition: background .45s ease-out;
+    }
+    main { padding: 24px; position: relative; }
     .latin {
       font-family: "Cormorant", serif; font-style: italic;
       font-size: 15px; letter-spacing: .22em; color: var(--dim);
@@ -51,5 +64,17 @@
   <p>이 주소에는 아무 방도 없습니다.<br>열려 있는 문으로 돌아갑니다.</p>
   <a href="/">대문으로</a>
 </main>
+<script>
+  /* 열쇠구멍 뒤의 불이 손을 따라온다 — 마우스가 있는 기계에서만.
+     손가락뿐인 기계에서는 손이 늘 화면을 덮어 빛이 그 밑에 숨는다. */
+  if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
+      !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    addEventListener("pointermove", function (e) {
+      var r = document.documentElement.style;
+      r.setProperty("--mx", (e.clientX / innerWidth * 100).toFixed(1) + "%");
+      r.setProperty("--my", (e.clientY / innerHeight * 100).toFixed(1) + "%");
+    }, { passive: true });
+  }
+</script>
 </body>
 </html>

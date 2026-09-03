@@ -12,6 +12,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preconnect" href="https://gaeumegwhxxnfvrhbknp.supabase.co" crossorigin>
+  <link rel="alternate" type="application/atom+xml" title="서가 뒤의 방" href="/books/feed.xml">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="rokiz.net">
   <meta property="og:locale" content="ko_KR">
@@ -109,6 +110,14 @@
   </section>
 
   <section>
+    <h2>최근에 꽂은 책</h2>
+    <!-- 서재가 스스로 짓는 피드(feed.xml)를 그대로 읽는다. 같은 도메인이라
+         담 너머로 부를 것도 없고, 서재가 「새로 들어온 것」을 정하는 규칙을
+         여기서 되풀이하지 않아도 된다 — 규칙 사본을 늘리지 않는 편이 낫다. -->
+    <ul id="shelved"><li class="empty">서재의 피드를 읽는 중…</li></ul>
+  </section>
+
+  <section>
     <h2>요즘 마음</h2>
     <!-- 여기는 주인이 손으로 적는 자리다. 아래 문장을 지우고 그대로 쓰면 된다. -->
     <p class="empty">아직 적어 두지 않았습니다.</p>
@@ -151,6 +160,51 @@
   } catch {
     자리.innerHTML = '<li class="empty">서재를 열지 못했습니다 — ' +
       '<a href="/books/">서재로 가서 직접 보세요</a>.</li>';
+  }
+
+  /* 이런 쪽은 오래되면 거짓말이 된다. 「언제 적은 것인가」를 사람이 손으로
+     적으면 그것부터 낡으므로, 서재가 갈피를 옮긴 시각을 그대로 가져와
+     「이틀 전」처럼 말하게 한다 — 스스로 낡는 줄이 없어진다. */
+  try {
+    const r = await fetch(
+      집 + "?select=bookmark_at&read_status=eq." + encodeURIComponent("읽는 중") +
+      "&bookmark_at=not.is.null&order=bookmark_at.desc&limit=1",
+      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 } });
+    if (!r.ok) return;
+    const [b] = await r.json();
+    if (!b?.bookmark_at) return;
+    const 날 = (Date.now() - new Date(b.bookmark_at)) / 86400000;
+    const 말 = 날 < 1 ? "오늘" : 날 < 2 ? "어제" : 날 < 30 ? `${Math.floor(날)}일 전`
+             : 날 < 365 ? `${Math.floor(날 / 30)}달 전` : `${Math.floor(날 / 365)}해 전`;
+    document.getElementById("when").textContent =
+      `갈피를 마지막으로 옮긴 것은 ${말}입니다 — 읽는 중인 책은 서재에서 바로 받아 옵니다`;
+  } catch { /* 못 물어보면 처음 문구 그대로 둔다 */ }
+})();
+
+/* 최근에 꽂은 책 — 서재의 피드를 읽는다. 같은 도메인이라 그냥 부르면 되고,
+   5KB 안팎이라 오가는 짐도 가볍다. 「입고」로 표시된 것만 골라 다섯 권. */
+(async function () {
+  const 자리 = document.getElementById("shelved");
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  try {
+    const r = await fetch("/books/feed.xml");
+    if (!r.ok) throw new Error(r.status);
+    const 문서 = new DOMParser().parseFromString(await r.text(), "application/xml");
+    if (문서.querySelector("parsererror")) throw new Error("피드를 읽지 못했습니다");
+    const 항목 = [...문서.getElementsByTagName("entry")]
+      .filter((e) => e.querySelector("category")?.getAttribute("term") === "입고")
+      .slice(0, 5);
+    if (!항목.length) { 자리.innerHTML = '<li class="empty">아직 새로 꽂은 책이 없습니다.</li>'; return; }
+    자리.innerHTML = 항목.map((e) => {
+      const 제목 = (e.getElementsByTagName("title")[0]?.textContent || "무제").replace(/\s*입고$/, "");
+      const 주소 = e.querySelector("link")?.getAttribute("href") || "/books/";
+      const 곁 = e.getElementsByTagName("summary")[0]?.textContent || "";
+      return `<li><b><a href="${esc(주소)}">${esc(제목)}</a></b><i> ${esc(곁)}</i></li>`;
+    }).join("");
+  } catch {
+    자리.innerHTML = '<li class="empty">서재의 피드를 읽지 못했습니다 — ' +
+      '<a href="/books/">서재에서 직접 보세요</a>.</li>';
   }
 })();
 </script>

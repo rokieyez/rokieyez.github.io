@@ -94,14 +94,23 @@
     /* 서재가 오늘 자기 상태를 스스로 말한다 — 정적 문구가 아니라 셈에서 나온다.
        못 물어보면 이 줄은 그냥 없다 (빈 자리가 남지 않게 hidden 으로 시작). */
     .today {
-      margin: 0 0 36px;
+      margin: 0 0 6px;
       font-size: 12.5px;
       color: var(--dim);
       opacity: .8;
       letter-spacing: .02em;
-      min-height: 1.2em;
     }
-    .today[hidden] { display: none; }
+    /* 지금 펼쳐 둔 책 — 서재 안쪽까지 들어가야 보이던 것을 대문으로 올린다 */
+    .nowline {
+      margin: 0 0 34px;
+      font-size: 12.5px;
+      color: var(--brass);
+      opacity: .62;
+      letter-spacing: .02em;
+      word-break: keep-all;
+    }
+    .today[hidden], .nowline[hidden] { display: none; }
+    .doors:first-child { margin-top: 0; }
 
     /* 방들 — 진짜 문처럼 세운다. 열린 문은 안쪽에서 빛이 새고,
        잠긴 문은 열쇠구멍만 희미하다. */
@@ -158,6 +167,27 @@
     @media (prefers-reduced-motion: no-preference) {
       .door:hover, .door:focus-visible { transform: translateY(-2px); }
     }
+    /* 누르면 문이 안쪽으로 열린다 — 빛이 먼저 새어 나오고 그다음에 방으로.
+       0.38초는 「열렸다」를 알아볼 만큼은 길고 기다린다고 느끼기엔 짧다.
+       모션 감경을 켠 사람에게는 이 연출이 아예 걸리지 않는다 (js 가 건너뛴다). */
+    .door.opening {
+      transform: perspective(680px) rotateY(-34deg) translateY(-2px);
+      transform-origin: left center;
+      border-color: rgba(224, 177, 94, .85);
+      background: rgba(224, 177, 94, .06);
+      transition: transform .38s cubic-bezier(.4, 0, .25, 1), border-color .2s;
+    }
+    .door.opening::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(100deg, rgba(240, 208, 150, .30), transparent 62%);
+      animation: spill .38s ease-out both;
+      pointer-events: none;
+    }
+    @keyframes spill { from { opacity: 0 } to { opacity: 1 } }
+
     /* 잠긴 문 — 누를 수 없고, 열쇠구멍만 보인다 */
     .door.locked {
       border-style: dashed;
@@ -215,6 +245,7 @@
   <h1>로키즈의 방</h1>
   <p class="sub">문마다 다른 방이 있습니다 — 지금은 둘이 열려 있습니다.</p>
   <p class="today" id="today" hidden></p>
+  <p class="nowline" id="nowline" hidden></p>
   <div class="doors">
     <a class="door" href="/books/">
       <b>서가 뒤의 방</b>
@@ -226,13 +257,16 @@
       <b>지금</b>
       <small>요즘 읽는 것과<br>만드는 것</small>
     </a>
+    <!-- 이름이 붙은 잠긴 문 — 열 자리가 정해져 있으면 다시 올 이유가 된다.
+         notes/ 에 틀은 이미 서 있고 첫 글만 기다린다. 글이 올라오면
+         이 <div> 를 <a class="door" href="/notes/"> 로 바꾸면 문이 열린다. -->
     <div class="door locked" aria-hidden="true">
       <svg class="hole" viewBox="0 0 34 46">
         <circle cx="17" cy="15" r="8" fill="none" stroke="currentColor" stroke-width="2.4"/>
         <path d="M12.5 22 L21.5 22 L19.5 41 L14.5 41 Z" fill="none" stroke="currentColor" stroke-width="2.4"/>
       </svg>
-      <b>잠긴 문</b>
-      <small>아직 아무것도<br>놓이지 않았습니다</small>
+      <b>글</b>
+      <small>첫 문장을<br>기다리는 중</small>
     </div>
   </div>
 </main>
@@ -284,7 +318,41 @@ if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
     el.textContent = `서재에 ${전부.toLocaleString()}권이 서 있고, 그중 ${(읽음 || 0).toLocaleString()}권을 읽어 냈습니다`;
     el.hidden = false;
   } catch { /* 서재가 자고 있어도 대문은 열려 있어야 한다 */ }
+
+  /* 지금 펼쳐 둔 책 — 서재 안쪽까지 들어가야 보이던 것을 대문에 건다.
+     대문의 얼굴이 매번 조금씩 달라지고, 서재로 들어갈 이유가 하나 생긴다.
+     필요한 칸만 골라 받아 오가는 것이 몇백 바이트를 넘지 않는다. */
+  try {
+    const r = await fetch(
+      집 + "?select=title,bookmark_page,page_count&read_status=eq." +
+      encodeURIComponent("읽는 중") + "&order=bookmark_at.desc&limit=1",
+      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 } });
+    if (!r.ok) return;
+    const [b] = await r.json();
+    if (!b?.title) return;
+    const 쪽 = (b.bookmark_page && b.page_count)
+      ? ` — ${b.page_count}쪽 중 ${b.bookmark_page}쪽` : "";
+    const el = document.getElementById("nowline");
+    el.textContent = `지금은 「${b.title}」를 펼쳐 두었습니다${쪽}`;
+    el.hidden = false;
+  } catch { /* 없으면 없는 대로 */ }
 })();
+
+/* 문은 열리고 나서 방으로 보낸다 — 누르면 안쪽으로 열리는 0.38초를 보고
+   그다음에 옮겨 간다. 새 탭·가운데 클릭·모션 감경은 건드리지 않는다:
+   그건 「지금 여기서 보겠다」는 뜻이 아니다. */
+if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  document.querySelectorAll("a.door").forEach((문) => {
+    문.addEventListener("click", (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      e.preventDefault();
+      문.classList.add("opening");
+      const 가자 = () => { location.href = 문.href; };
+      문.addEventListener("transitionend", 가자, { once: true });
+      setTimeout(가자, 520);   // 애니메이션이 안 걸린 기계에서도 반드시 간다
+    });
+  });
+}
 </script>
 </body>
 </html>
