@@ -186,6 +186,8 @@
   <div id="listview">
     <ul class="list" id="list"></ul>
     <p class="empty" id="none" hidden>아직 첫 글을 놓지 않았습니다.</p>
+    <!-- 글이 한 묶음(50편)을 넘으면 나타난다 -->
+    <p><button class="brass quiet" id="more" type="button" hidden>지난 글 더 보기</button></p>
   </div>
 
   <article id="postview" hidden>
@@ -306,19 +308,33 @@ function 문단(글, 자리) {
 /* ── 읽기 ─────────────────────────────────────────────────────────── */
 let 글들 = [];
 
-async function 싣기() {
+/* 한 번에 받는 편수. 목록은 본문까지 통째로 받는데(첫 문장 미리보기에 쓴다)
+   한도가 없으면 글이 쌓일수록 목록 한 번에 모든 글의 전문이 실려 온다.
+   50편이면 대략 50KB — 그 뒤는 「더 보기」가 이어 받는다. */
+const 한묶음 = 50;
+let 받은수 = 0;
+
+async function 싣기(이어서) {
+  if (!이어서) { 받은수 = 0; 글들 = []; }
   try {
     const r = await fetch(
       `${REST}?select=slug,title,body,published,published_at,created_at,book_id` +
-      `&order=published_at.desc.nullslast,created_at.desc`,
+      `&order=published_at.desc.nullslast,created_at.desc` +
+      `&limit=${한묶음}&offset=${받은수}`,
       { headers: 머리() });
     if (!r.ok) throw new Error(r.status);
-    글들 = await r.json();
+    const 온것 = await r.json();
+    글들 = 이어서 && Array.isArray(글들) ? [...글들, ...온것] : 온것;
+    받은수 = Array.isArray(글들) ? 글들.length : 0;
+    /* 묶음이 꽉 찼으면 뒤에 더 있을 수 있다 — 딱 맞아떨어져도 한 번은 더 묻는다 */
+    $("more").hidden = 온것.length < 한묶음;
   } catch {
-    글들 = null;   // 못 읽었다는 것과 비어 있다는 것은 다르다
+    if (!이어서) 글들 = null;   // 못 읽었다는 것과 비어 있다는 것은 다르다
+    $("more").hidden = true;
   }
   그리기();
 }
+
 
 function 그리기() {
   const 목록 = $("list"), 없음 = $("none");
@@ -601,6 +617,11 @@ async function 걸린책보이기(아는것) {
   x.addEventListener("click", () => { 건책 = null; 걸린책보이기(); });
   p.append(" ", x);
 }
+
+$("more").addEventListener("click", () => {
+  $("more").disabled = true;
+  싣기(true).finally(() => { $("more").disabled = false; });
+});
 
 $("w-book").addEventListener("input", (e) => {
   clearTimeout(찾는손);

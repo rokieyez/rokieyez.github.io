@@ -11,6 +11,7 @@
  *   ② 쪽마다의 규칙 — 제목·설명·canonical·og·테마색·구조화 표식
  *   ③ canonical 이 지도의 loc 과 글자 그대로 같은가
  *   ④ 쪽 안의 안쪽 링크가 다 살아 있나
+ *   ⑥ 시간에 닳는 것들 — 도메인·인증서의 남은 날
  *   ⑤ 지어 둔 것이 뒤처지지 않았나 — 이 집에서 무엇을 만드는 일은 전부
  *      손이다(글쪽·카드·지도·피드). 도구를 안 돌리면 발행한 글이 검색에
  *      아예 없고, 새로 꽂은 책도 마찬가지다. 그런데 그것을 알려 주는
@@ -185,7 +186,11 @@ try {
        "서재 저장소에서 make-book-pages.mjs 를 돌리세요");
   }
 } catch (e) {
-  console.log(`  (DB 에 묻지 못했습니다: ${e.message} — 뒤처짐은 건너뜁니다)`);
+  /* 조용히 넘어가면 안 된다. 무료 요금제는 오래 안 쓰면 프로젝트가 잠드는데,
+     그러면 대문의 셈·글방·서재가 한꺼번에 죽는다 (정적 쪽만 살아남는다).
+     이레에 한 번 도는 이 점검이 그것을 알아채는 자리다. */
+  티("글방·서재의 DB", `묻지 못했습니다 (${e.message}) — ` +
+     "Supabase 가 잠들었을 수 있습니다 (무료 요금제는 오래 안 쓰면 멈춥니다)");
 }
 
 /* 피드 — 집 피드는 손으로 지으므로 서재 피드보다 옛것이 되기 쉽다 */
@@ -215,6 +220,53 @@ try {
   }
   if (말들.length < 3) 티("대문", `그 문장이 ${말들.length}곳에만 있습니다 — 본문·og·twitter 셋이어야`);
 } catch (e) { 티("대문", e.message); }
+
+/* ── ⑥ 시간에 닳는 것 ────────────────────────────────────────────
+   집이 아무리 반듯해도 땅문서가 만료되면 통째로 사라진다. 여섯 달 전부터
+   세어 두면 잊을 수가 없다. */
+console.log("\n── 남은 날 ──");
+const 남은날 = (iso) => Math.round((new Date(iso) - Date.now()) / 86400000);
+
+/* 도메인 — whois 는 어디에나 있지 않지만 RDAP 는 그냥 HTTP 다 */
+try {
+  const r = await fetch("https://rdap.verisign.com/net/v1/domain/rokiz.net");
+  if (r.ok) {
+    const 끝 = (await r.json()).events?.find((e) => e.eventAction === "expiration")?.eventDate;
+    if (끝) {
+      const d = 남은날(끝);
+      console.log(`  도메인   ${끝.slice(0, 10)} — ${d}일`);
+      /* 90일: 닷네임의 갱신 안내가 오는 무렵이고, 잊어도 두어 번 더 알린다 */
+      if (d < 90) 티("도메인", `${d}일 뒤(${끝.slice(0, 10)}) 만료됩니다 — 닷네임에서 갱신하세요`);
+    }
+  }
+} catch (e) { console.log(`  도메인   묻지 못했습니다 (${e.message})`); }
+
+/* 인증서 — GitHub Pages 가 스스로 갈지만, 갈지 못하면 집이 안 열린다 */
+try {
+  const { connect } = await import("node:tls");
+  const 끝 = await new Promise((풀림, 깨짐) => {
+    const 줄 = connect({ host: "www.rokiz.net", port: 443, servername: "www.rokiz.net" },
+      () => { const c = 줄.getPeerCertificate(); 줄.end(); 풀림(c?.valid_to); });
+    줄.setTimeout(10000, () => { 줄.destroy(); 깨짐(new Error("시간 초과")); });
+    줄.on("error", 깨짐);
+  });
+  const d = 남은날(끝);
+  console.log(`  인증서   ${new Date(끝).toISOString().slice(0, 10)} — ${d}일`);
+  /* 14일: Let's Encrypt 는 30일 전부터 갈려 하므로, 여기까지 왔으면 정말 안 되는 것 */
+  if (d < 14) 티("인증서", `${d}일 남았습니다 — GitHub Pages 가 스스로 갈지 못하고 있습니다`);
+} catch (e) { console.log(`  인증서   보지 못했습니다 (${e.message})`); }
+
+/* 공개 열쇠가 여러 곳에 흩어져 있다 — 하나만 갈고 나머지를 잊으면
+   그 쪽만 조용히 죽는다. 살아 있는 쪽들이 같은 열쇠를 쓰는지 본다. */
+try {
+  const 열쇠들 = new Set();
+  for (const 길 of ["/", "/notes/", "/now/", "/404.html"]) {
+    const h = (await 받기(길)).글;
+    for (const m of h.matchAll(/sb_publishable_[A-Za-z0-9_-]+/g)) 열쇠들.add(m[0]);
+  }
+  console.log(`  열쇠     쓰는 곳이 다 같은가 — ${열쇠들.size}가지`);
+  if (열쇠들.size > 1) 티("열쇠", `쪽마다 다른 열쇠를 쓰고 있습니다 (${열쇠들.size}가지)`);
+} catch (e) { console.log(`  열쇠     보지 못했습니다 (${e.message})`); }
 
 /* ── 끝 ──────────────────────────────────────────────────────── */
 if (흠.length) {
