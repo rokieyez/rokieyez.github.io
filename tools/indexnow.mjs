@@ -56,6 +56,14 @@ const r = await fetch("https://api.indexnow.org/indexnow", {
   }),
 });
 console.log(`\n${r.status} ${r.statusText}`);
-console.log(r.status === 200 || r.status === 202
-  ? "받아들여졌습니다 — 색인은 저쪽 사정에 달렸습니다"
-  : await r.text());
+if (r.status === 200 || r.status === 202) {
+  console.log("받아들여졌습니다 — 색인은 저쪽 사정에 달렸습니다");
+} else {
+  /* 여기서 조용히 끝내면 안 된다. 자동으로 도는 자리(GitHub Actions)에서는
+     아무도 이 글을 읽지 않고, 초록색 체크만 보고 「알렸다」고 여기게 된다.
+     실제로 처음 보낼 때 403(열쇠 검증 전)이 났었다 — 그때 초록이었다면
+     영영 몰랐을 것이다. */
+  console.error(await r.text());
+  console.error("\n보내지 못했습니다");
+  process.exitCode = 1;
+}
