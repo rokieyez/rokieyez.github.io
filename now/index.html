@@ -62,6 +62,16 @@
     ul { margin: 0; padding: 0; list-style: none; }
     li { margin: 0 0 10px; font-size: 14.5px; }
     li b { font-weight: 400; }
+    /* 읽는 중인 책은 표지를 곁들인다 — 글자만 있는 줄보다 「지금」이 잘 보인다.
+       표지는 알라딘 CDN 것이라 서재의 전송량과는 상관이 없다.
+       주소가 죽었으면 그림을 걷고 글줄만 남긴다 (onerror). */
+    li.withcover { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px; }
+    li.withcover img {
+      width: 58px; flex: 0 0 58px; min-width: 0;
+      border-radius: 2px; background: rgba(224,177,94,.06);
+      box-shadow: 0 2px 10px rgba(0,0,0,.4);
+    }
+    li.withcover .t { min-width: 0; }
     li i { font-style: normal; color: var(--dim); font-size: 12.5px; }
     a { color: var(--brass); text-decoration: none; border-bottom: 1px solid rgba(224,177,94,.32); }
     a:hover, a:focus-visible { border-bottom-color: var(--brass); outline: none; }
@@ -123,6 +133,15 @@
     <p class="empty">아직 적어 두지 않았습니다.</p>
   </section>
 
+  <!-- 지난 지금 — 이 쪽은 덮어쓰는 쪽이라 고칠 때마다 과거가 사라진다.
+       크게 바뀔 때 이 파일을 now/<연도>-<달>.html 로 복사해 두면 기록이 된다.
+       그때 아래 <ul> 에 한 줄 더하고 이 절의 hidden 을 지운다. -->
+  <section id="past" hidden>
+    <h2>지난 지금</h2>
+    <ul>
+    </ul>
+  </section>
+
   <p class="dim" style="font-size:12.5px">
     이런 쪽을 <a href="https://nownownow.com/about" rel="noopener">now 쪽</a>이라고 부릅니다 —
     이력이 아니라 지금에 대한 한 장.
@@ -142,7 +161,7 @@
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   try {
     const r = await fetch(
-      집 + "?select=id,title,author,bookmark_page,page_count" +
+      집 + "?select=id,title,author,bookmark_page,page_count,cover_url" +
       "&read_status=eq." + encodeURIComponent("읽는 중") + "&limit=6",
       { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 } });
     if (!r.ok) throw new Error(r.status);
@@ -151,11 +170,20 @@
       자리.innerHTML = '<li class="empty">지금 펼쳐 둔 책이 없습니다.</li>';
       return;
     }
+    /* 알라딘은 표지가 없을 때 「No Image」 그림 주소를 돌려준다 —
+       그걸 걸면 회색 안내판이 액자에 걸린다. 표지가 없는 것으로 친다 */
+    const 진짜표지 = (u) => (u && !/\/noimg/i.test(u) ? u : null);
     자리.innerHTML = 책들.map((b) => {
       const 갈피 = (b.bookmark_page && b.page_count)
         ? ` — ${b.page_count}쪽 중 ${b.bookmark_page}쪽` : "";
-      return `<li><b><a href="/books/#book/${esc(b.id)}">${esc(b.title || "무제")}</a></b>` +
-             `<i> ${esc(b.author || "지은이 미상")}${esc(갈피)}</i></li>`;
+      const 표지 = 진짜표지(b.cover_url);
+      const 글 = `<b><a href="/books/#book/${esc(b.id)}">${esc(b.title || "무제")}</a></b>` +
+                 `<i> ${esc(b.author || "지은이 미상")}${esc(갈피)}</i>`;
+      if (!표지) return `<li>${글}</li>`;
+      return `<li class="withcover">` +
+        `<img src="${esc(표지)}" alt="" loading="lazy" decoding="async"` +
+        ` onerror="this.closest('li').classList.remove('withcover');this.remove()">` +
+        `<span class="t">${글}</span></li>`;
     }).join("");
   } catch {
     자리.innerHTML = '<li class="empty">서재를 열지 못했습니다 — ' +

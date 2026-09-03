@@ -93,13 +93,7 @@
     }
     /* 서재가 오늘 자기 상태를 스스로 말한다 — 정적 문구가 아니라 셈에서 나온다.
        못 물어보면 이 줄은 그냥 없다 (빈 자리가 남지 않게 hidden 으로 시작). */
-    .today {
-      margin: 0 0 6px;
-      font-size: 12.5px;
-      color: var(--dim);
-      opacity: .8;
-      letter-spacing: .02em;
-    }
+
     /* 지금 펼쳐 둔 책 — 서재 안쪽까지 들어가야 보이던 것을 대문으로 올린다 */
     .nowline {
       margin: 0 0 34px;
@@ -109,7 +103,7 @@
       letter-spacing: .02em;
       word-break: keep-all;
     }
-    .today[hidden], .nowline[hidden] { display: none; }
+    .nowline[hidden] { display: none; }
     .doors:first-child { margin-top: 0; }
 
     /* 방들 — 진짜 문처럼 세운다. 열린 문은 안쪽에서 빛이 새고,
@@ -149,6 +143,20 @@
       word-break: keep-all;
       overflow-wrap: break-word;
     }
+    /* 그 방의 오늘 — 문 안 맨 아래 한 줄. 셈이 도착하기 전에는 자리도 없다 */
+    .door em {
+      display: block;
+      margin-top: 9px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(224, 177, 94, .14);
+      font-style: normal;
+      font-size: 11px;
+      color: var(--brass);
+      opacity: .62;
+      letter-spacing: .04em;
+    }
+    .door em[hidden] { display: none; }
+
     /* 문손잡이 */
     .door::after {
       content: "";
@@ -244,7 +252,8 @@
   <p class="latin">ROKIZ</p>
   <h1>로키즈의 방</h1>
   <p class="sub">문마다 다른 방이 있습니다 — 지금은 둘이 열려 있습니다.</p>
-  <p class="today" id="today" hidden></p>
+  <!-- 셈은 그 방의 문 안으로 갔다 (아래 .door em). 여기 남는 것은
+       서재 안쪽까지 들어가야 보이던 「지금 펼쳐 둔 책」 한 문장뿐이다 -->
   <p class="nowline" id="nowline" hidden></p>
   <div class="doors">
     <a class="door" href="/books/">
@@ -252,10 +261,12 @@
       <!-- 권수는 적지 않는다 — 장서는 계속 늘고, 정적 파일의 숫자는 반드시 거짓이 된다.
            오늘의 숫자는 위의 .today 줄이 서재에 직접 물어 온다 -->
       <small>한 사람의 장서를 그대로<br>옮겨 담은 밤의 서재</small>
+      <em id="d-books" hidden></em>
     </a>
     <a class="door" href="/now/">
       <b>지금</b>
       <small>요즘 읽는 것과<br>만드는 것</small>
+      <em id="d-now" hidden></em>
     </a>
     <!-- 이름이 붙은 잠긴 문 — 열 자리가 정해져 있으면 다시 올 이유가 된다.
          notes/ 에 틀은 이미 서 있고 첫 글만 기다린다. 글이 올라오면
@@ -314,8 +325,8 @@ if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
       세기("&read_status=eq." + encodeURIComponent("읽음")),
     ]);
     if (!전부) return;
-    const el = document.getElementById("today");
-    el.textContent = `서재에 ${전부.toLocaleString()}권이 서 있고, 그중 ${(읽음 || 0).toLocaleString()}권을 읽어 냈습니다`;
+    const el = document.getElementById("d-books");
+    el.textContent = `${전부.toLocaleString()}권 · ${(읽음 || 0).toLocaleString()}권 읽음`;
     el.hidden = false;
   } catch { /* 서재가 자고 있어도 대문은 열려 있어야 한다 */ }
 
@@ -334,6 +345,25 @@ if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
       ? ` — ${b.page_count}쪽 중 ${b.bookmark_page}쪽` : "";
     const el = document.getElementById("nowline");
     el.textContent = `지금은 「${b.title}」를 펼쳐 두었습니다${쪽}`;
+    el.hidden = false;
+  } catch { /* 없으면 없는 대로 */ }
+
+  /* 「지금」 문 안에는 그 쪽이 마지막으로 움직인 때를 적는다 — 서재의 갈피
+     시각을 그대로 쓴다. now 쪽이 낡았는지 문 앞에서 바로 알 수 있다. */
+  try {
+    const r = await fetch(
+      집 + "?select=bookmark_at&read_status=eq." + encodeURIComponent("읽는 중") +
+      "&bookmark_at=not.is.null&order=bookmark_at.desc&limit=1",
+      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 } });
+    if (!r.ok) return;
+    const [b] = await r.json();
+    if (!b?.bookmark_at) return;
+    const 날 = (Date.now() - new Date(b.bookmark_at)) / 86400000;
+    const 말 = 날 < 1 ? "오늘 움직임" : 날 < 2 ? "어제 움직임"
+             : 날 < 30 ? `${Math.floor(날)}일 전` : 날 < 365 ? `${Math.floor(날 / 30)}달 전`
+             : `${Math.floor(날 / 365)}해 전`;
+    const el = document.getElementById("d-now");
+    el.textContent = 말;
     el.hidden = false;
   } catch { /* 없으면 없는 대로 */ }
 })();
