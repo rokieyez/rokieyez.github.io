@@ -8,7 +8,7 @@
  * 무엇을 담나:
  *   ① 서재 피드의 최근 항목 (책이 꽂히고 기록이 지어진 일)
  *   ② now/ 의 지난 갈무리 (now/<연도>-<달>.html)
- *   ③ notes/ 의 글 (notes/index.html 의 목록에서 읽는다)
+ *   ③ 글방의 글 (Supabase 의 notes 표 — 발행한 것만 온다)
  *
  * 언제 다시 돌리나:
  *   글을 올리거나 지금을 갈무리한 뒤. 서재 쪽만 바뀌었으면 안 돌려도
@@ -16,7 +16,7 @@
  *
  * 쓰는 법:  node tools/make-feed.mjs
  */
-import { writeFile, readdir, readFile } from "node:fs/promises";
+import { writeFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -71,23 +71,30 @@ async function 지난지금() {
     });
 }
 
-/* ③ 글 — notes/index.html 의 목록을 그대로 읽는다. 글 목록의 정본이
-   거기 하나뿐이어야 두 곳이 어긋나지 않는다. */
+/* ③ 글 — 글방의 표(notes)에서 곧장 읽는다. 초고는 오지 않는다:
+   공개 열쇠로 부르므로 RLS 가 발행한 글만 내준다 — 여기서 거를 것이 없다. */
 async function 글() {
-  const 원본 = await readFile(join(뿌리, "notes/index.html"), "utf8").catch(() => "");
-  /* 주석부터 걷어 낸다 — 그 안에 「이렇게 한 줄 더한다」는 본보기가 들어
-     있어서, 그냥 훑으면 있지도 않은 「어떤 글」이 피드에 실린다 (실제로 그랬다) */
-  const src = 원본.replace(/<!--[\s\S]*?-->/g, "");
-  const 줄 = [...src.matchAll(
-    /<li>\s*<a href="([^"]+)">([^<]+)<\/a>\s*<time datetime="([^"]+)">/g)];
-  return 줄.map(([, 주소, 제목, 날]) => ({
-    제목,
-    주소: `${집}/notes/${주소.replace(/^\.?\//, "")}`,
-    때: new Date(`${날}T00:00:00Z`).toISOString(),
-    글: "새 글.",
-    갈래: "notes",
-    키: `tag:rokiz.net,2026:notes/${주소}`,
-  }));
+  const 집서버 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/notes";
+  const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
+  try {
+    const r = await fetch(
+      `${집서버}?select=slug,title,body,published_at&order=published_at.desc&limit=20`,
+      { headers: { apikey: 열쇠, Authorization: `Bearer ${열쇠}` } });
+    if (!r.ok) throw new Error(r.status);
+    return (await r.json())
+      .filter((n) => n.published_at)
+      .map((n) => ({
+        제목: n.title,
+        주소: `${집}/notes/#${encodeURIComponent(n.slug)}`,
+        때: new Date(n.published_at).toISOString(),
+        글: String(n.body || "").replace(/\s+/g, " ").slice(0, 300) || "새 글.",
+        갈래: "notes",
+        키: `tag:rokiz.net,2026:notes/${n.slug}`,
+      }));
+  } catch (e) {
+    console.warn(`  글방을 읽지 못했습니다 (${e.message}) — 글 없이 짓습니다`);
+    return [];
+  }
 }
 
 const 일들 = [...await 서재(), ...await 지난지금(), ...await 글()]
