@@ -46,6 +46,15 @@ const 날짜 = (iso) => {
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
 };
 
+/* 읽는 데 걸리는 시간 — 한국어는 분당 500자 어림. 아주 짧은 글에 「1분」이
+   붙으면 오히려 우스우니 300자 아래는 적지 않는다 (0 을 돌려준다).
+   목록(notes/index.html 의 그리기)과 **같은 규칙이어야** 목록에서 본 숫자와
+   글쪽에서 본 숫자가 다르지 않다. */
+const 분 = (글) => {
+  const 자 = String(글 || "").replace(/\s/g, "").length;
+  return 자 >= 300 ? Math.max(1, Math.round(자 / 500)) : 0;
+};
+
 /* 본문은 평문이다 — 빈 줄이 문단의 경계, 한 줄 바꿈은 그대로 살린다.
    화면(notes/index.html)의 문단() 과 같은 규칙이어야 두 곳이 다르게
    보이지 않는다. 글자는 반드시 이스케이프해서 넣는다. */
@@ -144,6 +153,9 @@ const 쪽만들기 = (n, 앞, 뒤, 책) => {
        letter-spacing: .04em; line-height: 1.45; }
   time { display: block; margin-bottom: 40px; font-size: 12px;
          color: var(--dim); opacity: .85; letter-spacing: .06em; }
+  /* 읽는 데 걸리는 시간 — 날짜 옆에 조용히. <time> 이 이미 .85 를 쓰고 있으니
+     여기서 또 흐리게 하지 않는다 (곱해져서 안 읽힌다) */
+  time .mins { margin-left: 7px; }
   p { margin: 0 0 18px; font-size: 15.5px; }
   /* 결 — 날짜 밑에 조용히. 누르면 글방에서 그 결만 걸러 본다 */
   .tags { margin: -32px 0 40px; font-size: 11.5px; letter-spacing: .06em; }
@@ -190,13 +202,25 @@ const 쪽만들기 = (n, 앞, 뒤, 책) => {
      (WCAG 2.2 의 최소는 24×24, 바닥글 글자는 그보다 작다) */
   footer a { position: relative; }
   footer a::after { content: ""; position: absolute; left: -7px; right: -7px; top: -9px; bottom: -9px; }
+  /* ── 키보드로 걷는 사람 (2026-09-03) ────────────────────────────
+     이 집은 곳곳에서 outline 을 끄고 제 방식으로 대답한다 — 문은 살짝
+     들리고, 테가 밝아지고, 글자 색이 바뀐다. 그 대답은 그대로 두되,
+     **어디서든 반드시 보이는 고리**를 하나 깐다. outline:none 을
+     하나씩 걷는 대신 한 줄로 덮는 까닭은, 새 단추를 만들 때마다
+     또 꺼질 자리이기 때문이다. !important 는 여기서 옳다.
+     마우스로 누른 사람에게는 뜨지 않는다 (:focus 가 아니라 :focus-visible). */
+  :focus-visible {
+    outline: 2px solid var(--brass) !important;
+    outline-offset: 2px;
+  }
 </style>
 </head>
 <body>
 <article>
   <p class="latin">SCRIPTA</p>
   <h1>${esc(n.title)}</h1>
-  <time datetime="${esc(String(n.published_at).slice(0, 10))}">${날짜(n.published_at)}</time>
+  <time datetime="${esc(String(n.published_at).slice(0, 10))}">${날짜(n.published_at)}${
+    분(n.body) ? `<span class="mins">· ${분(n.body)}분</span>` : ""}</time>
   ${(n.tags || []).length ? `<p class="tags">${(n.tags || [])
       .map((t) => `<a href="./#결/${encodeURIComponent(t)}">${esc(t)}</a>`).join(" ")}</p>` : ""}
   ${문단(n.body)}

@@ -211,6 +211,19 @@
       main { animation: rise .8s ease both; }
       @keyframes rise { from { opacity:0; transform: translateY(8px) } to { opacity:1; transform:none } }
     }
+
+    /* ── 키보드로 걷는 사람 (2026-09-03) ────────────────────────────
+       이 집은 곳곳에서 outline 을 끄고 제 방식으로 대답한다 — 문은 살짝
+       들리고, 테가 밝아지고, 글자 색이 바뀐다. 그 대답은 그대로 두되,
+       **어디서든 반드시 보이는 고리**를 하나 깐다. 87곳의 `outline: none`
+       을 하나씩 걷는 대신 한 줄로 덮는 까닭은, 새 단추를 만들 때마다
+       또 꺼질 자리이기 때문이다. !important 는 여기서 옳다 — 이 고리는
+       아래에서 조용히 꺼서는 안 되는 것이다.
+       마우스로 누른 사람에게는 뜨지 않는다 (:focus 가 아니라 :focus-visible). */
+    :focus-visible {
+      outline: 2px solid var(--brass) !important;
+      outline-offset: 2px;
+    }
   </style>
 </head>
 <body>

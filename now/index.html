@@ -85,6 +85,11 @@
     a:hover, a:focus-visible { border-bottom-color: var(--brass); outline: none; }
     .dim { color: var(--dim); }
     .empty { color: var(--dim); font-size: 13.5px; opacity: .85; }
+    /* 갈무리를 편 자리의 한 줄 — 「없다」가 아니라 「지금은 이것뿐이다」라는 말이다.
+       글방의 .empty.kept 와 같은 모양이어야 두 방이 다르게 보이지 않는다. */
+    p.kept { margin: 0 0 12px; padding: 6px 0 6px 11px; font-size: 13px;
+             color: var(--dim); opacity: .85;
+             border-left: 2px solid rgba(200,168,110,.4); }
     footer {
       padding: 0 24px 28px; font-size: 11.5px; color: var(--dim);
       opacity: .85; letter-spacing: .1em; text-align: center;
@@ -102,6 +107,17 @@
       main { animation: rise .8s ease both; }
       @keyframes rise { from { opacity:0; transform: translateY(8px) } to { opacity:1; transform:none } }
     }
+    /* ── 키보드로 걷는 사람 (2026-09-03) ────────────────────────────
+       이 집은 곳곳에서 outline 을 끄고 제 방식으로 대답한다 — 문은 살짝
+       들리고, 테가 밝아지고, 글자 색이 바뀐다. 그 대답은 그대로 두되,
+       **어디서든 반드시 보이는 고리**를 하나 깐다. `outline: none` 을
+       하나씩 걷는 대신 한 줄로 덮는 까닭은, 새 단추를 만들 때마다
+       또 꺼질 자리이기 때문이다. !important 는 여기서 옳다.
+       마우스로 누른 사람에게는 뜨지 않는다 (:focus 가 아니라 :focus-visible). */
+    :focus-visible {
+      outline: 2px solid var(--brass) !important;
+      outline-offset: 2px;
+    }
   </style>
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"WebPage","name":"지금 — 로키즈의 방",
@@ -115,7 +131,9 @@
        그 줄을 걷고 아래의 <noscript> 한 줄로 갈음한다.
        (머리의 <noscript> 안에는 style 을 둘 수 있다) -->
   <noscript><style>
-    #reading, #shelved { display: none }
+    /* 구워 둔 목록이 있으면 그것을 그대로 보여 준다 — 자바스크립트가 없어도
+       읽을 것이 있다. 「물어보는 중」 한 줄만 남은 경우에만 자리를 걷는다. */
+    #reading:not([data-baked]), #shelved { display: none }
     .noscript-note { margin: 0 0 10px; padding: 8px 0 8px 11px; font-size: 13px;
                      color: var(--dim); border-left: 2px solid rgba(200,168,110,.4); }
     .noscript-note a { color: var(--brass) }
@@ -133,10 +151,13 @@
     <h2>읽는 중</h2>
     <!-- 서재의 「읽는 중」 책을 그대로 가져온다. 손으로 옮겨 적으면
          반드시 어긋난다 — 서재에서 책을 덮는 순간 여기도 같이 덮인다. -->
-    <ul id="reading"><li class="empty">서재에 물어보는 중…</li></ul>
-    <noscript><p class="noscript-note">이 줄은 서재에 직접 물어 채웁니다 —
-      자바스크립트가 꺼져 있어 묻지 못했습니다.
-      <a href="/books/">서가 뒤의 방</a>에서 바로 보실 수 있습니다.</p></noscript>
+    <ul id="reading" data-baked="2026-09-03">
+      <li class="withcover"><img src="https://image.aladin.co.kr/product/733/63/cover500/8960172782_1.jpg" alt="" loading="lazy" decoding="async"><span class="t"><b><a href="/books/#book/87ccf7de-8bfc-4f54-8f88-b22da1c478a8">운명의 날 (하)</a></b><i> 데니스 루헤인 — 520쪽 중 1쪽</i><span class="prog"><i style="width:1%"></i></span></span></li>
+    </ul>
+    <noscript><p class="noscript-note">위는 <b>구워 둔 갈무리</b>입니다 —
+      이 줄은 서재에 직접 물어 오늘 것으로 갈아 끼우는데, 자바스크립트가
+      꺼져 있어 묻지 못했습니다.
+      <a href="/books/">서가 뒤의 방</a>에서 지금 것을 보실 수 있습니다.</p></noscript>
   </section>
 
   <section>
@@ -189,10 +210,20 @@
 /* 읽는 중인 책 — 서재에 직접 묻는다. 필요한 칸만 골라 받아서
    오가는 것이 몇백 바이트를 넘지 않는다 (books/CLAUDE.md 의 Egress 규칙).
    못 물어보면 그 사실을 말한다 — 빈 자리를 남기거나 거짓으로 채우지 않는다. */
+function 사람날짜(iso) {
+  const d = new Date(iso + "T00:00:00");
+  return isNaN(d) ? "" : `${d.getMonth() + 1}월 ${d.getDate()}일`;
+}
 (async function () {
   const 집 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/books";
   const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
   const 자리 = document.getElementById("reading");
+  /* 구워 둔 목록을 손에 쥔 채로 시작한다 (tools/bake-now.mjs 가 굽는다).
+     아래에서 오늘 것으로 갈아 끼우므로, 여기서 붙들어 두지 않으면 사라진다.
+     서재가 답하지 않을 때 되돌릴 자리다 — 글방의 구운목록과 같은 수법. */
+  const 구운목록 = 자리.innerHTML;
+  const 구운날 = 자리.dataset.baked || "";
+  const 구운편수 = 자리.querySelectorAll("li:not(.empty)").length;
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   try {
@@ -225,8 +256,21 @@
         `<span class="t">${글}</span></li>`;
     }).join("");
   } catch {
-    자리.innerHTML = '<li class="empty">서재를 열지 못했습니다 — ' +
-      '<a href="/books/">서재로 가서 직접 보세요</a>.</li>';
+    /* 못 물어봤다. 예전에는 여기서 자리를 사과문 한 줄로 갈아 버렸는데,
+       바로 아래 「최근에 꽂은 책」은 우리 서버의 피드를 읽으므로 멀쩡히
+       서 있었다 — 한 쪽 안에서 한 줄만 죽어 있는 꼴이다.
+       구워 둔 목록을 되돌리고, 그것이 언제 적 갈무리인지 밝힌다. */
+    if (구운편수) {
+      자리.innerHTML = 구운목록;
+      const 말 = document.createElement("p");
+      말.className = "kept";
+      말.textContent = "서재에 닿지 못해, " +
+        (구운날 ? 사람날짜(구운날) + "에 " : "") + "갈무리해 둔 목록을 폅니다.";
+      자리.parentNode.insertBefore(말, 자리);
+    } else {
+      자리.innerHTML = '<li class="empty">서재를 열지 못했습니다 — ' +
+        '<a href="/books/">서재로 가서 직접 보세요</a>.</li>';
+    }
   }
 
   /* 이런 쪽은 오래되면 거짓말이 된다. 「언제 적은 것인가」를 사람이 손으로
