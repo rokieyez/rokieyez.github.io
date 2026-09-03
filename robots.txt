@@ -1,0 +1,6 @@
+# 서가 뒤의 방 · 로키즈의 방 — 다 읽어 가도 좋습니다
+User-agent: *
+Allow: /
+
+# 서재의 지도 (책 한 권마다 한 줄)
+Sitemap: https://www.rokiz.net/books/sitemap.xml
