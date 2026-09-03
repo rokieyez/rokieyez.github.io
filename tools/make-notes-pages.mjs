@@ -81,6 +81,8 @@ const 쪽만들기 = (n) => {
 <meta name="color-scheme" content="dark">
 <link rel="canonical" href="${주소}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <link rel="alternate" type="application/atom+xml" title="로키즈의 방" href="/feed.xml">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="rokiz.net">
