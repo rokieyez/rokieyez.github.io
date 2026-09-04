@@ -158,7 +158,7 @@
     <!-- 서재의 「읽는 중」 책을 그대로 가져온다. 손으로 옮겨 적으면
          반드시 어긋난다 — 서재에서 책을 덮는 순간 여기도 같이 덮인다. -->
     <ul id="reading" data-baked="2026-09-04">
-      <li class="withcover"><img src="https://image.aladin.co.kr/product/733/63/cover500/8960172782_1.jpg" alt="" loading="lazy" decoding="async"><span class="t"><b><a href="/books/#book/87ccf7de-8bfc-4f54-8f88-b22da1c478a8">운명의 날 (하)</a></b><i> 데니스 루헤인 — 520쪽 중 1쪽</i><span class="prog"><i style="width:1%"></i></span></span></li>
+      <li class="withcover"><img src="https://image.aladin.co.kr/product/733/63/cover500/8960172782_1.jpg" alt="" fetchpriority="high" decoding="async"><span class="t"><b><a href="/books/#book/87ccf7de-8bfc-4f54-8f88-b22da1c478a8">운명의 날 (하)</a></b><i> 데니스 루헤인 — 520쪽 중 1쪽</i><span class="prog"><i style="width:1%"></i></span></span></li>
     </ul>
     <noscript><p class="noscript-note">위는 <b>구워 둔 갈무리</b>입니다 —
       이 줄은 서재에 직접 물어 오늘 것으로 갈아 끼우는데, 자바스크립트가
@@ -257,7 +257,10 @@ function 사람날짜(iso) {
                  `<i> ${esc(b.author || "지은이 미상")}${esc(갈피)}</i>${막대}`;
       if (!표지) return `<li>${글}</li>`;
       return `<li class="withcover">` +
-        `<img src="${esc(표지)}" alt="" loading="lazy" decoding="async"` +
+        /* 이 표지는 첫 화면 맨 위에 선다 — lazy 를 걸면 브라우저가 「나중에」로
+           미뤄, 정작 처음 보이는 그림이 가장 늦게 온다. 아래로 굴려야 나오는
+           그림에나 맞는 표다 (2026-09-04). 먼저 받게 하고 우선순위도 올린다. */
+        `<img src="${esc(표지)}" alt="" fetchpriority="high" decoding="async"` +
         ` onerror="this.closest('li').classList.remove('withcover');this.remove()">` +
         `<span class="t">${글}</span></li>`;
     }).join("");

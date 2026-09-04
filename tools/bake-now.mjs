@@ -43,7 +43,7 @@ function 한줄(b) {
            + `<i> ${esc(b.author || "지은이 미상")}${esc(갈피)}</i>${막대}`;
   if (!표지) return `      <li>${글}</li>`;
   return `      <li class="withcover">`
-    + `<img src="${esc(표지)}" alt="" loading="lazy" decoding="async">`
+    + `<img src="${esc(표지)}" alt="" fetchpriority="high" decoding="async">`
     + `<span class="t">${글}</span></li>`;
 }
 
