@@ -17,16 +17,13 @@ import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { 오늘 } from "./오늘.mjs";
+import { 열쇠, 밑동, esc } from "./집.mjs";
 
 process.stdout.on("error", (e) => { if (e.code !== "EPIPE") throw e; });
 
 const 뿌리 = join(dirname(fileURLToPath(import.meta.url)), "..");
-const 서재 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/books";
-const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
+const 서재 = `${밑동}/books`;
 
-const esc = (s) => String(s ?? "")
-  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-  .replace(/"/g, "&quot;");
 /* 알라딘은 표지가 없을 때 「No Image」 그림 주소를 준다 — 표지가 없는 것으로 친다 */
 const 진짜표지 = (u) => (u && !/\/noimg/i.test(u) ? u : null);
 

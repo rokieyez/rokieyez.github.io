@@ -392,7 +392,7 @@ async function 싣기(이어서) {
       `${REST}?select=slug,title,body,published,published_at,created_at,book_id,tags` +
       `&order=published_at.desc.nullslast,created_at.desc` +
       `&limit=${한묶음}&offset=${받은수}`,
-      { headers: 머리() });
+      { headers: 머리(), signal: AbortSignal.timeout(8000) });
     if (!r.ok) throw new Error(r.status);
     const 온것 = await r.json();
     글들 = 이어서 && Array.isArray(글들) ? [...글들, ...온것] : 온것;
@@ -742,7 +742,8 @@ async function 책찾기(말) {
   const r = await fetch(
     `${서재REST}?select=id,title,author,cover_url` +
     `&title=ilike.*${encodeURIComponent(q)}*&order=title.asc&limit=8`,
-    { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 } }).catch(() => null);
+    { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 },
+      signal: AbortSignal.timeout(8000) }).catch(() => null);
   if (!r?.ok) { $("w-found").hidden = true; return; }
   const 책들 = await r.json();
   const ul = $("w-found");
@@ -781,7 +782,8 @@ async function 걸린책보이기(아는것) {
   let b = 아는것;
   if (!b) {
     const r = await fetch(`${서재REST}?select=id,title,author&id=eq.${건책}&limit=1`,
-      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 } }).catch(() => null);
+      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 },
+      signal: AbortSignal.timeout(8000) }).catch(() => null);
     b = r?.ok ? (await r.json())[0] : null;
   }
   p.append(`걸어 둔 책: ${b?.title || "(서가에서 찾지 못했습니다)"}`);
@@ -808,7 +810,8 @@ async function 그때읽던책(때) {
     `${서재REST}?select=id,title,author,bookmark_at` +
     `&bookmark_at=not.is.null&bookmark_at=lte.${encodeURIComponent(언제)}` +
     `&order=bookmark_at.desc&limit=1`,
-    { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 } }).catch(() => null);
+    { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 },
+      signal: AbortSignal.timeout(8000) }).catch(() => null);
   if (!r?.ok) return;
   const [b] = await r.json();
   if (!b) return;

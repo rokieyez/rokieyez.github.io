@@ -23,22 +23,19 @@ import { readFile, writeFile, access } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { 이달 } from "./오늘.mjs";
+import { 열쇠, 밑동, esc } from "./집.mjs";
 
 process.stdout.on("error", (e) => { if (e.code !== "EPIPE") throw e; });
 
 const 뿌리 = join(dirname(fileURLToPath(import.meta.url)), "..");
 const 집 = "https://www.rokiz.net";
-const 서재 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/books";
-const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
+const 서재 = `${밑동}/books`;
 const 덮기 = process.argv.includes("--force");
 /* 달은 **도구를 돌리는 사람의 달력**을 따른다. toISOString 은 UTC 라, 매달
    1일 한국 시간 새벽에 갈무리하면 지난달 파일로 저장되어 이미 있는 갈무리를
    덮어쓸 뻔한다 (--force 없이는 멈추지만, 멈추는 것도 곤란하기는 같다). */
 const 달 = process.argv.find((a) => /^\d{4}-\d{2}$/.test(a)) || 이달();
 
-const esc = (s) => String(s ?? "")
-  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-  .replace(/"/g, "&quot;");
 
 /* 알라딘은 표지가 없을 때 「No Image」 그림 주소를 준다 — 표지가 없는 것으로 친다 */
 const 표지of = (u) => (u && !/\/noimg/i.test(u) ? u : null);

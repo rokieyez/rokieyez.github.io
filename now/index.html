@@ -236,7 +236,8 @@ function 사람날짜(iso) {
     const r = await fetch(
       집 + "?select=id,title,author,bookmark_page,page_count,cover_url" +
       "&read_status=eq." + encodeURIComponent("읽는 중") + "&limit=6",
-      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 } });
+      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 },
+        signal: AbortSignal.timeout(8000) });
     if (!r.ok) throw new Error(r.status);
     const 책들 = await r.json();
     if (!책들.length) {
@@ -289,7 +290,8 @@ function 사람날짜(iso) {
     const r = await fetch(
       집 + "?select=bookmark_at&read_status=eq." + encodeURIComponent("읽는 중") +
       "&bookmark_at=not.is.null&order=bookmark_at.desc&limit=1",
-      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 } });
+      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 },
+        signal: AbortSignal.timeout(8000) });
     if (!r.ok) return;
     const [b] = await r.json();
     if (!b?.bookmark_at) return;
@@ -320,7 +322,7 @@ function 사람날짜(iso) {
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   try {
-    const r = await fetch("/books/feed.xml");
+    const r = await fetch("/books/feed.xml", { signal: AbortSignal.timeout(8000) });
     if (!r.ok) throw new Error(r.status);
     const 문서 = new DOMParser().parseFromString(await r.text(), "application/xml");
     if (문서.querySelector("parsererror")) throw new Error("피드를 읽지 못했습니다");

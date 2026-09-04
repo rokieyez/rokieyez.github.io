@@ -23,19 +23,17 @@ import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
+import { 열쇠, 밑동, esc } from "./집.mjs";
 
 process.stdout.on("error", (e) => { if (e.code !== "EPIPE") throw e; });
 const 달려 = promisify(execFile);
 
 const 뿌리 = join(dirname(fileURLToPath(import.meta.url)), "..");
 const 자리 = join(뿌리, "notes", "card");
-const 서버 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/notes";
-const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
+const 서버 = `${밑동}/notes`;
 const 크롬 = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const 다시 = process.argv.includes("--force");
 
-const esc = (s) => String(s ?? "")
-  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /* 카드 한 장. 서재의 회고 카드와 같은 밤빛이라 집의 얼굴이 이어진다.
    제목이 길면 저절로 작아진다 — 넘쳐서 잘리는 것보다 낫다. */

@@ -27,12 +27,11 @@ import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { 오늘 } from "./오늘.mjs";
+import { 열쇠, 밑동 } from "./집.mjs";
 
 process.stdout.on("error", (e) => { if (e.code !== "EPIPE") throw e; });
 
 const 뿌리 = join(dirname(fileURLToPath(import.meta.url)), "..");
-const 밑동 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1";
-const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
 const 오늘날 = 오늘();
 
 const 머리 = { apikey: 열쇠, Authorization: `Bearer ${열쇠}` };

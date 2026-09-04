@@ -19,13 +19,11 @@
 import { writeFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { 열쇠, 밑동, esc } from "./집.mjs";
 
 const 뿌리 = join(dirname(fileURLToPath(import.meta.url)), "..");
 const 집 = "https://www.rokiz.net";
 
-const esc = (s) => String(s ?? "")
-  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-  .replace(/"/g, "&quot;");
 
 /* ① 서재 — 배포된 피드를 그대로 읽는다. 서재가 「새로 들어온 것」을 정하는
    규칙을 이쪽에 베껴 두지 않으려는 것이다. 못 읽어도 집 피드는 나온다. */
@@ -74,8 +72,7 @@ async function 지난지금() {
 /* ③ 글 — 글방의 표(notes)에서 곧장 읽는다. 초고는 오지 않는다:
    공개 열쇠로 부르므로 RLS 가 발행한 글만 내준다 — 여기서 거를 것이 없다. */
 async function 글() {
-  const 집서버 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/notes";
-  const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
+  const 집서버 = `${밑동}/notes`;
   try {
     const r = await fetch(
       `${집서버}?select=slug,title,body,published_at&order=published_at.desc&limit=20`,

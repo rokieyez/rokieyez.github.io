@@ -27,6 +27,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { 오늘 } from "./오늘.mjs";
+import { 열쇠, 밑동, esc } from "./집.mjs";
 
 /* 알림 글이 끊겨도 하던 일은 끝낸다 (`| head` 로 잘려도 파일은 온전하게) */
 process.stdout.on("error", (e) => { if (e.code !== "EPIPE") throw e; });
@@ -34,13 +35,9 @@ process.stdout.on("error", (e) => { if (e.code !== "EPIPE") throw e; });
 const 뿌리 = join(dirname(fileURLToPath(import.meta.url)), "..");
 const 자리 = join(뿌리, "notes");
 const 집 = "https://www.rokiz.net";
-const 집서버 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1";
+const 집서버 = 밑동;
 const 서버 = 집서버 + "/notes";
-const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
 
-const esc = (s) => String(s ?? "")
-  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-  .replace(/"/g, "&quot;");
 
 const 날짜 = (iso) => {
   const d = new Date(iso);

@@ -467,7 +467,7 @@ setTimeout(function () {
   const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
   const 머리 = { apikey: 열쇠, Authorization: "Bearer " + 열쇠, Prefer: "count=exact", Range: "0-0" };
   const 세기 = async (질의) => {
-    const r = await fetch(집 + "?select=id" + 질의, { method: "HEAD", headers: 머리 });
+    const r = await fetch(집 + "?select=id" + 질의, { method: "HEAD", headers: 머리, signal: AbortSignal.timeout(8000) });
     const m = /\/(\d+)$/.exec(r.headers.get("content-range") || "");
     return m ? Number(m[1]) : null;
   };
@@ -488,7 +488,8 @@ setTimeout(function () {
     const r = await fetch(
       집 + "?select=id,title,bookmark_page,page_count,cover_url&read_status=eq." +
       encodeURIComponent("읽는 중") + "&order=bookmark_at.desc&limit=1",
-      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 } });
+      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 },
+        signal: AbortSignal.timeout(8000) });
     if (!r.ok) return;
     const [b] = await r.json();
     if (!b?.title) return;
@@ -531,7 +532,8 @@ setTimeout(function () {
     const r = await fetch(
       집 + "?select=bookmark_at&read_status=eq." + encodeURIComponent("읽는 중") +
       "&bookmark_at=not.is.null&order=bookmark_at.desc&limit=1",
-      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 } });
+      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 },
+        signal: AbortSignal.timeout(8000) });
     if (!r.ok) return;
     const [b] = await r.json();
     if (!b?.bookmark_at) return;
@@ -560,7 +562,8 @@ setTimeout(function () {
       "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/notes" +
       "?select=published_at&order=published_at.desc&limit=1",
       { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠,
-                   Prefer: "count=exact" } });
+                   Prefer: "count=exact" },
+        signal: AbortSignal.timeout(8000) });
     if (!r.ok) return;
     const m = /\/(\d+)$/.exec(r.headers.get("content-range") || "");
     const 편 = m ? Number(m[1]) : 0;
