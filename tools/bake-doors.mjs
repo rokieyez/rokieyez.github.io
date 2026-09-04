@@ -26,13 +26,14 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { 오늘 } from "./오늘.mjs";
 
 process.stdout.on("error", (e) => { if (e.code !== "EPIPE") throw e; });
 
 const 뿌리 = join(dirname(fileURLToPath(import.meta.url)), "..");
 const 밑동 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1";
 const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
-const 오늘 = new Date().toISOString().slice(0, 10);
+const 오늘날 = 오늘();
 
 const 머리 = { apikey: 열쇠, Authorization: `Bearer ${열쇠}` };
 
@@ -86,13 +87,13 @@ let s = await readFile(쪽, "utf8");
 const 책말 = `${전부.toLocaleString()}권 · ${(읽음 || 0).toLocaleString()}권 읽음`;
 
 const 새문 = {
-  "d-books": `<em id="d-books" data-baked="${오늘}">${책말}</em>`,
+  "d-books": `<em id="d-books" data-baked="${오늘날}">${책말}</em>`,
   /* 시간은 글자로 굽지 않는다 — 시각만 심고 화면이 오늘 기준으로 다시 센다 */
   "d-now": 갈피?.bookmark_at
-    ? `<em id="d-now" data-baked="${오늘}" data-at="${갈피.bookmark_at}"></em>`
+    ? `<em id="d-now" data-baked="${오늘날}" data-at="${갈피.bookmark_at}"></em>`
     : `<em id="d-now" hidden></em>`,
   "d-notes": 글?.편
-    ? `<em id="d-notes" data-baked="${오늘}" data-count="${글.편}"${
+    ? `<em id="d-notes" data-baked="${오늘날}" data-count="${글.편}"${
         글.때 ? ` data-at="${글.때}"` : ""}></em>`
     : `<em id="d-notes" hidden></em>`,
 };

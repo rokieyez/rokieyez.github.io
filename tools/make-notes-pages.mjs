@@ -26,6 +26,7 @@ import { writeFile, readFile, readdir, rm, mkdir } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { 오늘 } from "./오늘.mjs";
 
 /* 알림 글이 끊겨도 하던 일은 끝낸다 (`| head` 로 잘려도 파일은 온전하게) */
 process.stdout.on("error", (e) => { if (e.code !== "EPIPE") throw e; });
@@ -339,13 +340,13 @@ console.log(`${글들.length}편의 글을 쪽으로 구웠습니다 → notes/`
    거짓 신호가 되풀이되면 검색엔진은 이 값 자체를 무시한다.
    git 이 그 파일의 마지막 손길을 정확히 알고 있으니 그것을 쓴다.
    git 이 없거나 아직 안 담긴 파일이면 오늘로 돌아간다. */
-const 오늘 = new Date().toISOString().slice(0, 10);
+const 오늘날 = 오늘();
 const 바뀐날 = (파일) => {
   try {
     const d = execFileSync("git", ["log", "-1", "--format=%cs", "--", 파일],
                            { cwd: 뿌리, encoding: "utf8" }).trim();
-    return d || 오늘;
-  } catch { return 오늘; }
+    return d || 오늘날;
+  } catch { return 오늘날; }
 };
 const 방 = [
   { 곳: `${집}/`,       때: 바뀐날("index.html"),       잦기: "monthly", 무게: "1.0" },

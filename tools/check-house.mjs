@@ -312,16 +312,138 @@ try {
   }
 } catch { /* git 이 없으면 셀 것이 없다 */ }
 
-/* 공개 열쇠가 여러 곳에 흩어져 있다 — 하나만 갈고 나머지를 잊으면
-   그 쪽만 조용히 죽는다. 살아 있는 쪽들이 같은 열쇠를 쓰는지 본다. */
+/* ② 「담는 중」이라 말하는 문장이 아직 참인가.
+   /now/ 에는 「1,300여 권의 실물 장서를 옮겨 담는 중」이라 적혀 있다. 손으로
+   쓴 문장이라 다 옮긴 날에도 그대로 남는다 — 끝난 일을 진행 중이라 말하는
+   쪽이 되는 것이다. 적어 둔 수와 실제 권수를 견주어, 거의 다 찼는데도 아직
+   「담는 중」이면 알린다. 문장을 저절로 고치지는 않는다: 무엇이라 바꿔 쓸지는
+   사람이 정할 일이고, 여기서는 「이제 그 말이 곧 거짓이 된다」만 말한다. */
 try {
-  const 열쇠들 = new Set();
-  for (const 길 of ["/", "/notes/", "/now/", "/404.html"]) {
-    const h = (await 받기(길)).글;
-    for (const m of h.matchAll(/sb_publishable_[A-Za-z0-9_-]+/g)) 열쇠들.add(m[0]);
+  const h = (await 받기("/now/")).글;
+  const m = /([\d,]+)여?\s*권의 실물 장서를 옮겨 담는 중/.exec(h);
+  if (!m) console.log("  담는중   그런 문장이 없습니다 (문장을 고쳤다면 이 검사도 손보세요)");
+  else {
+    const 적힌 = Number(m[1].replace(/,/g, ""));
+    const 꽂힌 = await 세기("books");
+    const 몫 = 꽂힌 && 적힌 ? Math.round(꽂힌 / 적힌 * 100) : 0;
+    console.log(`  담는중   적힌 ${적힌.toLocaleString()}권 · 꽂힌 ${(꽂힌 ?? 0).toLocaleString()}권 (${몫}%)`);
+    if (꽂힌 !== null && 몫 >= 95) {
+      티("담는중", `장서를 ${몫}% 옮겼습니다 — /now/ 의 「옮겨 담는 중」이 곧 거짓이 됩니다`);
+    }
   }
-  console.log(`  열쇠     쓰는 곳이 다 같은가 — ${열쇠들.size}가지`);
-  if (열쇠들.size > 1) 티("열쇠", `쪽마다 다른 열쇠를 쓰고 있습니다 (${열쇠들.size}가지)`);
+} catch (e) { console.log(`  담는중   보지 못했습니다 (${e.message})`); }
+
+/* ① 지난달 갈무리가 있는가.
+   /now/ 는 덮어쓰는 쪽이라 갈무리를 안 남기면 그 달이 영영 사라진다.
+   그런데 갈무리는 손으로만 뜬다(snapshot-now) — 잊기 딱 좋다. 달이 바뀌고
+   열흘이 지나도 지난달 것이 없으면 재촉한다. 이 달 것은 아직 안 끝난
+   달이니 묻지 않는다. */
+try {
+  const 이제 = new Date();
+  const 지난달 = new Date(이제.getFullYear(), 이제.getMonth() - 1, 1);
+  const 이름 = `${지난달.getFullYear()}-${String(지난달.getMonth() + 1).padStart(2, "0")}`;
+  /* 「지난달 것이 없다」만 보면 안 된다 — 이 집은 2026년 9월에 섰으므로
+     그 이전 달은 영영 없고, 그러면 검사가 매달 없는 것을 조르게 된다.
+     이미 뜬 갈무리 중 가장 나중 것을 기준 삼아, **그보다 뒤에 지나간 달이
+     있을 때만** 재촉한다. 갈무리가 하나도 없으면 아직 시작하지 않은 것이니
+     묻지 않는다. */
+  const 뜬것 = 방들.filter((b) => /^갈무리 /.test(b.이름))
+    .map((b) => b.이름.slice(4).trim()).sort();
+  const 마지막 = 뜬것[뜬것.length - 1] || null;
+  const 밀렸나 = !!마지막 && 이름 > 마지막;
+  console.log(`  갈무리   뜬 것 ${뜬것.length} (마지막 ${마지막 ?? "없음"}) · 지난달 ${이름}`);
+  if (밀렸나 && 이제.getDate() > 10) {
+    티("갈무리", `${마지막} 뒤로 갈무리가 없습니다 (지난달은 ${이름}) — ` +
+       "node tools/snapshot-now.mjs 로 그 달을 남기세요");
+  }
+} catch (e) { console.log(`  갈무리   보지 못했습니다 (${e.message})`); }
+
+/* ③ 구운 값이 얼마나 묵었나.
+   굽는 것도 손이라(bake-doors·bake-now), 잊으면 「9.4 기준」이 반년 뒤에도
+   붙어 있는다. 갈무리가 낡는 것 자체는 죄가 아니지만 — 서재가 답하면 오늘
+   것으로 갈리니까 — 너무 묵으면 「서재가 답하지 못한 사람」이 보는 숫자가
+   현실과 멀어진다. 두 달을 넘기면 알린다. */
+try {
+  const 묵은것 = [];
+  for (const [이름, 길] of [["대문", "/"], ["지금", "/now/"]]) {
+    const h = (await 받기(길)).글;
+    /* 한 쪽에 구운 자리가 여럿이면(대문의 문 셋) 가장 묵은 것 하나로 센다 */
+    const 날들 = [...new Set([...h.matchAll(/data-baked="(\d{4}-\d{2}-\d{2})"/g)].map((m) => m[1]))];
+    if (날들.length) {
+      const 옛 = 날들.sort()[0];
+      묵은것.push([이름, 옛, Math.round((Date.now() - new Date(옛)) / 86400000)]);
+    }
+  }
+  if (!묵은것.length) console.log("  구운값   없음");
+  else {
+    const 가장 = Math.max(...묵은것.map((x) => x[2]));
+    console.log(`  구운값   ${묵은것.map((x) => `${x[0]} ${x[1]}`).join(" · ")} — 가장 묵은 것 ${가장}일`);
+    if (가장 > 60) {
+      티("구운값", `구운 지 ${가장}일 된 값이 있습니다 — ` +
+         "node tools/bake-doors.mjs · bake-now.mjs 로 다시 구우세요");
+    }
+  }
+} catch (e) { console.log(`  구운값   보지 못했습니다 (${e.message})`); }
+
+/* ④ 화면이 거는 해 쪽이 실제로 지어져 있는가.
+   서재의 회고 패널은 데이터에 있는 해마다 y/<해>.html 링크를 건다. 그런데
+   그 쪽은 make-book-pages 가 짓는 정적 파일이라, 새해 첫 책을 「읽음」으로
+   표시하고 도구를 안 돌리면 그 링크가 404 가 된다 (app.js 의 주석도 이미
+   그렇게 인정하고 있다). 서재에 어떤 해가 있는지 묻고, 그 쪽들이 서 있는지
+   본다 — 한 해가 바뀔 때 조용히 생기는 구멍이다. */
+try {
+  const r = await fetch(
+    `${REST}/books?select=read_year&read_status=eq.${encodeURIComponent("읽음")}` +
+    "&read_year=not.is.null", { headers: 머리 });
+  const 해들 = [...new Set((await r.json()).map((b) => b.read_year))].sort();
+  const 없는것 = [];
+  for (const 해 of 해들) {
+    if ((await 받기(`/books/y/${해}.html`)).상태 !== 200) 없는것.push(해);
+  }
+  console.log(`  해쪽     읽은 해 ${해들.length} · 지어진 쪽 ${해들.length - 없는것.length}`);
+  if (없는것.length) {
+    티("해쪽", `${없는것.join("·")}년 쪽이 없습니다 — 서재의 회고가 404 로 보냅니다 ` +
+       "(서재에서 node tools/make-book-pages.mjs)");
+  }
+} catch (e) { console.log(`  해쪽     보지 못했습니다 (${e.message})`); }
+
+/* 공개 열쇠가 여러 곳에 흩어져 있다 — 하나만 갈고 나머지를 잊으면
+   그 쪽만 조용히 죽는다. 살아 있는 쪽들이 같은 열쇠를 쓰는지 본다.
+   ⑥ 배포된 쪽만 보아서는 모자란다: 열쇠는 도구 여덟과 서재의 config.js
+   에도 박혀 있다. 화면만 갈고 도구를 잊으면, 다음에 도구를 돌리는 날
+   그때서야 죽는다 — 그래서 로컬 파일까지 함께 센다. */
+try {
+  const 열쇠들 = new Map();   // 열쇠 → 그것을 쓰는 곳들
+  const 담기 = (곳, 글) => {
+    for (const m of 글.matchAll(/sb_publishable_[A-Za-z0-9_-]+/g)) {
+      if (!열쇠들.has(m[0])) 열쇠들.set(m[0], new Set());
+      열쇠들.get(m[0]).add(곳);
+    }
+  };
+  for (const 길 of ["/", "/notes/", "/now/", "/404.html"]) 담기(길, (await 받기(길)).글);
+  /* 배포된 서재의 config.js — 다른 저장소라 로컬에 없을 수 있다 */
+  try { 담기("/books/js/config.js", await (await fetch(`${집}/books/js/config.js`)).text()); }
+  catch { /* 못 받으면 그만 */ }
+  /* 도구들 — 화면에는 안 보이지만 열쇠를 들고 서재에 간다 */
+  let 도구수 = 0;
+  try {
+    const { readdir, readFile } = await import("node:fs/promises");
+    const { fileURLToPath } = await import("node:url");
+    const { dirname, join } = await import("node:path");
+    const 여기 = dirname(fileURLToPath(import.meta.url));
+    for (const f of (await readdir(여기)).filter((f) => f.endsWith(".mjs"))) {
+      담기(`tools/${f}`, await readFile(join(여기, f), "utf8"));
+      도구수++;
+    }
+  } catch { /* 받아 와서 돌리는 자리면 도구가 없다 */ }
+  console.log(`  열쇠     쓰는 곳이 다 같은가 — ${열쇠들.size}가지 (쪽 4 · 도구 ${도구수} · 서재 config)`);
+  if (열쇠들.size > 1) {
+    for (const [k, 곳들] of 열쇠들) {
+      console.log(`           …${k.slice(-8)} — ${[...곳들].join(", ")}`);
+    }
+    티("열쇠", `곳마다 다른 열쇠를 쓰고 있습니다 (${열쇠들.size}가지) — ` +
+       "화면만 갈고 도구를 잊으면 다음에 도구를 돌리는 날 죽습니다");
+  }
 } catch (e) { console.log(`  열쇠     보지 못했습니다 (${e.message})`); }
 
 /* 「며칠 전」을 말하는 자리가 셋이다 — 대문의 문, /now/ 의 첫 줄, 서재의
@@ -352,7 +474,10 @@ try {
     const 상한 = /Math\.min\(\s*11\s*,/.test(s) ? "11" : "없음";
     const 어휘 = /해 전/.test(s) ? "해" : (/년 전/.test(s) ? "년" : "?");
     const 주 = /주 전/.test(s) ? "주있음" : "주없음";
-    return [어제, 일, 해, 상한, 어휘, 주].join("·");
+    /* 경계가 같아도 **세는 법**이 다르면 답이 갈린다 — 스물네 시간으로
+       나누는 쪽과 자정을 세는 쪽은 어제 저녁 것을 두고 다르게 말한다 */
+    const 셈 = /getDate\(\)\s*\)/.test(s) ? "달력" : "경과";
+    return [어제, 일, 해, 상한, 어휘, 주, 셈].join("·");
   };
   const 서명 = 자리.map(([이름, 글]) => [이름, 사다리(글)]);
   const 가지 = new Set(서명.map(([, s]) => s));

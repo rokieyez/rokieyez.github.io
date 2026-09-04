@@ -16,6 +16,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { 오늘 } from "./오늘.mjs";
 
 process.stdout.on("error", (e) => { if (e.code !== "EPIPE") throw e; });
 
@@ -64,16 +65,16 @@ if (!틀.test(옛)) {
   console.error("now/index.html 에서 읽는 중 목록을 찾지 못했습니다");
   process.exit(1);
 }
-const 오늘 = new Date().toISOString().slice(0, 10);
+const 오늘날 = 오늘();
 const 속 = 책들.length
   ? "\n" + 책들.map(한줄).join("\n") + "\n    "
   : `<li class="empty">그때는 펼쳐 둔 책이 없었습니다.</li>`;
-const 새 = 옛.replace(틀, `<ul id="reading" data-baked="${오늘}">${속}$2`);
+const 새 = 옛.replace(틀, `<ul id="reading" data-baked="${오늘날}">${속}$2`);
 
 if (새 === 옛) {
   console.log("읽는 중 갈무리는 이미 최신입니다");
 } else {
   await writeFile(쪽, 새, "utf8");
-  console.log(`읽는 중 ${책들.length}권을 구웠습니다 (${오늘}) → now/index.html`);
+  console.log(`읽는 중 ${책들.length}권을 구웠습니다 (${오늘날}) → now/index.html`);
   책들.forEach((b) => console.log(`  ${b.title}`));
 }
