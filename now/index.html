@@ -40,6 +40,10 @@
       font-family: "Gowun Batang", "Noto Serif KR", serif;
       line-height: 1.85;
       display: grid; grid-template-rows: 1fr auto; place-items: center;
+      /* 한글은 기본값이면 아무 글자 사이에서나 꺾인다 — 폰에서 실제로
+         「읽는 중 책 / 은」, 「지금 / 은 서지를」처럼 낱말이 갈라졌다.
+         대문·글방·서재엔 이 줄이 있는데 이 쪽에만 없었다. 어절로만 꺾는다. */
+      word-break: keep-all; overflow-wrap: break-word;
     }
     body::before {
       content: ""; position: fixed; inset: 0; pointer-events: none;

@@ -27,6 +27,8 @@
       font-family: "Gowun Batang", "Noto Serif KR", serif;
       display: grid; place-items: center; text-align: center;
       position: relative; overflow: hidden;
+      /* 한글은 어절로만 꺾는다 — 다른 방과 같은 규칙 */
+      word-break: keep-all; overflow-wrap: break-word;
     }
     /* 잠긴 문 뒤에도 불은 켜져 있다 — 열쇠구멍이 그려진 이 쪽이야말로
        빛이 새는 자리다. 손을 따라 그 빛이 움직인다. */

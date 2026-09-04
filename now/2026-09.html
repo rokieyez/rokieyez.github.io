@@ -40,6 +40,8 @@
       font-family: "Gowun Batang", "Noto Serif KR", serif;
       line-height: 1.85;
       display: grid; grid-template-rows: 1fr auto; place-items: center;
+      /* 한글은 어절로만 꺾는다 — 지금 쪽과 같은 규칙 */
+      word-break: keep-all; overflow-wrap: break-word;
     }
     body::before {
       content: ""; position: fixed; inset: 0; pointer-events: none;
