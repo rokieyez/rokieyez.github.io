@@ -203,6 +203,13 @@
       letter-spacing: .04em;
     }
     .door em[hidden] { display: none; }
+    /* 구운 셈이 끝내 오늘 것으로 갈리지 못했을 때만 붙는 꼬리 — 언제 것인지
+       밝히는 자리다. 숫자보다 한 걸음 물러서 있되 읽히기는 해야 한다. */
+    .door em .asof {
+      display: block; margin-top: 3px;
+      font-size: 9.5px; letter-spacing: .06em;
+      color: var(--dim);
+    }
     .door em .prog {
       display: block; height: 3px; margin-top: 5px;
       background: rgba(224, 177, 94, .14); border-radius: 2px; overflow: hidden;
@@ -334,12 +341,12 @@
       <!-- 권수는 적지 않는다 — 장서는 계속 늘고, 정적 파일의 숫자는 반드시 거짓이 된다.
            오늘의 숫자는 위의 .today 줄이 서재에 직접 물어 온다 -->
       <small>한 사람의 장서를 그대로<br>옮겨 담은 밤의 서재</small>
-      <em id="d-books" hidden></em>
+      <em id="d-books" data-baked="2026-09-04">544권 · 27권 읽음</em>
     </a>
     <a class="door" href="/now/">
       <b>지금</b>
       <small>요즘 읽는 것과<br>만드는 것</small>
-      <em id="d-now" hidden></em>
+      <em id="d-now" data-baked="2026-09-04" data-at="2026-09-01T14:52:06.469+00:00"></em>
     </a>
     <!-- 2026년 9월 3일, 첫 글 「시절 인연」이 놓이면서 열린 문.
          .door.locked 규칙은 지우지 않았다 — 다음에 또 짓다 만 방이 생기면
@@ -347,7 +354,7 @@
     <a class="door" href="/notes/">
       <b>글</b>
       <small>문장으로 남겨 둔<br>것들</small>
-      <em id="d-notes" hidden></em>
+      <em id="d-notes" data-baked="2026-09-04" data-count="1" data-at="2026-09-03T11:19:52.377+00:00"></em>
     </a>
   </div>
 </main>
@@ -375,11 +382,67 @@ if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
   }
 })();
 
+/* ── 문 안의 셈: 구운 것과 오늘 것 ──────────────────────────────
+   문 안의 한 줄은 서재와 글방에 그 자리에서 묻는 값이라, 답이 오기 전에는
+   비어 있었다 — 처음 오는 사람은 몇 초 동안 빈 문 셋을 본다. 그래서
+   tools/bake-doors.mjs 가 그 값을 미리 글자로 구워 둔다(<em data-baked>).
+
+   구운 숫자가 거짓이 되지 않게 두 가지를 지킨다.
+     ① 시간이 흐르면 틀리는 말(「2일 전」)은 굽지 않는다. 그 시각(data-at)만
+        심어 두고 아래 지난말() 이 **오늘 기준으로** 다시 센다.
+     ② 다시 셀 수 없는 것(권수·편수)은 서재가 답하면 갈아 끼우고, 끝내
+        답하지 못하면 그때만 「9.4 기준」이라고 밝힌다. */
+
+/* 두 곳(갈피·글)이 같은 말투를 쓰도록 한 자리에 둔다 */
+function 지난말(iso, 어미) {
+  const 날 = (Date.now() - new Date(iso)) / 86400000;
+  if (날 < 1) return "오늘 " + 어미;
+  if (날 < 2) return "어제 " + 어미;
+  if (날 < 30) return `${Math.floor(날)}일 전`;
+  if (날 < 365) return `${Math.floor(날 / 30)}달 전`;
+  return `${Math.floor(날 / 365)}해 전`;
+}
+
+/* 오늘 것이 왔다 — 구운 자리를 갈아 끼우고 「언제 기준」 꼬리를 걷는다 */
+function 갈아끼움(el, 말) {
+  if (!el) return;
+  el.textContent = 말;
+  el.dataset.fresh = "1";
+  el.hidden = false;
+}
+
+/* 구운 것을 먼저 편다 — 서재가 답하기 전에도 문 안이 비어 있지 않도록.
+   시각이 심긴 자리는 그 자리에서 오늘 기준으로 다시 세어 말한다. */
+(function 구운것을편다() {
+  const n = document.getElementById("d-now");
+  if (n?.dataset.at) { n.textContent = 지난말(n.dataset.at, "움직임"); n.hidden = false; }
+  const t = document.getElementById("d-notes");
+  if (t?.dataset.count) {
+    t.textContent = `${t.dataset.count}편` +
+      (t.dataset.at ? " · " + 지난말(t.dataset.at, "놓임") : "");
+    t.hidden = false;
+  }
+})();
+
+/* 셋을 다 물어볼 만한 시간이 지나도 갈리지 않은 자리에는 언제 것인지를
+   밝힌다 — 갈무리를 오늘인 척 두지 않는다 (/now/·/notes/ 와 같은 규칙).
+   다시 셀 수 있는 「지금」 문은 늘 오늘 기준이므로 꼬리가 필요 없다. */
+setTimeout(function () {
+  document.querySelectorAll('.door em[data-baked]:not([data-fresh])').forEach(function (el) {
+    if (el.id === "d-now" || el.querySelector(".asof")) return;
+    const [, 달, 날] = el.dataset.baked.split("-");
+    const 꼬리 = document.createElement("span");
+    꼬리.className = "asof";
+    꼬리.textContent = `${Number(달)}.${Number(날)} 기준`;
+    el.appendChild(꼬리);
+  });
+}, 6000);
+
 /* 서재의 오늘 — 권수와 읽은 권수를 서재에 직접 묻는다.
    몸통 없이 세기만 하는 질의(Prefer: count=exact + Range: 0-0)라 오가는 것이
    헤더뿐이다. 무료 요금제의 전송량을 축내지 않으려는 것 — 서재에서 하루
    3.9GB 를 흘려 본 적이 있다 (books/CLAUDE.md 의 Egress 규칙).
-   못 물어보면 이 줄은 아예 나타나지 않는다. 대문이 서재 때문에 멈추면 안 된다. */
+   못 물어보면 구운 값이 그대로 남는다 — 대문이 서재 때문에 멈추면 안 된다. */
 (async function () {
   const 집 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/books";
   const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
@@ -395,10 +458,9 @@ if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
       세기("&read_status=eq." + encodeURIComponent("읽음")),
     ]);
     if (!전부) return;
-    const el = document.getElementById("d-books");
-    el.textContent = `${전부.toLocaleString()}권 · ${(읽음 || 0).toLocaleString()}권 읽음`;
-    el.hidden = false;
-  } catch { /* 서재가 자고 있어도 대문은 열려 있어야 한다 */ }
+    갈아끼움(document.getElementById("d-books"),
+      `${전부.toLocaleString()}권 · ${(읽음 || 0).toLocaleString()}권 읽음`);
+  } catch { /* 서재가 자고 있어도 대문은 열려 있어야 한다 — 구운 값이 남는다 */ }
 
   /* 지금 펼쳐 둔 책 — 서재 안쪽까지 들어가야 보이던 것을 대문에 건다.
      대문의 얼굴이 매번 조금씩 달라지고, 서재로 들어갈 이유가 하나 생긴다.
@@ -454,12 +516,8 @@ if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
     if (!r.ok) return;
     const [b] = await r.json();
     if (!b?.bookmark_at) return;
-    const 날 = (Date.now() - new Date(b.bookmark_at)) / 86400000;
-    const 말 = 날 < 1 ? "오늘 움직임" : 날 < 2 ? "어제 움직임"
-             : 날 < 30 ? `${Math.floor(날)}일 전` : 날 < 365 ? `${Math.floor(날 / 30)}달 전`
-             : `${Math.floor(날 / 365)}해 전`;
     const el = document.getElementById("d-now");
-    el.textContent = 말;
+    갈아끼움(el, 지난말(b.bookmark_at, "움직임"));
     if (window.__갈피) {
       const bar = document.createElement("span");
       bar.className = "prog";
@@ -489,17 +547,9 @@ if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
     const 편 = m ? Number(m[1]) : 0;
     if (!편) return;
     const [n] = await r.json();
-    let 말 = `${편}편`;
-    if (n?.published_at) {
-      const 날 = (Date.now() - new Date(n.published_at)) / 86400000;
-      말 += " · " + (날 < 1 ? "오늘 놓임" : 날 < 2 ? "어제 놓임"
-                   : 날 < 30 ? `${Math.floor(날)}일 전` : 날 < 365 ? `${Math.floor(날 / 30)}달 전`
-                   : `${Math.floor(날 / 365)}해 전`);
-    }
-    const el = document.getElementById("d-notes");
-    el.textContent = 말;
-    el.hidden = false;
-  } catch { /* 글방이 조용해도 문은 열려 있어야 한다 */ }
+    갈아끼움(document.getElementById("d-notes"),
+      `${편}편` + (n?.published_at ? " · " + 지난말(n.published_at, "놓임") : ""));
+  } catch { /* 글방이 조용해도 문은 열려 있어야 한다 — 구운 값이 남는다 */ }
 })();
 
 /* 문은 열리고 나서 방으로 보낸다 — 누르면 안쪽으로 열리는 0.38초를 보고
