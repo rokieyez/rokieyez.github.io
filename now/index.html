@@ -290,9 +290,16 @@ function 사람날짜(iso) {
     if (!r.ok) return;
     const [b] = await r.json();
     if (!b?.bookmark_at) return;
-    const 날 = (Date.now() - new Date(b.bookmark_at)) / 86400000;
-    const 말 = 날 < 1 ? "오늘" : 날 < 2 ? "어제" : 날 < 30 ? `${Math.floor(날)}일 전`
-             : 날 < 365 ? `${Math.floor(날 / 30)}달 전` : `${Math.floor(날 / 365)}해 전`;
+    /* ── 집 안에서 한 벌인 규칙이다 ─────────────────────────────
+       이 갈피 시각은 대문의 「지금」 문과 서재의 책상에도 그대로 걸린다.
+       세 자리가 저마다 셈하다 여섯 구간이 어긋나 있었다(2026-09-04).
+       고칠 때는 세 곳을 함께 고친다: 여기 · ../index.html 의 지난말() ·
+       (서재) js/app.js 의 agoOf. tools/check-house.mjs 가 재고 있다.
+       열두 달은 한 해이므로 달은 열하나에서 멈춘다. */
+    const 날 = Math.floor((Date.now() - new Date(b.bookmark_at)) / 86400000);
+    const 말 = 날 <= 0 ? "오늘" : 날 === 1 ? "어제" : 날 < 30 ? `${날}일 전`
+             : 날 < 365 ? `${Math.min(11, Math.floor(날 / 30))}달 전`
+             : `${Math.floor(날 / 365)}해 전`;
     document.getElementById("when").textContent =
       `갈피를 마지막으로 옮긴 것은 ${말}입니다 — 읽는 중인 책은 서재에서 바로 받아 옵니다`;
   } catch { /* 못 물어보면 처음 문구 그대로 둔다 */ }
