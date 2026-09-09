@@ -240,7 +240,9 @@
           `<li><span>${esc(f.kind)} <small style="color:var(--dim)">${esc(f.date)}</small></span>
              <a href="https://github.com/${REPO}/blob/${BRANCH}/${encodeURI(f.path)}" target="_blank" rel="noopener">보기</a>
              <button class="quiet" data-path="${esc(f.path)}" data-name="${esc(f.file)}">내려받기</button></li>`).join("");
-        return `<div class="person"><b>${esc(p.folder.split("-")[0])}</b><span class="when">${esc(p.folder.slice(p.folder.indexOf("-") + 1))}년생 · 최근 ${esc(p.latest)}</span><ul class="files">${files}</ul></div>`;
+        /* 폴더는 `이름-생년`. 생년을 모르는 사람은 `이름` 뿐이다 */
+        const [, who, born] = p.folder.match(/^(.*?)(?:-(\d{4}))?$/) || [, p.folder, ""];
+        return `<div class="person"><b>${esc(who)}</b><span class="when">${born ? esc(born) + "년생 · " : ""}최근 ${esc(p.latest)}</span><ul class="files">${files}</ul></div>`;
       }).join("");
     } catch (err) {
       list.innerHTML = `<p class="empty">목록을 읽지 못했습니다: ${esc(err.message)}</p>`;
