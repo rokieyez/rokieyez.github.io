@@ -7,6 +7,9 @@
 - `/now` — 지금 (요즘 읽는 것과 만드는 것)
 - `/notes` — 글 (글방 — 아래 참조)
 - `/books` — [서가 뒤의 방](https://github.com/rokieyez/books) (개인 서재)
+- `/politics` — 정치인 조사 버튼 (주인용 도구, `noindex`). 서버 없이 GitHub API 로
+  [politics-news](https://github.com/rokieyez/politics-news) 의 「인물 조사」 워크플로를 부르고, 결과 파일을
+  그 저장소의 `output/profiles/` 에서 읽어 내려받게 한다. 열쇠(fine-grained 토큰)는 브라우저 localStorage 에만 둔다
 
 ## 대문이 서재에 묻는 것
 

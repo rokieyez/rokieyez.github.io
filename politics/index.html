@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>정치인 조사 — 로키즈의 방</title>
+  <meta name="description" content="정치인 한 사람의 발자취 자료를 버튼 하나로 모으는 주인용 도구.">
+  <meta name="theme-color" content="#171009">
+  <meta name="color-scheme" content="dark">
+  <!-- 주인이 쓰는 도구라 검색에 올리지 않는다 -->
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href="https://www.rokiz.net/politics/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://api.github.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Cormorant:ital,wght@1,500&display=swap">
+  <style>
+    /* 「정치인 조사」 — politics-news 저장소의 워크플로를 여기서 누른다.
+       이 쪽은 서버가 없다. 버튼은 GitHub 의 API 를 부르고, 결과 파일은
+       저장소(output/profiles/)에서 그때그때 읽는다. 열쇠(토큰)는 이 브라우저의
+       localStorage 에만 두고 api.github.com 말고는 어디에도 보내지 않는다. */
+    :root { --dark:#171009; --paper:#E9DFC9; --dim:#9C8E74; --brass:#E0B15E; --line:rgba(224,177,94,.16); }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100%;
+      background: var(--dark); color: var(--paper);
+      font-family: "Gowun Batang", "Noto Serif KR", serif; line-height: 1.85;
+      display: grid; grid-template-rows: 1fr auto; place-items: center;
+      word-break: keep-all; overflow-wrap: break-word;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none;
+      background: radial-gradient(48% 34% at 50% 12%, rgba(224,177,94,.09), transparent 70%);
+    }
+    main { position: relative; padding: 56px 24px 32px; max-width: 62ch; width: 100%; }
+    .latin { font-family: "Cormorant", serif; font-style: italic; font-size: 14px; letter-spacing: .22em; color: var(--dim); margin: 0; }
+    h1 { margin: 8px 0 4px; font-size: clamp(28px, 6vw, 40px); font-weight: 700; letter-spacing: .05em; }
+    .lead { margin: 0 0 40px; font-size: 13.5px; color: var(--dim); }
+    section { margin: 0 0 38px; }
+    h2 { margin: 0 0 12px; font-size: 13px; font-weight: 400; color: var(--brass); letter-spacing: .18em; opacity: .85; }
+    h2::after { content: ""; display: block; width: 100%; height: 1px; margin-top: 8px; background: var(--line); }
+    p, li { font-size: 14.5px; }
+    p { margin: 0 0 12px; }
+    label { display: block; font-size: 13px; color: var(--dim); margin: 0 0 4px; letter-spacing: .04em; }
+    input[type=text] {
+      width: 100%; padding: 10px 12px; font: inherit; font-size: 16px;
+      color: var(--paper); background: rgba(233,223,201,.05);
+      border: 1px solid var(--line); border-radius: 4px; outline: none;
+    }
+    input[type=text]:focus { border-color: rgba(224,177,94,.5); }
+    .row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 14px; }
+    .check { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 8px; font-size: 14px; }
+    .check input { margin-top: 6px; accent-color: var(--brass); }
+    .check small { display: block; color: var(--dim); font-size: 12.5px; line-height: 1.6; }
+    button {
+      font: inherit; font-size: 14.5px; letter-spacing: .06em; cursor: pointer;
+      color: var(--dark); background: var(--brass); border: 0; border-radius: 4px; padding: 10px 18px;
+    }
+    button.quiet { color: var(--brass); background: transparent; border: 1px solid var(--line); padding: 6px 12px; font-size: 13px; }
+    button:disabled { opacity: .45; cursor: default; }
+    .status { margin: 12px 0 0; font-size: 13.5px; color: var(--dim); min-height: 1.6em; }
+    .status.err { color: #E08A5E; }
+    .status.ok { color: var(--brass); }
+    details { border: 1px solid var(--line); border-radius: 4px; padding: 10px 14px; }
+    summary { cursor: pointer; font-size: 14px; color: var(--brass); }
+    details p, details li { font-size: 13.5px; }
+    details ol { padding-left: 20px; margin: 8px 0; }
+    code { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: var(--paper); background: rgba(233,223,201,.08); padding: 1px 5px; border-radius: 3px; }
+    .person { padding: 14px 0; border-bottom: 1px solid var(--line); }
+    .person:last-child { border-bottom: 0; }
+    .person b { font-weight: 700; font-size: 16px; }
+    .person .when { color: var(--dim); font-size: 12.5px; margin-left: 8px; }
+    .files { margin: 8px 0 0; padding: 0; list-style: none; }
+    .files li { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 6px; font-size: 13.5px; }
+    .files li span { flex: 1 1 14ch; }
+    .files a { color: var(--brass); text-decoration: none; border-bottom: 1px solid var(--line); }
+    .empty { color: var(--dim); font-size: 13.5px; }
+    footer { position: relative; padding: 0 24px 40px; max-width: 62ch; width: 100%; font-size: 12.5px; color: var(--dim); }
+    footer a { color: var(--dim); }
+    @media (max-width: 480px) { .row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <p class="latin">Politics</p>
+  <h1>정치인 조사</h1>
+  <p class="lead">이름을 넣고 누르면 국회 공식 기록·위키백과·기사 제목을 모아 <b>정리표</b>를 만듭니다. 돈은 들지 않습니다.
+    표 대신 글이 필요하면 「자료묶음」을 받아 claude.ai 에 붙여 넣으세요.</p>
+
+  <section>
+    <h2>조사 시작</h2>
+    <form id="f" autocomplete="off">
+      <div class="row">
+        <div><label for="name">이름</label><input id="name" type="text" placeholder="예: 김민석" required></div>
+        <div><label for="birth">생년 (동명이인일 때만)</label><input id="birth" type="text" inputmode="numeric" placeholder="예: 1964"></div>
+      </div>
+      <label class="check"><input id="pack" type="checkbox"><span>자료묶음 파일도 만들기
+        <small>모은 자료 전부와 지시문이 든 한 파일. claude.ai 채팅창에 통째로 붙여 넣으면 연표·발자취·논란 정리가 나옵니다. 0원.</small></span></label>
+      <label class="check"><input id="ai" type="checkbox"><span>AI 정리 글까지 만들기
+        <small>붙여 넣는 수고 없이 프로그램이 모델을 불러 정리 글을 만듭니다. <b>한 번에 약 700원</b>이 API 요금으로 나갑니다.</small></span></label>
+      <p style="margin-top:14px"><button id="go" type="submit">조사 시작</button></p>
+      <p id="status" class="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section>
+    <h2>열쇠</h2>
+    <details id="keybox">
+      <summary id="keysum">GitHub 열쇠 — 아직 없음</summary>
+      <p>버튼이 저장소의 작업(Actions)을 대신 눌러 주려면 GitHub 가 「이 사람이 주인」임을 알아야 합니다. 열쇠는 한 번만 넣으면 이 브라우저에 남고, GitHub 에만 보냅니다.</p>
+      <ol>
+        <li>GitHub → 오른쪽 위 내 사진 → <b>Settings</b> → 맨 아래 <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b></li>
+        <li>이름은 아무거나(예: politics 버튼). Expiration 은 길게.</li>
+        <li><b>Repository access</b> → Only select repositories → <code>politics-news</code></li>
+        <li><b>Permissions</b> → Repository permissions → <b>Actions</b> 를 <b>Read and write</b> 로. (Metadata 는 저절로 켜집니다)</li>
+        <li>Generate 를 누르고 나온 <code>github_pat_…</code> 글자를 아래에 붙여 넣기</li>
+      </ol>
+      <p><input id="token" type="text" placeholder="github_pat_…" spellcheck="false"></p>
+      <p><button id="savekey" type="button" class="quiet">이 브라우저에 저장</button> <button id="dropkey" type="button" class="quiet">지우기</button></p>
+    </details>
+  </section>
+
+  <section>
+    <h2>지금까지 조사한 사람</h2>
+    <div id="list"><p class="empty">읽는 중…</p></div>
+  </section>
+</main>
+<footer>
+  버튼이 말을 안 들으면 <a id="actions" href="https://github.com/rokieyez/politics-news/actions/workflows/profile.yml" target="_blank" rel="noopener">GitHub 의 인물 조사 워크플로</a>에서 Run workflow 를 직접 눌러도 같습니다.
+  결과 파일은 <a href="https://github.com/rokieyez/politics-news/tree/main/output/profiles" target="_blank" rel="noopener">output/profiles</a> 에 쌓입니다.
+</footer>
+<script>
+(() => {
+  const REPO = "rokieyez/politics-news", BRANCH = "main", WF = "profile.yml";
+  const API = "https://api.github.com";
+  const KEY = "politics-news.token";
+  const $ = (id) => document.getElementById(id);
+  const status = $("status"), list = $("list");
+
+  /* ── 열쇠 ── */
+  const token = () => { try { return localStorage.getItem(KEY) || ""; } catch { return ""; } };
+  const showKey = () => {
+    const has = !!token();
+    $("keysum").textContent = has ? "GitHub 열쇠 — 저장됨 (이 브라우저)" : "GitHub 열쇠 — 아직 없음 (버튼을 쓰려면 필요)";
+    $("keybox").open = !has;
+  };
+  $("savekey").onclick = () => {
+    const v = $("token").value.trim();
+    if (!v) { say("열쇠 글자가 비었습니다.", "err"); return; }
+    try { localStorage.setItem(KEY, v); } catch { say("이 브라우저는 저장을 막고 있습니다.", "err"); return; }
+    $("token").value = ""; showKey(); say("열쇠를 저장했습니다.", "ok");
+  };
+  $("dropkey").onclick = () => { try { localStorage.removeItem(KEY); } catch {} showKey(); say("열쇠를 지웠습니다."); };
+  showKey();
+
+  const headers = (auth) => {
+    const h = { "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+    if (auth && token()) h["Authorization"] = "Bearer " + token();
+    return h;
+  };
+  function say(msg, kind) { status.textContent = msg; status.className = "status" + (kind ? " " + kind : ""); }
+
+  /* ── 조사 시작: workflow_dispatch ── */
+  let polling = null;
+  $("f").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = $("name").value.trim(), birth = $("birth").value.trim();
+    if (!name) return;
+    if (!token()) { $("keybox").open = true; say("먼저 아래 「열쇠」를 넣어 주세요.", "err"); return; }
+    if (birth && !/^\d{4}$/.test(birth)) { say("생년은 네 자리 숫자로만 (예: 1964).", "err"); return; }
+    if ($("ai").checked && !confirm("AI 정리 글은 한 번에 약 700원의 API 요금이 나갑니다. 진행할까요?")) return;
+    $("go").disabled = true;
+    say(`「${name}」 조사를 GitHub 에 맡기는 중…`);
+    const started = Date.now();
+    try {
+      const r = await fetch(`${API}/repos/${REPO}/actions/workflows/${WF}/dispatches`, {
+        method: "POST", headers: headers(true),
+        body: JSON.stringify({ ref: BRANCH, inputs: { name, birth, pack: String($("pack").checked), ai: String($("ai").checked) } }),
+      });
+      if (r.status === 204) {
+        say(`맡겼습니다. 1~4분쯤 걸립니다. 끝나면 아래 목록에 나타납니다…`);
+        watch(started, name);
+        return;
+      }
+      if (r.status === 401 || r.status === 403) say("열쇠가 맞지 않거나 Actions 쓰기 권한이 없습니다. 「열쇠」를 다시 만들어 보세요.", "err");
+      else if (r.status === 404) say("워크플로를 찾지 못했습니다. 저장소에 인물 조사 워크플로가 올라가 있는지 보세요.", "err");
+      else say(`GitHub 가 거절했습니다 (${r.status}). ${(await r.text()).slice(0, 200)}`, "err");
+    } catch (err) {
+      say("GitHub 에 닿지 못했습니다: " + err.message, "err");
+    }
+    $("go").disabled = false;
+  });
+
+  /* 돌아가는 작업을 15초마다 들여다본다. 끝나면 목록을 다시 읽는다. */
+  function watch(started, name) {
+    clearInterval(polling);
+    const deadline = started + 20 * 60 * 1000;
+    polling = setInterval(async () => {
+      if (Date.now() > deadline) { clearInterval(polling); $("go").disabled = false; say("20분이 지나도 끝나지 않았습니다. GitHub 의 워크플로 화면을 보세요.", "err"); return; }
+      try {
+        const r = await fetch(`${API}/repos/${REPO}/actions/workflows/${WF}/runs?per_page=5`, { headers: headers(true) });
+        if (!r.ok) return;
+        const runs = (await r.json()).workflow_runs || [];
+        const mine = runs.find((x) => new Date(x.created_at).getTime() >= started - 90 * 1000);
+        if (!mine) { say(`맡겼습니다. GitHub 가 줄을 세우는 중… (${elapsed(started)})`); return; }
+        if (mine.status !== "completed") { say(`「${name}」 조사 ${mine.status === "queued" ? "대기 중" : "진행 중"}… (${elapsed(started)})`); return; }
+        clearInterval(polling); $("go").disabled = false;
+        if (mine.conclusion === "success") { say(`「${name}」 조사가 끝났습니다. 아래에서 받으세요.`, "ok"); load(); }
+        else say(`조사가 ${mine.conclusion} 로 끝났습니다. GitHub 의 워크플로 화면에서 로그를 보세요.`, "err");
+      } catch { /* 한 번 못 읽은 것은 다음 번에 */ }
+    }, 15000);
+  }
+  const elapsed = (t) => { const s = Math.round((Date.now() - t) / 1000); return s < 60 ? `${s}초` : `${Math.floor(s / 60)}분 ${s % 60}초`; };
+
+  /* ── 결과 목록: 저장소 트리 한 번으로 output/profiles/ 를 읽는다 ── */
+  const KIND = [[/_정리표\.md$/, "정리표"], [/_AI정리\.md$/, "AI 정리 글"], [/\.md$/, "자료묶음 (claude.ai 에 붙이기)"]];
+  const kindOf = (f) => { for (const [re, k] of KIND) if (re.test(f)) return k; return ""; };
+  async function load() {
+    try {
+      const r = await fetch(`${API}/repos/${REPO}/git/trees/${BRANCH}?recursive=1`, { headers: headers(true) });
+      if (r.status === 403) { list.innerHTML = `<p class="empty">GitHub 가 잠시 읽기를 막았습니다(한 시간에 60번). 조금 뒤 새로 고치세요.</p>`; return; }
+      if (!r.ok) { list.innerHTML = `<p class="empty">목록을 읽지 못했습니다 (${r.status}).</p>`; return; }
+      const tree = (await r.json()).tree || [];
+      const people = new Map();
+      for (const e of tree) {
+        if (e.type !== "blob" || !e.path.startsWith("output/profiles/")) continue;
+        const [, , folder, file] = e.path.split("/");
+        if (!file || !kindOf(file)) continue;
+        const date = (file.match(/_(\d{4}-\d{2}-\d{2})/) || [])[1] || "";
+        const p = people.get(folder) || { folder, files: [], latest: "" };
+        p.files.push({ file, path: e.path, kind: kindOf(file), date });
+        if (date > p.latest) p.latest = date;
+        people.set(folder, p);
+      }
+      const rows = [...people.values()].sort((a, b) => b.latest.localeCompare(a.latest));
+      if (!rows.length) { list.innerHTML = `<p class="empty">아직 아무도 조사하지 않았습니다.</p>`; return; }
+      list.innerHTML = rows.map((p) => {
+        const files = p.files.sort((a, b) => b.date.localeCompare(a.date) || a.kind.localeCompare(b.kind)).map((f) =>
+          `<li><span>${esc(f.kind)} <small style="color:var(--dim)">${esc(f.date)}</small></span>
+             <a href="https://github.com/${REPO}/blob/${BRANCH}/${encodeURI(f.path)}" target="_blank" rel="noopener">보기</a>
+             <button class="quiet" data-path="${esc(f.path)}" data-name="${esc(f.file)}">내려받기</button></li>`).join("");
+        return `<div class="person"><b>${esc(p.folder.split("-")[0])}</b><span class="when">${esc(p.folder.slice(p.folder.indexOf("-") + 1))}년생 · 최근 ${esc(p.latest)}</span><ul class="files">${files}</ul></div>`;
+      }).join("");
+    } catch (err) {
+      list.innerHTML = `<p class="empty">목록을 읽지 못했습니다: ${esc(err.message)}</p>`;
+    }
+  }
+  /* raw.githubusercontent 는 글자를 화면에 띄우기만 하므로, 받아서 파일로 떨어뜨린다 */
+  list.addEventListener("click", async (e) => {
+    const b = e.target.closest("button[data-path]");
+    if (!b) return;
+    b.disabled = true;
+    try {
+      const r = await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encodeURI(b.dataset.path)}`);
+      if (!r.ok) throw new Error(String(r.status));
+      const url = URL.createObjectURL(await r.blob());
+      const a = Object.assign(document.createElement("a"), { href: url, download: b.dataset.name });
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch (err) { say("파일을 받지 못했습니다: " + err.message, "err"); }
+    b.disabled = false;
+  });
+  const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  load();
+})();
+</script>
+</body>
+</html>
