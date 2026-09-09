@@ -10,6 +10,7 @@
 - `/politics` — 정치인 조사 버튼 (주인용 도구, `noindex`). 서버 없이 GitHub API 로
   [politics-news](https://github.com/rokieyez/politics-news) 의 「인물 조사」 워크플로를 부르고, 결과 파일을
   그 저장소의 `output/profiles/` 에서 읽어 내려받게 한다. 열쇠(fine-grained 토큰)는 브라우저 localStorage 에만 둔다
+  (Actions·Contents 쓰기). 「AI 정리 붙여 넣기」는 claude.ai 결과를 Contents API 로 그 저장소에 `…_AI정리.md` 로 쓴다
 
 ## 대문이 서재에 묻는 것
 

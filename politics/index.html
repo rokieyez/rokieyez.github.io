@@ -49,6 +49,12 @@
       border: 1px solid var(--line); border-radius: 4px; outline: none;
     }
     input[type=text]:focus { border-color: rgba(224,177,94,.5); }
+    textarea {
+      width: 100%; padding: 10px 12px; font: inherit; font-size: 14px; line-height: 1.6;
+      color: var(--paper); background: rgba(233,223,201,.05);
+      border: 1px solid var(--line); border-radius: 4px; outline: none; resize: vertical;
+    }
+    textarea:focus { border-color: rgba(224,177,94,.5); }
     .row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 14px; }
     .check { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 8px; font-size: 14px; }
     .check input { margin-top: 6px; accent-color: var(--brass); }
@@ -113,7 +119,7 @@
         <li>GitHub → 오른쪽 위 내 사진 → <b>Settings</b> → 맨 아래 <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b></li>
         <li>이름은 아무거나(예: politics 버튼). Expiration 은 길게.</li>
         <li><b>Repository access</b> → Only select repositories → <code>politics-news</code></li>
-        <li><b>Permissions</b> → Repository permissions → <b>Actions</b> 를 <b>Read and write</b> 로. (Metadata 는 저절로 켜집니다)</li>
+        <li><b>Permissions</b> → Repository permissions → <b>Actions</b> 와 <b>Contents</b> 를 둘 다 <b>Read and write</b> 로. (Metadata 는 저절로 켜집니다.) Contents 는 「AI 정리 붙여 넣기」가 저장소에 파일을 쓸 때 씁니다.</li>
         <li>Generate 를 누르고 나온 <code>github_pat_…</code> 글자를 아래에 붙여 넣기</li>
       </ol>
       <p><input id="token" type="text" placeholder="github_pat_…" spellcheck="false"></p>
@@ -124,6 +130,14 @@
   <section>
     <h2>지금까지 조사한 사람</h2>
     <div id="list"><p class="empty">읽는 중…</p></div>
+  </section>
+
+  <section id="pastebox" hidden>
+    <h2>AI 정리 붙여 넣기</h2>
+    <p>자료묶음을 claude.ai 에 붙여 넣어 받은 정리 글을 여기에 붙이고 저장하면, 저장소에 <code id="pastetarget"></code> 로 올라갑니다. 돈은 들지 않습니다.</p>
+    <p><textarea id="pastetext" rows="12" placeholder="claude.ai 가 준 정리 글을 통째로 붙여 넣으세요" spellcheck="false"></textarea></p>
+    <p><button id="pastesave" type="button">저장소에 올리기</button> <button id="pastecancel" type="button" class="quiet">닫기</button></p>
+    <p id="pastestatus" class="status" aria-live="polite"></p>
   </section>
 </main>
 <footer>
@@ -242,7 +256,13 @@
              <button class="quiet" data-path="${esc(f.path)}" data-name="${esc(f.file)}">내려받기</button></li>`).join("");
         /* 폴더는 `이름-생년`. 생년을 모르는 사람은 `이름` 뿐이다 */
         const [, who, born] = p.folder.match(/^(.*?)(?:-(\d{4}))?$/) || [, p.folder, ""];
-        return `<div class="person"><b>${esc(who)}</b><span class="when">${born ? esc(born) + "년생 · " : ""}최근 ${esc(p.latest)}</span><ul class="files">${files}</ul></div>`;
+        /* 정리표 이름에서 `이름(생년,정당)_날짜` 를 떼어 AI 정리 파일 이름을 만든다 */
+        const tables = p.files.find((f) => /_정리표\.md$/.test(f.file));
+        const base = tables ? tables.file.replace(/_정리표\.md$/, "") : "";
+        const hasAI = p.files.some((f) => /_AI정리\.md$/.test(f.file));
+        const paste = base ? `<li><span style="color:var(--dim)">claude.ai 결과가 있다면</span>
+             <button class="quiet" data-paste="${esc(p.folder)}/${esc(base)}_AI정리.md">${hasAI ? "AI 정리 바꿔 넣기" : "AI 정리 붙여 넣기"}</button></li>` : "";
+        return `<div class="person"><b>${esc(who)}</b><span class="when">${born ? esc(born) + "년생 · " : ""}최근 ${esc(p.latest)}</span><ul class="files">${files}${paste}</ul></div>`;
       }).join("");
     } catch (err) {
       list.innerHTML = `<p class="empty">목록을 읽지 못했습니다: ${esc(err.message)}</p>`;
@@ -263,6 +283,47 @@
     } catch (err) { say("파일을 받지 못했습니다: " + err.message, "err"); }
     b.disabled = false;
   });
+  /* ── AI 정리 붙여 넣기: 파일 하나를 Contents API 로 저장소에 쓴다 (워크플로 없이, 0원) ── */
+  const box = $("pastebox"), pstatus = $("pastestatus");
+  let target = "";
+  const psay = (msg, kind) => { pstatus.textContent = msg; pstatus.className = "status" + (kind ? " " + kind : ""); };
+  list.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-paste]");
+    if (!b) return;
+    target = "output/profiles/" + b.dataset.paste;
+    $("pastetarget").textContent = b.dataset.paste.split("/")[1];
+    box.hidden = false; psay(""); $("pastetext").focus();
+    box.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  $("pastecancel").onclick = () => { box.hidden = true; };
+  $("pastesave").onclick = async () => {
+    const text = $("pastetext").value.trim();
+    if (!text) { psay("붙여 넣은 글이 없습니다.", "err"); return; }
+    if (!token()) { $("keybox").open = true; psay("먼저 「열쇠」를 넣어 주세요.", "err"); return; }
+    if (text.length < 200) { psay("너무 짧습니다. 정리 글 전체를 붙여 넣으세요.", "err"); return; }
+    $("pastesave").disabled = true; psay("저장소에 올리는 중…");
+    const stamp = new Date().toISOString().slice(0, 10);
+    const body = text + `\n\n---\n\nclaude.ai 에 자료묶음을 붙여 넣어 받은 글을 ${stamp} 에 rokiz.net/politics 에서 저장했습니다. 자료에 없는 사실이 섞였을 수 있으니 영상 전에 근거 번호를 확인하세요.\n`;
+    try {
+      const r = await putFile(target, body, `AI 정리 붙여 넣기: ${target.split("/")[2]}`);
+      if (r.ok) { psay("올렸습니다. 목록에 「AI 정리 글」로 나타납니다.", "ok"); $("pastetext").value = ""; setTimeout(load, 1500); }
+      else if (r.status === 403 || r.status === 404) psay("열쇠에 Contents 쓰기 권한이 없습니다. GitHub 의 열쇠 화면에서 Contents 를 Read and write 로 고치세요.", "err");
+      else if (r.status === 409 || r.status === 422) psay(`같은 파일이 방금 바뀌었습니다. 새로 고친 뒤 다시 올려 주세요 (${r.status}).`, "err");
+      else psay(`GitHub 가 거절했습니다 (${r.status}). ${(await r.text()).slice(0, 200)}`, "err");
+    } catch (err) { psay("GitHub 에 닿지 못했습니다: " + err.message, "err"); }
+    $("pastesave").disabled = false;
+  };
+  /* 글자를 UTF-8 바이트로 바꾼 뒤 base64 — btoa 는 라틴 문자만 받는다 */
+  const b64 = (text) => { const bytes = new TextEncoder().encode(text); let bin = ""; for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode(...bytes.subarray(i, i + 8192)); return btoa(bin); };
+  async function putFile(path, text, message) {
+    const url = `${API}/repos/${REPO}/contents/${encodeURI(path)}`;
+    let sha;
+    const g = await fetch(`${url}?ref=${BRANCH}`, { headers: headers(true) });   // 이미 있으면 sha 가 있어야 덮어쓴다
+    if (g.ok) sha = (await g.json()).sha;
+    return fetch(url, { method: "PUT", headers: headers(true),
+      body: JSON.stringify({ message, content: b64(text), branch: BRANCH, ...(sha ? { sha } : {}) }) });
+  }
+  window.__putFile = putFile;   // 시험용
   const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   load();
 })();
