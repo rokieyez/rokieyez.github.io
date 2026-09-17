@@ -375,7 +375,7 @@ body:has(#toast.on) #deskicons{transform:translateY(92px)}
   <div id="deskicons"></div>
   <div id="widgets">
     <div class="widget" id="wClock"><div><div class="d" id="wcDow"></div><div class="day" id="wcDay"></div></div><div><div class="time" id="wcTime"></div><small>서울</small></div></div>
-    <button class="widget" id="wLatest" aria-label="최근 작업 보기"></button>
+    <button class="widget" id="wLatest" aria-label="다음 작업 보기"></button>
   </div>
 
   <section class="win open" id="w-player" data-x="0.5" data-y="0.3" aria-label="쇼릴 플레이어">
@@ -617,6 +617,7 @@ function tune(i, autoplay){
   $('#nowTitle').textContent = w.title; $('#nowMeta').textContent = w.cat || ''; $('#nowCh').textContent = `${ch + 1}/${CONFIG.works.length}`;
   // 실제 영상은 눌러야 틀고(소리 때문에), 색 화면은 바로 움직인다
   playing = kindOf(w) === 'demo' ? true : !!autoplay;
+  if (typeof showNext === 'function' && $('#wLatest')) showNext();
   tv.classList.remove('fade'); void tv.offsetWidth; tv.classList.add('fade');
   showMedia();
 }
@@ -735,10 +736,13 @@ if (ext.length) $('#dock').insertAdjacentHTML('beforeend', '<span class="sep"></
 document.addEventListener('click', e => { const b = e.target.closest('[data-open]'); if (b) openWin(b.dataset.open); });
 syncDock();
 
-// ── 위젯: 최근 작업(목록 맨 위) ──
-{ const w = CONFIG.works[0], b = $('#wLatest');
-  b.innerHTML = `<span class="cap"><small>최근 작업</small><b>${w.title}</b></span>`; b.prepend(thumbEl(w, 0));
-  b.onclick = () => { tune(0, true); openWin('player'); }; }
+// ── 위젯: 다음 작업 — 쇼릴에 떠 있는 것의 다음 편. (같은 영상이 위젯과 쇼릴에 나란히 뜨면 겹쳐 보인다) ──
+function showNext(){
+  const n = (ch + 1) % CONFIG.works.length, w = CONFIG.works[n], b = $('#wLatest');
+  b.innerHTML = `<span class="cap"><small>다음 작업</small><b>${w.title}</b></span>`; b.prepend(thumbEl(w, n));
+  b.onclick = () => { tune(n, true); openWin('player'); };
+}
+showNext();
 
 // ── 스포트라이트: 메뉴와 작업물을 찾는다 (⌘K · Ctrl+K · /) ──
 const spot = $('#spot'), spotIn = $('#spotIn'), spotList = $('#spotList');
