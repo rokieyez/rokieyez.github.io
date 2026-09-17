@@ -59,7 +59,7 @@ svg{display:block}
   background:var(--bar);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
   font-size:13.5px;color:var(--menu);box-shadow:0 .5px 0 var(--edge);
 }
-#menubar .brand{font-weight:700;padding:0 10px 0 4px;display:flex;align-items:center;gap:8px}
+#menubar .brand{font-weight:700;padding:0 10px 0 4px;display:flex;align-items:center;gap:8px;line-height:1}
 /* 로고: 검은 앱 아이콘 판 위에 노란 필름 카메라 */
 .logo{display:inline-grid;place-items:center;border-radius:24%;background:#000;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.28)}
 .logo svg{width:72%;height:auto;fill:var(--brand)}
@@ -70,7 +70,8 @@ svg{display:block}
 :root:not([data-theme="dark"]) .win :is(.wordmark,.slogan){color:var(--text)}
 .app .lg{width:36px;height:auto;fill:var(--brand)}
 #spotList .app .lg{width:20px}
-#menubar button{padding:2px 9px;border-radius:5px;height:22px;font-weight:500}
+/* 글자 줄 높이가 단추보다 커서 글자가 1.5px 아래로 밀렸었다 — 줄 높이를 1 로 두고 가운데에 놓는다 */
+#menubar button{display:inline-flex;align-items:center;padding:0 9px;border-radius:5px;height:22px;font-weight:500;line-height:1}
 #menubar button:hover{background:rgba(255,255,255,.22)}
 #menubar .spacer{flex:1}
 #themeBtn svg,#spotBtn svg{width:15px;height:15px;fill:currentColor}
