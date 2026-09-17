@@ -25,6 +25,7 @@
   --bar:rgba(255,255,255,.36); --dock:rgba(255,255,255,.3); --edge:rgba(255,255,255,.55); --menu:#111;
   --brand:#f7ce0a; --accent:#f7ce0a; --on-accent:#111; --shadow:0 0 0 .5px rgba(0,0,0,.22),0 24px 60px rgba(0,0,0,.32),0 4px 12px rgba(0,0,0,.12);
   --base:#c9b8ff; --line:rgba(255,255,255,.9);
+  --bar-hi:rgba(255,255,255,.75); --bar-lo:rgba(255,255,255,0); --bar-rim:rgba(255,255,255,.9);
   /* 바탕화면: 직접 만든 색 번짐 */
   --wall:
     radial-gradient(90% 70% at 100% 100%,#ff9fb8 0,transparent 60%),
@@ -38,6 +39,7 @@
   --bar:rgba(16,16,18,.45); --dock:rgba(44,44,48,.45); --edge:rgba(255,255,255,.16); --menu:#fff;
   --accent:#f7ce0a; --shadow:0 0 0 .5px rgba(255,255,255,.16),0 30px 70px rgba(0,0,0,.6),0 4px 12px rgba(0,0,0,.3);
   --base:#0b0a1f; --line:rgba(190,185,255,.75);
+  --bar-hi:rgba(255,255,255,.13); --bar-lo:rgba(255,255,255,.015); --bar-rim:rgba(255,255,255,.14);
   --wall:
     radial-gradient(70% 70% at 62% 22%,#3a2f78 0,transparent 62%),
     radial-gradient(60% 60% at 0% 70%,#1d1a4d 0,transparent 60%),
@@ -52,7 +54,8 @@ body{
 }
 #wall{position:fixed;inset:0;z-index:-1;background:var(--wall)}
 #wall svg{position:absolute;inset:0;width:100%;height:100%}
-#wall path{fill:none;stroke:var(--line);vector-effect:non-scaling-stroke}
+#wall .grain{mix-blend-mode:overlay;opacity:.5}
+#wall stop{stop-color:var(--line)}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 /* 모바일 크롬이 누를 때 씌우는 파란 상자를 끈다. 글자판으로 옮겨 다닐 때의 테두리(:focus-visible)는 남긴다 */
 *{-webkit-tap-highlight-color:transparent}
@@ -87,8 +90,10 @@ svg{display:block}
 
 /* ── 바탕화면 · 오른쪽 아이콘 ── */
 #desktop{position:fixed;inset:30px 0 0 0}
-.app{display:grid;place-items:center;width:54px;height:54px;border-radius:13px;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.35),0 3px 8px rgba(0,0,0,.28)}
-.app svg{width:28px;height:28px;fill:#fff}
+.app{display:grid;place-items:center;width:54px;height:54px;border-radius:13px;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.22),inset 0 1px 0 rgba(255,255,255,.18),0 3px 8px rgba(0,0,0,.35)}
+.app svg{width:31px;height:31px}
+.app .fl{fill:var(--brand)}
+.app .ln{fill:none;stroke:var(--brand);stroke-width:1.700;stroke-linecap:round;stroke-linejoin:round}
 #deskicons{position:absolute;right:14px;top:14px;display:grid;gap:10px;transition:transform .45s cubic-bezier(.2,.9,.3,1)}
 body:has(#toast.on) #deskicons{transform:translateY(92px)}
 #deskicons button{display:grid;justify-items:center;gap:5px;width:88px;padding:8px 0 5px;border-radius:8px;color:#fff;font-size:12px;font-weight:500;text-shadow:0 1px 3px rgba(0,0,0,.7)}
@@ -107,6 +112,8 @@ body:has(#toast.on) #deskicons{transform:translateY(92px)}
 .win .bar{
   height:40px;flex:none;display:flex;align-items:center;padding:0 14px;position:relative;
   border-bottom:.5px solid var(--sep);cursor:default;user-select:none;touch-action:none;
+  /* 위가 밝고 아래로 가라앉는 제목 줄 + 맨 윗선 한 줄의 빛 */
+  background:linear-gradient(to bottom,var(--bar-hi),var(--bar-lo));box-shadow:inset 0 1px 0 var(--bar-rim);
 }
 .lights{display:flex;gap:8px;z-index:1}
 .lights button{width:12px;height:12px;border-radius:50%;background:var(--fill2);box-shadow:inset 0 0 0 .5px rgba(0,0,0,.12);display:grid;place-items:center;font-size:9px;line-height:1;color:transparent;font-weight:700}
@@ -296,7 +303,7 @@ body:has(#toast.on) #deskicons{transform:translateY(92px)}
 #dock .ext .app::after{content:"↗";position:absolute;top:-3px;right:-3px;width:17px;height:17px;border-radius:50%;background:#1c1c1e;color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;box-shadow:0 0 0 1.5px rgba(255,255,255,.25)}
 /* 올리면 아이콘 자체가 커져서 옆 아이콘을 밀어낸다 — transform 으로 키우면 자리는 그대로라 옆을 덮는다 */
 #dock .app{position:relative;transition:width .15s ease-out,height .15s ease-out,border-radius .15s ease-out}
-#dock .app svg{width:52%;height:52%;transition:none}
+#dock .app svg{width:58%;height:58%;transition:none}
 #dock .app .lg{width:66%;height:auto}
 #dock .tip{
   position:absolute;bottom:calc(100% + 10px);padding:3px 10px;border-radius:6px;font-size:12px;white-space:nowrap;color:var(--text);
@@ -345,14 +352,22 @@ body:has(#toast.on) #deskicons{transform:translateY(92px)}
 <body>
 
 <div id="wall" aria-hidden="true">
-  <svg viewBox="0 0 1440 900" preserveAspectRatio="none">
-    <defs><filter id="soft"><feGaussianBlur stdDeviation="1.2"/></filter></defs>
+  <!-- 겹겹이 흐르는 빛 띠. 색은 배경마다 --line 을 따른다 -->
+  <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="rb1" gradientUnits="userSpaceOnUse" x1="0" y1="900" x2="1440" y2="200"><stop offset="0" stop-opacity="0"/><stop offset=".45" stop-opacity=".55"/><stop offset="1" stop-opacity="0"/></linearGradient>
+      <linearGradient id="rb2" gradientUnits="userSpaceOnUse" x1="0" y1="700" x2="1440" y2="400"><stop offset="0" stop-opacity="0"/><stop offset=".6" stop-opacity=".3"/><stop offset="1" stop-opacity=".05"/></linearGradient>
+      <linearGradient id="rb3" gradientUnits="userSpaceOnUse" x1="200" y1="900" x2="1440" y2="0"><stop offset="0" stop-opacity=".02"/><stop offset=".7" stop-opacity=".22"/><stop offset="1" stop-opacity="0"/></linearGradient>
+      <filter id="soft" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="14"/></filter>
+      <filter id="grainf"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .55 0"/></filter>
+    </defs>
     <g filter="url(#soft)">
-      <path d="M-20 300 C 300 180, 520 470, 800 400 S 1250 120, 1460 250" stroke-width="1" opacity=".35"/>
-      <path d="M-20 430 C 260 330, 560 640, 860 520 S 1260 300, 1460 380" stroke-width="2.200" opacity=".7"/>
-      <path d="M-20 520 C 300 440, 600 720, 900 600 S 1280 400, 1460 470" stroke-width="1.400" opacity=".5"/>
-      <path d="M-20 640 C 320 560, 640 800, 940 700 S 1300 540, 1460 600" stroke-width="1" opacity=".3"/>
+      <path fill="url(#rb3)" d="M-60 940 C 260 700, 520 760, 820 520 S 1300 60, 1520 -40 L1520 260 C 1320 300, 1100 520, 860 700 S 300 900, -60 1100Z"/>
+      <path fill="url(#rb2)" d="M-60 560 C 240 470, 520 700, 860 560 S 1300 300, 1520 340 L1520 520 C 1300 470, 1120 640, 880 720 S 300 760, -60 760Z"/>
+      <path fill="url(#rb1)" d="M-60 760 C 280 640, 560 860, 900 690 S 1320 380, 1520 420 L1520 500 C 1330 470, 1140 700, 900 790 S 320 850, -60 880Z"/>
     </g>
+    <path fill="none" stroke="url(#rb1)" stroke-width="1.500" d="M-60 760 C 280 640, 560 860, 900 690 S 1320 380, 1520 420"/>
+    <rect class="grain" width="1440" height="900" filter="url(#grainf)"/>
   </svg>
 </div>
 
@@ -491,16 +506,17 @@ const CONFIG = {
 };
 
 // ── 앱 아이콘: [창 id, 이름, 바탕 그라데이션, 아이콘 path] ──
+const TILE = ['#2e2e33', '#0e0e10'];  // 모든 아이콘이 같은 어두운 판을 쓴다 — 그림만 노란 선으로 다르다
 const APPS = [
-  ['player', '쇼릴', ['#1c1c1e', '#000'], 'LOGO'],
-  ['about', '소개', ['#5ac8fa', '#007aff'], 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 4.2a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8zM10.7 11h2.6v6.800h-2.600z'],
-  ['works', '작업물', ['#ffd60a', '#ff9f0a'], 'M3 5.500A1.500 1.500 0 0 1 4.500 4h5l2 2.500h8A1.500 1.500 0 0 1 21 8v10.500a1.500 1.500 0 0 1-1.500 1.500h-15A1.500 1.500 0 0 1 3 18.500z'],
-  ['process', '제작 과정', ['#63e6be', '#30b0c7'], 'M4 5h3v3H4zm5 .5h11v2H9zM4 10.500h3v3H4zm5 .5h11v2H9zM4 16h3v3H4zm5 .5h11v2H9z'],
-  ['contact', '문의', ['#34c759', '#248a3d'], 'M3 6.500A1.500 1.500 0 0 1 4.500 5h15A1.500 1.500 0 0 1 21 6.500v.4l-9 5.600-9-5.600zm0 2.800v8.200A1.500 1.500 0 0 0 4.500 19h15a1.500 1.500 0 0 0 1.500-1.500V9.300l-9 5.600z'],
+  ['player', '쇼릴', TILE, 'LOGO'],
+  ['about', '소개', TILE, 'M12 12a3.500 3.500 0 1 0 0-7 3.500 3.500 0 0 0 0 7zM5.200 19.500c.9-3 3.500-4.600 6.800-4.600s5.900 1.600 6.800 4.600'],
+  ['works', '작업물', TILE, 'M4 9h16v10.500H4zM6.500 5.800h11M10.200 12v4.500l4-2.250z'],
+  ['process', '제작 과정', TILE, 'M4 6a2 2 0 1 0 4 0 2 2 0 1 0-4 0M16 12a2 2 0 1 0 4 0 2 2 0 1 0-4 0M4 18a2 2 0 1 0 4 0 2 2 0 1 0-4 0M8 6h6a4 4 0 0 1 4 4M18 14a4 4 0 0 1-4 4H8'],
+  ['contact', '문의', TILE, 'M20.500 3.500L3.500 10.200l6.300 3.200 3.200 6.300zM9.800 13.400l4.700-4.700'],
 ];
 const LINKS = {
-  youtube: ['유튜브', ['#ff5a52', '#d70015'], 'M21.6 7.2a2.500 2.500 0 0 0-1.800-1.800C18.200 5 12 5 12 5s-6.200 0-7.800.4A2.500 2.500 0 0 0 2.400 7.200C2 8.800 2 12 2 12s0 3.200.4 4.800a2.500 2.500 0 0 0 1.800 1.800C5.800 19 12 19 12 19s6.200 0 7.800-.4a2.500 2.500 0 0 0 1.800-1.800c.4-1.600.4-4.800.4-4.800s0-3.200-.4-4.800zM10 15V9l5.200 3z'],
-  instagram: ['인스타그램', ['#f9ce34', '#ee2a7b'], 'M12 7.200a4.800 4.800 0 1 0 0 9.600 4.800 4.800 0 0 0 0-9.600zm0 7.900a3.100 3.100 0 1 1 0-6.200 3.100 3.100 0 0 1 0 6.200zM17 3H7a4 4 0 0 0-4 4v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V7a4 4 0 0 0-4-4zm2.300 14a2.300 2.300 0 0 1-2.300 2.300H7A2.300 2.300 0 0 1 4.700 17V7A2.300 2.300 0 0 1 7 4.700h10A2.300 2.300 0 0 1 19.300 7zM17.200 5.700a1.100 1.100 0 1 0 0 2.200 1.100 1.100 0 0 0 0-2.200z'],
+  youtube: ['유튜브', TILE, 'M21.6 7.2a2.500 2.500 0 0 0-1.800-1.800C18.200 5 12 5 12 5s-6.200 0-7.800.4A2.500 2.500 0 0 0 2.400 7.200C2 8.800 2 12 2 12s0 3.200.4 4.800a2.500 2.500 0 0 0 1.800 1.800C5.800 19 12 19 12 19s6.200 0 7.800-.4a2.500 2.500 0 0 0 1.800-1.800c.4-1.600.4-4.800.4-4.800s0-3.200-.4-4.800zM10 15V9l5.200 3z'],
+  instagram: ['인스타그램', TILE, 'M12 7.200a4.800 4.800 0 1 0 0 9.600 4.800 4.800 0 0 0 0-9.600zm0 7.900a3.100 3.100 0 1 1 0-6.200 3.100 3.100 0 0 1 0 6.200zM17 3H7a4 4 0 0 0-4 4v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V7a4 4 0 0 0-4-4zm2.300 14a2.300 2.300 0 0 1-2.300 2.300H7A2.300 2.300 0 0 1 4.700 17V7A2.300 2.300 0 0 1 7 4.700h10A2.300 2.300 0 0 1 19.300 7zM17.200 5.700a1.100 1.100 0 1 0 0 2.200 1.100 1.100 0 0 0 0-2.200z'],
 };
 const ROW_COLORS = ['#ff9f0a', '#ff375f', '#5e5ce6', '#30b0c7', '#34c759'];
 
@@ -532,7 +548,8 @@ const LOGO_PATH = 'M125 0H360Q380 0 380 20V155Q380 175 360 175C310 178 300 185 2
   + 'M545 22V144Q545 166 526 155L420 94Q402 83 420 72L526 11Q545 0 545 22Z';
 const LOGO = cls => `<svg class="${cls || ''}" viewBox="0 0 548 228" aria-hidden="true"><path fill-rule="evenodd" d="${LOGO_PATH}"/></svg>`;
 document.querySelectorAll('.logo').forEach(el => el.innerHTML = LOGO());
-const appIcon = ([c1, c2], d) => `<span class="app" style="background:linear-gradient(180deg,${c1},${c2})">${d === 'LOGO' ? LOGO('lg') : SVG(d)}</span>`;
+// fill 이 참이면 면으로 칠한 그림(유튜브 로고 등), 아니면 선 그림
+const appIcon = ([c1, c2], d, fill) => `<span class="app" style="background:linear-gradient(180deg,${c1},${c2})">${d === 'LOGO' ? LOGO('lg') : SVG(d).replace('<svg', fill ? '<svg class="fl"' : '<svg class="ln"')}</span>`;
 const groupRows = rows => rows.map(([a, b], i) => `<li><i class="no" style="background:${ROW_COLORS[i % ROW_COLORS.length]}">${i + 1}</i><div><b>${a}</b><span>${b}</span></div></li>`).join('');
 $('#aboutText').textContent = CONFIG.about;
 $('#stepList').innerHTML = groupRows(CONFIG.process);
@@ -729,7 +746,7 @@ APPS.forEach(([id, label, colors, d]) => {
 });
 const ext = Object.entries(CONFIG.links).filter(([k, url]) => url && LINKS[k]);
 if (ext.length) $('#dock').insertAdjacentHTML('beforeend', '<span class="sep"></span>' + ext.map(([k, url]) =>
-  `<a class="item ext" href="${url}" target="_blank" rel="noopener" aria-label="${LINKS[k][0]}"><span class="tip">${LINKS[k][0]}</span>${appIcon(LINKS[k][1], LINKS[k][2])}</a>`).join(''));
+  `<a class="item ext" href="${url}" target="_blank" rel="noopener" aria-label="${LINKS[k][0]}"><span class="tip">${LINKS[k][0]}</span>${appIcon(LINKS[k][1], LINKS[k][2], true)}</a>`).join(''));
 ['works', 'about', 'contact'].forEach(id => {
   const [, label, colors, d] = APPS.find(a => a[0] === id);
   $('#deskicons').insertAdjacentHTML('beforeend', `<button data-open="${id}">${appIcon(colors, d)}${label}</button>`);
@@ -752,8 +769,8 @@ function spotAll(){
   return [
     ...APPS.map(([id, label, colors, d]) => ({label, hint: '메뉴', icon: appIcon(colors, d), run: () => openWin(id)})),
     ...CONFIG.works.map((w, i) => ({label: w.title, hint: w.cat || '작업물', work: [w, i], run: () => { tune(i, true); openWin('player'); }})),
-    {label: '밝게·어둡게 바꾸기', hint: '동작', icon: appIcon(['#8e8e93', '#48484a'], 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 2v14a7 7 0 0 1 0-14z'), run: () => $('#themeBtn').click()},
-    {label: '배경 바꾸기', hint: '동작', icon: appIcon(['#64d2ff', '#5e5ce6'], 'M4 5h16v14H4zm2 12h12l-4-6-3 4-2-2.500z'), run: nextWall},
+    {label: '밝게·어둡게 바꾸기', hint: '동작', icon: appIcon(TILE, 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 2v14a7 7 0 0 1 0-14z', true), run: () => $('#themeBtn').click()},
+    {label: '배경 바꾸기', hint: '동작', icon: appIcon(TILE, 'M4 5.500h16v13H4zM4 16l4.500-4.500 3.500 3.500 2.500-2.500L20 18', false), run: nextWall},
   ];
 }
 function spotRender(){
