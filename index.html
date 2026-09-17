@@ -198,7 +198,13 @@ svg{display:block}
 .brief textarea{min-height:76px;resize:vertical}
 .brief .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .btnrow{display:grid;grid-template-columns:1fr auto;gap:8px}
-.btnrow button{border-radius:8px;padding:6px 14px;background:var(--fill);font-weight:500;font-size:13px}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.sendmsg{font-size:13px;min-height:1.6em;margin-top:-2px}
+.sendmsg.ok{color:#30d158}.sendmsg.err{color:#ff6961}
+:root:not([data-theme="dark"]) .sendmsg.ok{color:#1f8a3b}
+:root:not([data-theme="dark"]) .sendmsg.err{color:#c4281c}
+.pill:disabled{opacity:.6;cursor:default}
+.btnrow button:not(.pill){border-radius:8px;padding:6px 14px;background:var(--fill);font-weight:500;font-size:13px}
 .btnrow button:hover{background:var(--fill2)}
 
 /* ── 배경 고르기 (밝게·어둡게와 따로) ── */
@@ -405,7 +411,10 @@ svg{display:block}
           <label>남기실 연락처<input name="reply" autocomplete="off" placeholder="전화나 메일"></label>
         </div>
         <label>내용<textarea name="msg" placeholder="어디에 쓸 영상인지, 길이, 참고 영상 링크 등"></textarea></label>
-        <div class="btnrow"><a class="pill" id="mailBtn" href="#">메일 앱으로 보내기</a><button type="button" id="copyBtn">복사</button></div>
+        <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="btnrow"><button class="pill" id="sendBtn" type="submit">보내기</button><button type="button" id="copyBtn">복사</button></div>
+        <p class="sendmsg" id="sendMsg" role="status"></p>
+        <a id="mailBtn" href="#" hidden>메일 앱으로 보내기</a>
       </form>
     </div>
   </section>
@@ -435,13 +444,13 @@ const CONFIG = {
   // src 에는 유튜브 주소(watch · youtu.be · shorts · live) 나 mp4 주소를 넣는다. 비워 두면 움직이는 색 화면이 대신 나온다.
   // cat 은 작업물 창의 분류 단추가 된다.
   works: [
+    {title: '계촌클래식축제 아세요?', meta: '이건음악회 Eagon Concert', cat: '문화·예술', scene: 'sunset', src: 'https://youtu.be/WGwolr-Q4CM'},
     {title: '이름은 어렵지만 한 번 맛보면 멈출 수 없는 스페인식 조개찜 / 알메하스 기사다스', meta: 'CombleTV', cat: '푸드', scene: 'sunset', src: 'https://youtu.be/0oIEkjTkipA'},
     {title: '친구가 되기까지 (2026)', meta: '수아연아TV', cat: '단편', scene: 'night', src: 'https://youtu.be/sdi8azMyPoA'},
     {title: '꽁블의 새로운 도전, 모스가든과 함께하는 꽁블 가든스 커리', meta: 'CombleTV', cat: '푸드', scene: 'mint', src: 'https://youtu.be/m0dngXFhW4s'},
     {title: '선이 머문 자리, 되돌아오는 시간 | 양정화 작가 개인전', meta: '이건음악회 Eagon Concert', cat: '문화·예술', scene: 'noon', src: 'https://youtu.be/UfETRtQDOp4'},
     {title: '러시아와 우크라이나, 그리고 폴란드에 뒤엉킨 슬픈 역사 / 조한범 박사 (3부)', meta: '와이스트릿', cat: '교양·정보', scene: 'night', src: 'https://www.youtube.com/watch?v=xifeMjtYaq4'},
     {title: 'AI - 8분안에 전부 알려드림', meta: '수아연아TV', cat: '교양·정보', scene: 'mint', src: 'https://youtu.be/UcML5fOneWs'},
-    {title: '계촌클래식축제 아세요?', meta: '이건음악회 Eagon Concert', cat: '문화·예술', scene: 'sunset', src: 'https://youtu.be/WGwolr-Q4CM'},
     {title: '비트코인에 대한 생각을 완전히 바꿔 버릴 겁니다 / 오태민 교수 (풀버전)', meta: '와이스트릿', cat: '교양·정보', scene: 'noon', src: 'https://www.youtube.com/watch?v=9cVC-kHQNoU'},
     {title: '초록우산, 인천시교육청과 함께하는 토닥토닥 마음교실', meta: '이건음악회 Eagon Concert', cat: '문화·예술', scene: 'mint', src: 'https://youtu.be/MyfM6ybVROE'},
   ],
@@ -453,6 +462,12 @@ const CONFIG = {
     ['납품', '쓰실 곳에 맞는 규격으로 드립니다.'],
   ],
   contact: {담당: '조민호', 메일: 'rokiz@naver.com'},
+  // 문의 양식이 가는 곳(Supabase Edge Function). key 는 공개돼도 되는 anon 열쇠다.
+  // 한 IP 에서 10분에 5번까지만 받는다. 메일 보내기에 실패하면 화면이 메일 앱으로 물러난다.
+  inquiry: {
+    url: 'https://gaeumegwhxxnfvrhbknp.supabase.co/functions/v1/media-inquiry',
+    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhZXVtZWd3aHh4bmZ2cmhia25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxODMzNDksImV4cCI6MjEwMzc1OTM0OX0.B0aeSgxymFG_oZIJ1p0sKcbkAz1CjmpzaQK3F54x1KA',
+  },
   // 독 오른쪽에 붙는 바깥 링크. 주소를 채우면 나타난다.
   links: {youtube: '', instagram: ''},
   // 처음 들어오면 오른쪽 위에 한 번 뜨는 알림. 비우면 안 뜬다.
@@ -512,13 +527,33 @@ $('#contactRows').innerHTML = Object.entries(CONFIG.contact).map(([k, v]) => { c
 document.querySelectorAll('.win .bar').forEach(b => b.insertAdjacentHTML('afterbegin',
   '<span class="lights"><button class="c" aria-label="닫기">×</button><button class="m" aria-label="독으로 내리기">−</button><button class="z" aria-label="크게·원래대로">+</button></span>'));
 
-// ── 문의 양식: 서버로 보내지 않고, 적은 내용을 메일 앱에 채워 연다 ──
+// ── 문의 양식: 서버가 메일로 바로 보낸다. 서버가 못 보내면 적은 내용을 채워 메일 앱을 연다 ──
 function briefText(){
   const f = new FormData($('#brief'));
   return ['이름·회사: ' + (f.get('who') || ''), '연락처: ' + (f.get('reply') || ''), '', f.get('msg') || ''].join('\n');
 }
 function syncMail(){ $('#mailBtn').href = 'mailto:' + CONFIG.contact.메일 + '?subject=' + encodeURIComponent('[영상 제작 문의]') + '&body=' + encodeURIComponent(briefText()); }
 $('#brief').addEventListener('input', syncMail); syncMail();
+function say(text, kind){ const m = $('#sendMsg'); m.textContent = text; m.className = 'sendmsg ' + (kind || ''); }
+function toMailApp(why){ say(why + ' 메일 앱을 엽니다 — 거기서 보내기를 눌러 주세요.', 'err'); syncMail(); location.href = $('#mailBtn').href; }
+$('#brief').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = new FormData($('#brief')), btn = $('#sendBtn');
+  if (!String(f.get('reply')).trim()) { say('답을 드릴 연락처를 적어 주세요.', 'err'); $('#brief').reply.focus(); return; }
+  if (String(f.get('msg')).trim().length < 5) { say('내용을 조금만 더 적어 주세요.', 'err'); $('#brief').msg.focus(); return; }
+  btn.disabled = true; btn.textContent = '보내는 중…'; say('');
+  try {
+    const r = await fetch(CONFIG.inquiry.url, {
+      method: 'POST', headers: {'Content-Type': 'application/json', Authorization: 'Bearer ' + CONFIG.inquiry.key},
+      body: JSON.stringify(Object.fromEntries(f)), signal: AbortSignal.timeout(15000),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 429) say(j.error === 'busy' ? '오늘은 문의가 많아 잠시 닫혔어요. 메일로 보내 주세요: ' + CONFIG.contact.메일 : `너무 자주 보내셨어요. ${j.retry || '잠시'} 뒤에 다시 보내 주세요.`, 'err');
+    else if (r.ok && j.ok && j.mailed) { say('보냈습니다. 곧 연락드릴게요.', 'ok'); $('#brief').reset(); syncMail(); }
+    else toMailApp('지금은 바로 보내기가 안 돼서');
+  } catch { toMailApp('연결이 안 돼서'); }
+  btn.disabled = false; btn.textContent = '보내기';
+});
 $('#copyBtn').onclick = async () => {
   try { await navigator.clipboard.writeText(briefText()); $('#copyBtn').textContent = '복사됨'; }
   catch { $('#copyBtn').textContent = '복사 실패'; }
