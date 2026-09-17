@@ -668,7 +668,7 @@ CONFIG.works.forEach((w, i) => {
 
 // ── 창 열기·닫기·끌기 ──
 const wide = () => matchMedia('(min-width:761px)').matches;
-let zTop = 10;
+let zTop = 10, openSeq = 0;
 function focusWin(w){
   w.style.zIndex = ++zTop;
   document.querySelectorAll('.win').forEach(x => x.classList.toggle('active', x === w));
@@ -677,6 +677,8 @@ function syncDock(){ document.querySelectorAll('#dock [data-open]').forEach(b =>
 function openWin(id){
   const w = $('#w-' + id), was = w.classList.contains('open');
   w.classList.add('open'); if (!was && wide() && !w.dataset.moved) place(w);
+  // 좁은 화면은 창을 세로로 쌓는다 — 새로 연 창은 이미 펼쳐진 창들 아래에 붙는다(문서 순서대로 두면 사이에 끼어든다)
+  if (!was) w.style.order = ++openSeq;
   focusWin(w); syncDock();
   if (!wide()) w.scrollIntoView({behavior: 'smooth', block: 'start'});
 }
