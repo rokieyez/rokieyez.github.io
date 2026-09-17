@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 검색 결과에 실리는 제목은 이것이다 (og:title 이 아니라). 「rokiz」였을 때는
+       집 이름으로 검색해도 대문 제목에 그 말이 없었다 — 같은 쪽인데 og 는
+       「로키즈의 방」, 제목은 영문이라 둘이 서로 다른 이름을 대고 있었다. -->
+  <title>로키즈의 방</title>
+  <meta name="description" content="문마다 다른 방이 있습니다 — 로키즈의 개인 사이트.">
+  <meta name="theme-color" content="#171009">
+  <!-- 밤의 집이다 — 스크롤막대·기본 위젯도 어두운 쪽을 쓰게 한다 -->
+  <meta name="color-scheme" content="dark">
+  <!-- rokiz.net 은 www 로 301 되지만, 어느 주소로 걸어 들어오든 한 쪽을 가리킨다 -->
+  <link rel="canonical" href="https://www.rokiz.net/rooms/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <!-- 집 전체를 구독한다 — 서재의 책, 지난 지금, 새 글이 한 줄기로 온다 -->
+  <link rel="alternate" type="application/atom+xml" title="로키즈의 방" href="/feed.xml">
+  <!-- 서재의 오늘을 물으러 간다 — 손잡기를 미리 터 둔다 -->
+  <link rel="preconnect" href="https://gaeumegwhxxnfvrhbknp.supabase.co" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="rokiz.net">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:title" content="로키즈의 방">
+  <meta property="og:description" content="문마다 다른 방이 있습니다 — 지금은 셋이 열려 있습니다.">
+  <meta property="og:url" content="https://www.rokiz.net/rooms/">
+  <!-- 링크를 나눌 때 보이는 얼굴 — 없으면 카톡·슬랙이 회색 상자를 띄운다 -->
+  <meta property="og:image" content="https://www.rokiz.net/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="밤빛 바탕의 열쇠구멍과 「로키즈의 방」">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="로키즈의 방">
+  <meta name="twitter:description" content="문마다 다른 방이 있습니다 — 지금은 셋이 열려 있습니다.">
+  <meta name="twitter:image" content="https://www.rokiz.net/og.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Cormorant:ital,wght@1,500&display=swap">
+  <style>
+    /* rokiz.net 대문 — 방(경로)들로 들어가는 입구.
+       서가 뒤의 방(/books)과 같은 밤의 세계관을 아주 옅게만 공유한다. */
+    :root {
+      --dark: #171009;
+      --paper: #E9DFC9;
+      --dim: #9C8E74;
+      --brass: #E0B15E;
+      /* 커서가 있는 자리 — 램프가 그리로 따라간다 (js 가 고쳐 쓴다) */
+      --mx: 50%;
+      --my: 34%;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    /* 두 칸짜리 격자 — 위 칸에 대문, 아래 칸에 서명.
+       예전에는 footer 를 position: fixed 로 바닥에 붙였는데, 화면이 낮으면
+       (폰을 눕히면 360px 다) 「다른 방들은 아직 잠겨 있습니다」 위에 겹쳐
+       앉았다. 흐름 안에 두면 좁아질수록 저절로 비켜난다. */
+    body {
+      margin: 0;
+      background: var(--dark);
+      color: var(--paper);
+      font-family: "Gowun Batang", "Noto Serif KR", serif;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      place-items: center;
+      text-align: center;
+      position: relative;
+      overflow-x: hidden;
+    }
+    /* 램프 — 손이 가는 곳으로 따라온다. 손가락뿐인 기계에서는 가운데 그대로 */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(46% 38% at var(--mx) var(--my),
+                  rgba(224, 177, 94, .10), transparent 70%);
+      transition: background .45s ease-out;
+    }
+    main { padding: 24px; position: relative; }
+    .latin {
+      font-family: "Cormorant", serif;
+      font-style: italic;
+      font-size: 15px;
+      letter-spacing: .22em;
+      color: var(--dim);
+    }
+    h1 {
+      margin: 10px 0 6px;
+      font-size: clamp(34px, 7vw, 52px);
+      font-weight: 700;
+      letter-spacing: .06em;
+    }
+    .sub {
+      margin: 0 0 10px;
+      font-size: 14.5px;
+      color: var(--dim);
+      line-height: 1.7;
+      /* 문 안의 글(.door p)엔 이 규칙이 있는데 정작 첫 문장엔 없어,
+         폰에서 「지금은 셋이 열려 있습니 / 다.」로 「다.」만 홀로 떨어졌다 */
+      word-break: keep-all; overflow-wrap: break-word;
+    }
+    /* 서재가 오늘 자기 상태를 스스로 말한다 — 정적 문구가 아니라 셈에서 나온다.
+       못 물어보면 이 줄은 그냥 없다 (빈 자리가 남지 않게 hidden 으로 시작). */
+
+    /* 지금 펼쳐 둔 책 — 서재 안쪽까지 들어가야 보이던 것을 대문으로 올린다.
+       표지 한 장이 곁들면 대문의 얼굴이 책을 덮을 때마다 달라진다. */
+    .nowline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 13px;
+      margin: 4px 0 34px;
+      font-size: 12.5px;
+      color: var(--brass);
+      opacity: .68;
+      letter-spacing: .02em;
+      word-break: keep-all;
+      text-align: left;
+    }
+    .nowline img {
+      width: 38px;
+      flex: 0 0 38px;
+      border-radius: 2px;
+      background: rgba(224, 177, 94, .06);
+      box-shadow: 0 2px 9px rgba(0, 0, 0, .45);
+    }
+    .nowline .t { max-width: 30ch; }
+    /* 갈피 막대 — 「520쪽 중 1쪽」을 눈으로도 보이게. 1% 아래로는 내려가지
+       않는다 (0% 는 「아직 안 펼침」과 구별이 안 된다 — 서재의 규칙과 같다) */
+    .nowline .prog {
+      display: block;
+      height: 3px;
+      margin-top: 6px;
+      background: rgba(224, 177, 94, .14);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .nowline .prog i { display: block; height: 100%; background: rgba(224, 177, 94, .62); }
+    .nowline[hidden] { display: none; }
+    .doors:first-child { margin-top: 0; }
+
+    /* 방들 — 진짜 문처럼 세운다. 열린 문은 안쪽에서 빛이 새고,
+       잠긴 문은 열쇠구멍만 희미하다. */
+    .doors {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 18px;
+    }
+    .door {
+      position: relative;
+      display: block;
+      width: 152px;
+      padding: 26px 16px 20px;
+      border: 1px solid rgba(224, 177, 94, .34);
+      border-radius: 60px 60px 4px 4px;   /* 위가 둥근 문 */
+      color: var(--brass);
+      text-decoration: none;
+      transition: background .35s, border-color .35s, transform .35s;
+      /* 폰에서 탭하면 브라우저가 제 손으로 반짝이는 판을 하나 덧그린다.
+         그 판은 요소의 **네모난 상자**를 따르므로, 위가 둥근 이 문 위에
+         네모가 한순간 떠올랐다. 끄고, 아래에서 문 모양 그대로 눌리게 한다. */
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* 눌린 동안의 문 — 하이라이트를 껐으니 이것이 대신 대답한다.
+       전이를 걸지 않는 것은 손가락이 닿는 순간 바로 보여야 하기 때문이다.
+       border-radius 를 따르므로 네모가 아니라 문 모양으로 눌린다. */
+    .door:active {
+      transition: none;
+      background: rgba(224, 177, 94, .11);
+      border-color: rgba(224, 177, 94, .66);
+    }
+    .door b {
+      display: block;
+      font-size: 15.5px;
+      font-weight: 400;
+      letter-spacing: .04em;
+    }
+    .door small {
+      display: block;
+      margin-top: 6px;
+      font-size: 11.5px;
+      color: var(--dim);
+      letter-spacing: .06em;
+      line-height: 1.6;
+      /* 한글은 기본값이면 아무 글자 사이에서나 꺾인다 — 152px 짜리 문 안에서
+         「그대로」가 「그대 / 로」로 갈라졌다. 어절 단위로만 꺾는다 */
+      word-break: keep-all;
+      overflow-wrap: break-word;
+    }
+    /* 그 방의 오늘 — 문 안 맨 아래 한 줄. 셈이 도착하기 전에는 자리도 없다 */
+    .door em {
+      display: block;
+      margin-top: 9px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(224, 177, 94, .14);
+      font-style: normal;
+      font-size: 11px;
+      color: var(--brass);
+      opacity: .85;
+      letter-spacing: .04em;
+    }
+    .door em[hidden] { display: none; }
+    /* 구운 셈이 끝내 오늘 것으로 갈리지 못했을 때만 붙는 꼬리 — 언제 것인지
+       밝히는 자리다. 숫자보다 한 걸음 물러서 있되 읽히기는 해야 한다. */
+    .door em .asof {
+      display: block; margin-top: 3px;
+      font-size: 9.5px; letter-spacing: .06em;
+      color: var(--dim);
+    }
+    .door em .prog {
+      display: block; height: 3px; margin-top: 5px;
+      background: rgba(224, 177, 94, .14); border-radius: 2px; overflow: hidden;
+    }
+    .door em .prog i { display: block; height: 100%; background: rgba(224, 177, 94, .5); }
+
+    /* 문손잡이 */
+    /* 문손잡이 — 위가 둥근 아치 문에 달린 놋쇠 손잡이 한 점.
+       오른쪽 가운데(문이 열리는 쪽)에 선다. 장식이지 상태 표시가 아니다. */
+    .door::after {
+      content: "";
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: rgba(224, 177, 94, .5);
+    }
+    .door:hover, .door:focus-visible {
+      background: rgba(224, 177, 94, .08);
+      border-color: rgba(224, 177, 94, .72);
+      outline: none;
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .door:hover, .door:focus-visible { transform: translateY(-2px); }
+    }
+    /* 누르면 문이 안쪽으로 열린다 — 빛이 먼저 새어 나오고 그다음에 방으로.
+       0.38초는 「열렸다」를 알아볼 만큼은 길고 기다린다고 느끼기엔 짧다.
+       모션 감경을 켠 사람에게는 이 연출이 아예 걸리지 않는다 (js 가 건너뛴다). */
+    .door.opening {
+      transform: perspective(680px) rotateY(-34deg) translateY(-2px);
+      transform-origin: left center;
+      border-color: rgba(224, 177, 94, .85);
+      background: rgba(224, 177, 94, .06);
+      transition: transform .38s cubic-bezier(.4, 0, .25, 1), border-color .2s;
+    }
+    .door.opening::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(100deg, rgba(240, 208, 150, .30), transparent 62%);
+      animation: spill .38s ease-out both;
+      pointer-events: none;
+    }
+    @keyframes spill { from { opacity: 0 } to { opacity: 1 } }
+
+    /* 잠긴 문 — 누를 수 없고, 열쇠구멍만 보인다 */
+    .door.locked {
+      border-style: dashed;
+      border-color: rgba(224, 177, 94, .16);
+      color: rgba(224, 177, 94, .34);
+      cursor: default;
+    }
+    .door.locked small { color: rgba(156, 142, 116, .55); }
+    .door.locked::after { background: rgba(224, 177, 94, .16); }
+    .door.locked .hole {
+      display: block;
+      width: 19px;
+      margin: 0 auto 9px;
+      opacity: .45;
+    }
+    footer {
+      padding: 0 0 18px;
+      font-size: 11.5px;
+      color: var(--dim);
+      opacity: .85;
+      letter-spacing: .1em;
+    }
+    footer a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(156,142,116,.3); }
+    /* 손가락이 닿는 자리를 넓힌다 — 보이는 크기는 그대로 두고 ::after 로만.
+       바닥글 링크는 글자 크기 그대로라 12×18 밖에 안 됐다 (WCAG 2.2 의
+       최소는 24×24). 서재가 사다리 눈금과 서표 닫기에 쓴 것과 같은 방법이다. */
+    footer a { position: relative; }
+    footer a::after {
+      content: ""; position: absolute;
+      left: -7px; right: -7px; top: -9px; bottom: -9px;
+    }
+    footer a:hover, footer a:focus-visible { color: var(--brass); outline: none; }
+    @media (prefers-reduced-motion: no-preference) {
+      main { animation: rise .9s ease both; }
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: none; }
+      }
+    }
+    /* 문 세 짝이 한 줄에 서려면 152×3 + 틈 36 + 여백 48 = 540px 이 든다.
+       그보다 좁으면 둘만 서고 잠긴 문 하나가 다음 줄에 혼자 남아 어긋난다
+       (430px 짜리 큰 폰에서 실제로 그랬다) — 아예 세로로 쌓는다. */
+    @media (max-width: 560px) {
+      .doors { gap: 12px; }
+      .door { width: 100%; max-width: 260px; border-radius: 40px 40px 4px 4px; padding: 20px 16px 16px; }
+    }
+
+    /* ── 키보드로 걷는 사람 (2026-09-03) ────────────────────────────
+       이 집은 곳곳에서 outline 을 끄고 제 방식으로 대답한다 — 문은 살짝
+       들리고, 테가 밝아지고, 글자 색이 바뀐다. 그 대답은 그대로 두되,
+       **어디서든 반드시 보이는 고리**를 하나 깐다. 87곳의 `outline: none`
+       을 하나씩 걷는 대신 한 줄로 덮는 까닭은, 새 단추를 만들 때마다
+       또 꺼질 자리이기 때문이다. !important 는 여기서 옳다 — 이 고리는
+       아래에서 조용히 꺼서는 안 되는 것이다.
+       마우스로 누른 사람에게는 뜨지 않는다 (:focus 가 아니라 :focus-visible). */
+    :focus-visible {
+      outline: 2px solid var(--brass) !important;
+      outline-offset: 2px;
+    }
+  </style>
+  <!-- 이 집이 누구의 것이고 어떤 방이 있는지 — 검색 결과의 얼굴을 정한다 -->
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebSite","name":"로키즈의 방",
+   "alternateName":"rokiz.net","url":"https://www.rokiz.net/rooms/","inLanguage":"ko",
+   "description":"문마다 다른 방이 있습니다 — 로키즈의 개인 사이트.",
+   "hasPart":[
+     {"@type":"WebSite","name":"서가 뒤의 방","url":"https://www.rokiz.net/books/",
+      "description":"한 사람의 장서를 그대로 옮겨 담은 밤의 서재."},
+     {"@type":"WebPage","name":"지금","url":"https://www.rokiz.net/now/",
+      "description":"요즘 읽는 것과 만드는 것."}]}
+  </script>
+</head>
+<body>
+<main>
+  <p class="latin">ROKIZ</p>
+  <h1>로키즈의 방</h1>
+  <p class="sub">문마다 다른 방이 있습니다 — 지금은 셋이 열려 있습니다.</p>
+  <!-- 셈은 그 방의 문 안으로 갔다 (아래 .door em). 여기 남는 것은
+       서재 안쪽까지 들어가야 보이던 「지금 펼쳐 둔 책」 한 문장뿐이다 -->
+  <p class="nowline" id="nowline" hidden></p>
+  <div class="doors">
+    <a class="door" href="/books/">
+      <b>서가 뒤의 방</b>
+      <!-- 권수는 적지 않는다 — 장서는 계속 늘고, 정적 파일의 숫자는 반드시 거짓이 된다.
+           오늘의 숫자는 위의 .today 줄이 서재에 직접 물어 온다 -->
+      <small>한 사람의 장서를 그대로<br>옮겨 담은 밤의 서재</small>
+      <em id="d-books" data-baked="2026-09-04">544권 · 27권 읽음</em>
+    </a>
+    <a class="door" href="/now/">
+      <b>지금</b>
+      <small>요즘 읽는 것과<br>만드는 것</small>
+      <em id="d-now" data-baked="2026-09-04" data-at="2026-09-01T14:52:06.469+00:00"></em>
+    </a>
+    <!-- 2026년 9월 3일, 첫 글 「시절 인연」이 놓이면서 열린 문.
+         .door.locked 규칙은 지우지 않았다 — 다음에 또 짓다 만 방이 생기면
+         그때 잠긴 문으로 이름부터 걸어 두려는 것이다. -->
+    <a class="door" href="/notes/">
+      <b>글</b>
+      <small>문장으로 남겨 둔<br>것들</small>
+      <em id="d-notes" data-baked="2026-09-04" data-count="1" data-at="2026-09-03T11:19:52.377+00:00"></em>
+    </a>
+  </div>
+</main>
+<footer>rokiz.net · <a href="/books/">서재</a> · <a href="/now/">지금</a> · <a href="/notes/">글</a></footer>
+
+<script>
+/* 램프가 손을 따라온다 — 마우스가 있는 기계에서만.
+   손가락뿐인 기계(폰)에서는 빛이 가운데 머문다: 손가락은 늘 화면을 덮고
+   있어 따라다니게 하면 빛이 손 밑에 숨는다. */
+if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
+    !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  addEventListener("pointermove", (e) => {
+    document.documentElement.style.setProperty("--mx", (e.clientX / innerWidth * 100).toFixed(1) + "%");
+    document.documentElement.style.setProperty("--my", (e.clientY / innerHeight * 100).toFixed(1) + "%");
+  }, { passive: true });
+}
+
+/* 밤에는 문 뒤에 불이 켜진다 — 탭의 작은 얼굴이 시각을 따라 바뀐다.
+   해가 진 뒤(18시~6시)면 열쇠구멍으로 빛이 샌다. 보는 사람의 시계를 따른다. */
+(function () {
+  const 시 = new Date().getHours();
+  if (시 >= 18 || 시 < 6) {
+    const l = document.querySelector('link[rel="icon"]');
+    if (l) l.href = "/favicon-night.svg";
+  }
+})();
+
+/* ── 문 안의 셈: 구운 것과 오늘 것 ──────────────────────────────
+   문 안의 한 줄은 서재와 글방에 그 자리에서 묻는 값이라, 답이 오기 전에는
+   비어 있었다 — 처음 오는 사람은 몇 초 동안 빈 문 셋을 본다. 그래서
+   tools/bake-doors.mjs 가 그 값을 미리 글자로 구워 둔다(<em data-baked>).
+
+   구운 숫자가 거짓이 되지 않게 두 가지를 지킨다.
+     ① 시간이 흐르면 틀리는 말(「2일 전」)은 굽지 않는다. 그 시각(data-at)만
+        심어 두고 아래 지난말() 이 **오늘 기준으로** 다시 센다.
+     ② 다시 셀 수 없는 것(권수·편수)은 서재가 답하면 갈아 끼우고, 끝내
+        답하지 못하면 그때만 「9.4 기준」이라고 밝힌다. */
+
+/* 두 곳(갈피·글)이 같은 말투를 쓰도록 한 자리에 둔다.
+   ── 집 안에서 한 벌인 규칙이다 ─────────────────────────────
+   이 갈피 시각은 /now/ 의 첫 줄과 서재의 책상에도 그대로 걸린다. 세 자리가
+   저마다 셈하다 여섯 구간이 어긋나 있었다(2026-09-04). 고칠 때는 세 곳을
+   함께 고친다: 여기 · now/index.html · (서재) js/app.js 의 agoOf.
+   tools/check-house.mjs 가 세 자리가 같은 규칙인지 재고 있다.
+
+   달을 열둘까지 세지 않는 것은, 서른 날로 나누면 364일이 「12달 전」이
+   되기 때문이다 — 열두 달은 한 해다. 열한 달에서 멈추고 365일부터 해로.
+
+   날은 **자정을 몇 번 넘었는가**로 센다. 스물네 시간으로 나누면 어제 저녁
+   여덟 시에 놓은 글을 오늘 아침에 보고도 「오늘 놓임」이라 말한다(2026-09-04
+   에 재어 확인). 사람은 그것을 어제라고 안다 — 보는 사람의 달력을 따른다. */
+function 잔날(iso) {
+  const a = new Date(iso), b = new Date();
+  return Math.round((new Date(b.getFullYear(), b.getMonth(), b.getDate())
+                   - new Date(a.getFullYear(), a.getMonth(), a.getDate())) / 86400000);
+}
+function 지난말(iso, 어미) {
+  const 날 = 잔날(iso);
+  if (날 <= 0) return "오늘 " + 어미;
+  if (날 === 1) return "어제 " + 어미;
+  if (날 < 30) return `${날}일 전`;
+  if (날 < 365) return `${Math.min(11, Math.floor(날 / 30))}달 전`;
+  return `${Math.floor(날 / 365)}해 전`;
+}
+
+/* 오늘 것이 왔다 — 구운 자리를 갈아 끼우고 「언제 기준」 꼬리를 걷는다 */
+function 갈아끼움(el, 말) {
+  if (!el) return;
+  el.textContent = 말;
+  el.dataset.fresh = "1";
+  el.hidden = false;
+}
+
+/* 구운 것을 먼저 편다 — 서재가 답하기 전에도 문 안이 비어 있지 않도록.
+   시각이 심긴 자리는 그 자리에서 오늘 기준으로 다시 세어 말한다. */
+(function 구운것을편다() {
+  const n = document.getElementById("d-now");
+  if (n?.dataset.at) { n.textContent = 지난말(n.dataset.at, "움직임"); n.hidden = false; }
+  const t = document.getElementById("d-notes");
+  if (t?.dataset.count) {
+    t.textContent = `${t.dataset.count}편` +
+      (t.dataset.at ? " · " + 지난말(t.dataset.at, "놓임") : "");
+    t.hidden = false;
+  }
+})();
+
+/* 셋을 다 물어볼 만한 시간이 지나도 갈리지 않은 자리에는 언제 것인지를
+   밝힌다 — 갈무리를 오늘인 척 두지 않는다 (/now/·/notes/ 와 같은 규칙).
+   다시 셀 수 있는 「지금」 문은 늘 오늘 기준이므로 꼬리가 필요 없다. */
+setTimeout(function () {
+  document.querySelectorAll('.door em[data-baked]:not([data-fresh])').forEach(function (el) {
+    if (el.id === "d-now" || el.querySelector(".asof")) return;
+    const [, 달, 날] = el.dataset.baked.split("-");
+    const 꼬리 = document.createElement("span");
+    꼬리.className = "asof";
+    꼬리.textContent = `${Number(달)}.${Number(날)} 기준`;
+    el.appendChild(꼬리);
+  });
+}, 6000);
+
+/* 서재의 오늘 — 권수와 읽은 권수를 서재에 직접 묻는다.
+   몸통 없이 세기만 하는 질의(Prefer: count=exact + Range: 0-0)라 오가는 것이
+   헤더뿐이다. 무료 요금제의 전송량을 축내지 않으려는 것 — 서재에서 하루
+   3.9GB 를 흘려 본 적이 있다 (books/CLAUDE.md 의 Egress 규칙).
+   못 물어보면 구운 값이 그대로 남는다 — 대문이 서재 때문에 멈추면 안 된다. */
+(async function () {
+  const 집 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/books";
+  const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
+  const 머리 = { apikey: 열쇠, Authorization: "Bearer " + 열쇠, Prefer: "count=exact", Range: "0-0" };
+  const 세기 = async (질의) => {
+    const r = await fetch(집 + "?select=id" + 질의, { method: "HEAD", headers: 머리, signal: AbortSignal.timeout(8000) });
+    const m = /\/(\d+)$/.exec(r.headers.get("content-range") || "");
+    return m ? Number(m[1]) : null;
+  };
+  try {
+    const [전부, 읽음] = await Promise.all([
+      세기(""),
+      세기("&read_status=eq." + encodeURIComponent("읽음")),
+    ]);
+    if (!전부) return;
+    갈아끼움(document.getElementById("d-books"),
+      `${전부.toLocaleString()}권 · ${(읽음 || 0).toLocaleString()}권 읽음`);
+  } catch { /* 서재가 자고 있어도 대문은 열려 있어야 한다 — 구운 값이 남는다 */ }
+
+  /* 지금 펼쳐 둔 책 — 서재 안쪽까지 들어가야 보이던 것을 대문에 건다.
+     대문의 얼굴이 매번 조금씩 달라지고, 서재로 들어갈 이유가 하나 생긴다.
+     필요한 칸만 골라 받아 오가는 것이 몇백 바이트를 넘지 않는다. */
+  try {
+    const r = await fetch(
+      집 + "?select=id,title,bookmark_page,page_count,cover_url&read_status=eq." +
+      encodeURIComponent("읽는 중") + "&order=bookmark_at.desc&limit=1",
+      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 },
+        signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return;
+    const [b] = await r.json();
+    if (!b?.title) return;
+    const 쪽 = (b.bookmark_page && b.page_count)
+      ? ` — ${b.page_count}쪽 중 ${b.bookmark_page}쪽` : "";
+    const el = document.getElementById("nowline");
+    el.textContent = "";
+
+    /* 알라딘은 표지가 없을 때 「No Image」 그림 주소를 돌려준다 — 그걸 걸면
+       회색 안내판이 붙는다. 표지가 없는 것으로 친다 (서재와 같은 규칙). */
+    const 표지 = b.cover_url && !/\/noimg/i.test(b.cover_url) ? b.cover_url : null;
+    if (표지) {
+      const im = new Image();
+      im.src = 표지; im.alt = ""; im.loading = "lazy"; im.decoding = "async";
+      im.onerror = () => im.remove();   // 죽은 주소면 그림만 걷고 글은 남긴다
+      el.appendChild(im);
+    }
+    const t = document.createElement("span");
+    t.className = "t";
+    t.textContent = `지금은 「${b.title}」를 펼쳐 두었습니다${쪽}`;
+    /* 갈피 막대 — 쪽수를 둘 다 알 때만. 1% 아래로는 내려가지 않는다 */
+    if (b.bookmark_page && b.page_count) {
+      const bar = document.createElement("span");
+      bar.className = "prog";
+      const i = document.createElement("i");
+      i.style.width = Math.max(1, Math.round(b.bookmark_page / b.page_count * 100)) + "%";
+      bar.appendChild(i);
+      t.appendChild(bar);
+    }
+    el.appendChild(t);
+    el.hidden = false;
+    /* 문 안의 「지금」에도 같은 막대를 얹는다 — 문 앞에서 진도가 보인다 */
+    window.__갈피 = (b.bookmark_page && b.page_count)
+      ? Math.max(1, Math.round(b.bookmark_page / b.page_count * 100)) : null;
+  } catch { /* 없으면 없는 대로 */ }
+
+  /* 「지금」 문 안에는 그 쪽이 마지막으로 움직인 때를 적는다 — 서재의 갈피
+     시각을 그대로 쓴다. now 쪽이 낡았는지 문 앞에서 바로 알 수 있다. */
+  try {
+    const r = await fetch(
+      집 + "?select=bookmark_at&read_status=eq." + encodeURIComponent("읽는 중") +
+      "&bookmark_at=not.is.null&order=bookmark_at.desc&limit=1",
+      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 },
+        signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return;
+    const [b] = await r.json();
+    if (!b?.bookmark_at) return;
+    const el = document.getElementById("d-now");
+    갈아끼움(el, 지난말(b.bookmark_at, "움직임"));
+    if (window.__갈피) {
+      const bar = document.createElement("span");
+      bar.className = "prog";
+      const i = document.createElement("i");
+      i.style.width = window.__갈피 + "%";
+      bar.appendChild(i);
+      el.appendChild(bar);
+    }
+    el.hidden = false;
+  } catch { /* 없으면 없는 대로 */ }
+})();
+
+/* 글 문 안의 셈 — 몇 편이 놓였고 마지막이 언제였나.
+   Prefer: count=exact 를 얹으면 한 번의 부름으로 최근 한 편과 전체 편수를
+   함께 받는다 (편수는 헤더에 온다). 초고는 오지 않는다 — 공개 열쇠라
+   RLS 가 발행한 것만 내준다. */
+(async function () {
+  const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
+  try {
+    const r = await fetch(
+      "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/notes" +
+      "?select=published_at&order=published_at.desc&limit=1",
+      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠,
+                   Prefer: "count=exact" },
+        signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return;
+    const m = /\/(\d+)$/.exec(r.headers.get("content-range") || "");
+    const 편 = m ? Number(m[1]) : 0;
+    if (!편) return;
+    const [n] = await r.json();
+    갈아끼움(document.getElementById("d-notes"),
+      `${편}편` + (n?.published_at ? " · " + 지난말(n.published_at, "놓임") : ""));
+  } catch { /* 글방이 조용해도 문은 열려 있어야 한다 — 구운 값이 남는다 */ }
+})();
+
+/* 문은 열리고 나서 방으로 보낸다 — 누르면 안쪽으로 열리는 0.38초를 보고
+   그다음에 옮겨 간다. 새 탭·가운데 클릭·모션 감경은 건드리지 않는다:
+   그건 「지금 여기서 보겠다」는 뜻이 아니다. */
+let 떠난다 = false;   // 이 쪽에서 나가는 일은 한 번뿐이다
+
+/* 폰의 크롬은 뒤로 가기 때 쪽을 다시 돌리지 않고 **되살린다**(bfcache).
+   그러면 스크립트가 다시 안 돌아 「떠난다」가 true 인 채로 남고 — 문이
+   전부 죽는다. 열린 채 굳은 문의 자국(opening)도 그대로 남는다.
+   되살아난 것이라면 둘 다 걷는다. */
+addEventListener("pageshow", (e) => {
+  if (!e.persisted) return;
+  떠난다 = false;
+  document.querySelectorAll("a.door.opening").forEach((문) => 문.classList.remove("opening"));
+});
+if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  document.querySelectorAll("a.door").forEach((문) => {
+    문.addEventListener("click", (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      e.preventDefault();
+      if (떠난다) return;      // 두 번 눌러도 한 번만 나간다
+      떠난다 = true;
+      문.classList.add("opening");
+      /* 나가는 일은 반드시 한 번이어야 한다. 예전에는 transitionend 에
+         { once: true } 만 걸고 setTimeout 을 따로 두었는데, 이 문은
+         transform(.38s)과 border-color(.2s) 두 가지를 전이한다 —
+         transitionend 는 속성마다 오므로 0.2초에 먼저 한 번 나가고,
+         이동이 늦으면 0.52초에 한 번 더 나갔다. 같은 주소로 두 번
+         나가면 히스토리에 두 칸이 쌓여 뒤로 가기가 헛돈다. */
+      const 가자 = () => {
+        문.removeEventListener("transitionend", 지켜본다);
+        clearTimeout(늦어도);
+        location.href = 문.href;
+      };
+      const 지켜본다 = (ev) => { if (ev.propertyName === "transform") 가자(); };
+      문.addEventListener("transitionend", 지켜본다);
+      const 늦어도 = setTimeout(가자, 520);   // 전이가 안 걸린 기계에서도 반드시 간다
+    });
+  });
+}
+</script>
+</body>
+</html>

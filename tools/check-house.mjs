@@ -75,7 +75,7 @@ if (스스로) {
 
 /* 집이 지키기로 한 규칙. 방을 새로 열면 여기 한 줄 */
 const 방들 = [
-  { 이름: "대문",     길: "/",                            표식: 1 },
+  { 이름: "대문",     길: "/rooms/",                          표식: 1 },
   { 이름: "지금",     길: "/now/",                        표식: 1 },
   { 이름: "글방",     길: "/notes/",                      표식: 1 },
   { 이름: "서재",     길: "/books/",                      표식: 1 },
@@ -278,7 +278,7 @@ try {
 /* 대문의 「지금은 N이 열려 있습니다」가 실제 문 개수와 맞는가.
    한 번 어긋난 적이 있다 — og 와 twitter 만 「하나」에서 멈춰 있었다. */
 try {
-  const h = (await 받기("/")).글;
+  const h = (await 받기("/rooms/")).글;
   const 문수 = (h.match(/<a class="door"/g) || []).length;
   const 수사 = { 1: "하나가", 2: "둘이", 3: "셋이", 4: "넷이", 5: "다섯이" }[문수];
   const 말들 = [...h.matchAll(/지금은 ([^ ]+) 열려 있습니다/g)].map((m) => m[1]);
@@ -405,7 +405,7 @@ try {
    현실과 멀어진다. 두 달을 넘기면 알린다. */
 try {
   const 묵은것 = [];
-  for (const [이름, 길] of [["대문", "/"], ["지금", "/now/"]]) {
+  for (const [이름, 길] of [["대문", "/rooms/"], ["지금", "/now/"]]) {
     const h = (await 받기(길)).글;
     /* 한 쪽에 구운 자리가 여럿이면(대문의 문 셋) 가장 묵은 것 하나로 센다 */
     const 날들 = [...new Set([...h.matchAll(/data-baked="(\d{4}-\d{2}-\d{2})"/g)].map((m) => m[1]))];
@@ -460,7 +460,7 @@ try {
       열쇠들.get(m[0]).add(곳);
     }
   };
-  for (const 길 of ["/", "/notes/", "/now/", "/404.html"]) 담기(길, (await 받기(길)).글);
+  for (const 길 of ["/rooms/", "/notes/", "/now/", "/404.html"]) 담기(길, (await 받기(길)).글);
   /* 배포된 서재의 config.js — 다른 저장소라 로컬에 없을 수 있다 */
   try { 담기("/books/js/config.js", await (await fetch(`${집}/books/js/config.js`)).text()); }
   catch { /* 못 받으면 그만 */ }
@@ -494,7 +494,7 @@ try {
    나머지를 잊는 일이 없도록 여기서 견준다 — 열쇠를 견주는 것과 같은 뜻이다. */
 try {
   const 자리 = [
-    ["대문", (await 받기("/")).글],
+    ["대문", (await 받기("/rooms/")).글],
     ["지금", (await 받기("/now/")).글],
     ["서재", await (await fetch(`${집}/books/js/app.js`)).text()],
   ];

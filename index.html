@@ -1,618 +1,790 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- 검색 결과에 실리는 제목은 이것이다 (og:title 이 아니라). 「rokiz」였을 때는
-       집 이름으로 검색해도 대문 제목에 그 말이 없었다 — 같은 쪽인데 og 는
-       「로키즈의 방」, 제목은 영문이라 둘이 서로 다른 이름을 대고 있었다. -->
-  <title>로키즈의 방</title>
-  <meta name="description" content="문마다 다른 방이 있습니다 — 로키즈의 개인 사이트.">
-  <meta name="theme-color" content="#171009">
-  <!-- 밤의 집이다 — 스크롤막대·기본 위젯도 어두운 쪽을 쓰게 한다 -->
-  <meta name="color-scheme" content="dark">
-  <!-- rokiz.net 은 www 로 301 되지만, 어느 주소로 걸어 들어오든 한 쪽을 가리킨다 -->
-  <link rel="canonical" href="https://www.rokiz.net/">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/icon-192.png">
-  <link rel="manifest" href="/manifest.webmanifest">
-  <!-- 집 전체를 구독한다 — 서재의 책, 지난 지금, 새 글이 한 줄기로 온다 -->
-  <link rel="alternate" type="application/atom+xml" title="로키즈의 방" href="/feed.xml">
-  <!-- 서재의 오늘을 물으러 간다 — 손잡기를 미리 터 둔다 -->
-  <link rel="preconnect" href="https://gaeumegwhxxnfvrhbknp.supabase.co" crossorigin>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="rokiz.net">
-  <meta property="og:locale" content="ko_KR">
-  <meta property="og:title" content="로키즈의 방">
-  <meta property="og:description" content="문마다 다른 방이 있습니다 — 지금은 셋이 열려 있습니다.">
-  <meta property="og:url" content="https://www.rokiz.net/">
-  <!-- 링크를 나눌 때 보이는 얼굴 — 없으면 카톡·슬랙이 회색 상자를 띄운다 -->
-  <meta property="og:image" content="https://www.rokiz.net/og.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="밤빛 바탕의 열쇠구멍과 「로키즈의 방」">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="로키즈의 방">
-  <meta name="twitter:description" content="문마다 다른 방이 있습니다 — 지금은 셋이 열려 있습니다.">
-  <meta name="twitter:image" content="https://www.rokiz.net/og.png">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Cormorant:ital,wght@1,500&display=swap">
-  <style>
-    /* rokiz.net 대문 — 방(경로)들로 들어가는 입구.
-       서가 뒤의 방(/books)과 같은 밤의 세계관을 아주 옅게만 공유한다. */
-    :root {
-      --dark: #171009;
-      --paper: #E9DFC9;
-      --dim: #9C8E74;
-      --brass: #E0B15E;
-      /* 커서가 있는 자리 — 램프가 그리로 따라간다 (js 가 고쳐 쓴다) */
-      --mx: 50%;
-      --my: 34%;
-    }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    /* 두 칸짜리 격자 — 위 칸에 대문, 아래 칸에 서명.
-       예전에는 footer 를 position: fixed 로 바닥에 붙였는데, 화면이 낮으면
-       (폰을 눕히면 360px 다) 「다른 방들은 아직 잠겨 있습니다」 위에 겹쳐
-       앉았다. 흐름 안에 두면 좁아질수록 저절로 비켜난다. */
-    body {
-      margin: 0;
-      background: var(--dark);
-      color: var(--paper);
-      font-family: "Gowun Batang", "Noto Serif KR", serif;
-      display: grid;
-      grid-template-rows: 1fr auto;
-      place-items: center;
-      text-align: center;
-      position: relative;
-      overflow-x: hidden;
-    }
-    /* 램프 — 손이 가는 곳으로 따라온다. 손가락뿐인 기계에서는 가운데 그대로 */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background: radial-gradient(46% 38% at var(--mx) var(--my),
-                  rgba(224, 177, 94, .10), transparent 70%);
-      transition: background .45s ease-out;
-    }
-    main { padding: 24px; position: relative; }
-    .latin {
-      font-family: "Cormorant", serif;
-      font-style: italic;
-      font-size: 15px;
-      letter-spacing: .22em;
-      color: var(--dim);
-    }
-    h1 {
-      margin: 10px 0 6px;
-      font-size: clamp(34px, 7vw, 52px);
-      font-weight: 700;
-      letter-spacing: .06em;
-    }
-    .sub {
-      margin: 0 0 10px;
-      font-size: 14.5px;
-      color: var(--dim);
-      line-height: 1.7;
-      /* 문 안의 글(.door p)엔 이 규칙이 있는데 정작 첫 문장엔 없어,
-         폰에서 「지금은 셋이 열려 있습니 / 다.」로 「다.」만 홀로 떨어졌다 */
-      word-break: keep-all; overflow-wrap: break-word;
-    }
-    /* 서재가 오늘 자기 상태를 스스로 말한다 — 정적 문구가 아니라 셈에서 나온다.
-       못 물어보면 이 줄은 그냥 없다 (빈 자리가 남지 않게 hidden 으로 시작). */
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>로키즈미디어 — GET VISUALIZED</title>
+<meta name="description" content="로키즈미디어 — 기획부터 촬영, 편집, 모션그래픽까지. 영상제작 스튜디오.">
+<!-- 작업물이 임시 값인 동안은 검색에 걸리지 않게 둔다. 실제 내용이 들어가면 이 줄을 지운다. -->
+<meta name="robots" content="noindex">
+<meta property="og:title" content="로키즈미디어 — GET VISUALIZED">
+<meta property="og:description" content="기획부터 촬영, 편집, 모션그래픽까지. 영상제작 스튜디오.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#000000">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/poppins/800-italic.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/poppins/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<style>
+:root{
+  --text:#1d1d1f; --text2:rgba(60,60,67,.72); --sep:rgba(60,60,67,.16);
+  --win:rgba(246,246,248,.82); --field:rgba(255,255,255,.85); --fill:rgba(120,120,128,.14); --fill2:rgba(120,120,128,.24);
+  --bar:rgba(255,255,255,.36); --dock:rgba(255,255,255,.3); --edge:rgba(255,255,255,.55); --menu:#111;
+  --brand:#f7ce0a; --accent:#f7ce0a; --on-accent:#111; --shadow:0 0 0 .5px rgba(0,0,0,.22),0 24px 60px rgba(0,0,0,.32),0 4px 12px rgba(0,0,0,.12);
+  --base:#c9b8ff; --line:rgba(255,255,255,.9);
+  /* 바탕화면: 직접 만든 색 번짐 */
+  --wall:
+    radial-gradient(90% 70% at 100% 100%,#ff9fb8 0,transparent 60%),
+    radial-gradient(80% 70% at 70% 10%,#9db8ff 0,transparent 60%),
+    radial-gradient(70% 60% at 0% 80%,#ffc89a 0,transparent 60%),
+    linear-gradient(160deg,#b9a5ff,#e0b3f0 55%,#ffc2a8);
+}
+:root[data-theme="dark"]{
+  --text:#f5f5f7; --text2:rgba(235,235,245,.62); --sep:rgba(255,255,255,.1);
+  --win:rgba(30,30,36,.8); --field:rgba(255,255,255,.07); --fill:rgba(120,120,128,.24); --fill2:rgba(120,120,128,.4);
+  --bar:rgba(16,16,18,.45); --dock:rgba(44,44,48,.45); --edge:rgba(255,255,255,.16); --menu:#fff;
+  --accent:#f7ce0a; --shadow:0 0 0 .5px rgba(255,255,255,.16),0 30px 70px rgba(0,0,0,.6),0 4px 12px rgba(0,0,0,.3);
+  --base:#0b0a1f; --line:rgba(190,185,255,.75);
+  --wall:
+    radial-gradient(70% 70% at 62% 22%,#3a2f78 0,transparent 62%),
+    radial-gradient(60% 60% at 0% 70%,#1d1a4d 0,transparent 60%),
+    radial-gradient(60% 50% at 100% 100%,#3a1840 0,transparent 60%),
+    linear-gradient(180deg,#16133a,#0b0a1f);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Pretendard Variable",Pretendard,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  font-size:14px;line-height:1.6;color:var(--text);background:var(--base);overflow:hidden;-webkit-font-smoothing:antialiased;
+}
+#wall{position:fixed;inset:0;z-index:-1;background:var(--wall)}
+#wall svg{position:absolute;inset:0;width:100%;height:100%}
+#wall path{fill:none;stroke:var(--line);vector-effect:non-scaling-stroke}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+a{color:inherit}
+svg{display:block}
 
-    /* 지금 펼쳐 둔 책 — 서재 안쪽까지 들어가야 보이던 것을 대문으로 올린다.
-       표지 한 장이 곁들면 대문의 얼굴이 책을 덮을 때마다 달라진다. */
-    .nowline {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 13px;
-      margin: 4px 0 34px;
-      font-size: 12.5px;
-      color: var(--brass);
-      opacity: .68;
-      letter-spacing: .02em;
-      word-break: keep-all;
-      text-align: left;
-    }
-    .nowline img {
-      width: 38px;
-      flex: 0 0 38px;
-      border-radius: 2px;
-      background: rgba(224, 177, 94, .06);
-      box-shadow: 0 2px 9px rgba(0, 0, 0, .45);
-    }
-    .nowline .t { max-width: 30ch; }
-    /* 갈피 막대 — 「520쪽 중 1쪽」을 눈으로도 보이게. 1% 아래로는 내려가지
-       않는다 (0% 는 「아직 안 펼침」과 구별이 안 된다 — 서재의 규칙과 같다) */
-    .nowline .prog {
-      display: block;
-      height: 3px;
-      margin-top: 6px;
-      background: rgba(224, 177, 94, .14);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .nowline .prog i { display: block; height: 100%; background: rgba(224, 177, 94, .62); }
-    .nowline[hidden] { display: none; }
-    .doors:first-child { margin-top: 0; }
+/* ── 메뉴 막대 ── */
+#menubar{
+  position:fixed;inset:0 0 auto 0;height:30px;z-index:9000;display:flex;align-items:center;gap:2px;padding:0 10px;
+  background:var(--bar);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
+  font-size:13.5px;color:var(--menu);box-shadow:0 .5px 0 var(--edge);
+}
+#menubar .brand{font-weight:700;padding:0 10px 0 4px;display:flex;align-items:center;gap:8px}
+/* 로고: 검은 앱 아이콘 판 위에 노란 필름 카메라 */
+.logo{display:inline-grid;place-items:center;border-radius:24%;background:#000;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.28)}
+.logo svg{width:72%;height:auto;fill:var(--brand)}
+#menubar .logo{width:25px;background:none;box-shadow:none;border-radius:0}
+#menubar .logo svg{width:100%}
+.wordmark{font-family:Poppins,"Pretendard Variable",sans-serif;font-weight:800;font-style:italic;letter-spacing:-.5px;color:#e8f5f3;line-height:1}
+.slogan{font-family:Poppins,sans-serif;font-weight:500;letter-spacing:.62em;margin-right:-.62em;color:#e8f5f3;font-size:10px}
+:root:not([data-theme="dark"]) .win :is(.wordmark,.slogan){color:var(--text)}
+.app .lg{width:36px;height:auto;fill:var(--brand)}
+#spotList .app .lg{width:20px}
+#menubar button{padding:2px 9px;border-radius:5px;height:22px;font-weight:500}
+#menubar button:hover{background:rgba(255,255,255,.22)}
+#menubar .spacer{flex:1}
+#themeBtn svg,#spotBtn svg{width:15px;height:15px;fill:currentColor}
+#clock{padding:0 6px;font-weight:500;font-variant-numeric:tabular-nums}
 
-    /* 방들 — 진짜 문처럼 세운다. 열린 문은 안쪽에서 빛이 새고,
-       잠긴 문은 열쇠구멍만 희미하다. */
-    .doors {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 18px;
-    }
-    .door {
-      position: relative;
-      display: block;
-      width: 152px;
-      padding: 26px 16px 20px;
-      border: 1px solid rgba(224, 177, 94, .34);
-      border-radius: 60px 60px 4px 4px;   /* 위가 둥근 문 */
-      color: var(--brass);
-      text-decoration: none;
-      transition: background .35s, border-color .35s, transform .35s;
-      /* 폰에서 탭하면 브라우저가 제 손으로 반짝이는 판을 하나 덧그린다.
-         그 판은 요소의 **네모난 상자**를 따르므로, 위가 둥근 이 문 위에
-         네모가 한순간 떠올랐다. 끄고, 아래에서 문 모양 그대로 눌리게 한다. */
-      -webkit-tap-highlight-color: transparent;
-    }
-    /* 눌린 동안의 문 — 하이라이트를 껐으니 이것이 대신 대답한다.
-       전이를 걸지 않는 것은 손가락이 닿는 순간 바로 보여야 하기 때문이다.
-       border-radius 를 따르므로 네모가 아니라 문 모양으로 눌린다. */
-    .door:active {
-      transition: none;
-      background: rgba(224, 177, 94, .11);
-      border-color: rgba(224, 177, 94, .66);
-    }
-    .door b {
-      display: block;
-      font-size: 15.5px;
-      font-weight: 400;
-      letter-spacing: .04em;
-    }
-    .door small {
-      display: block;
-      margin-top: 6px;
-      font-size: 11.5px;
-      color: var(--dim);
-      letter-spacing: .06em;
-      line-height: 1.6;
-      /* 한글은 기본값이면 아무 글자 사이에서나 꺾인다 — 152px 짜리 문 안에서
-         「그대로」가 「그대 / 로」로 갈라졌다. 어절 단위로만 꺾는다 */
-      word-break: keep-all;
-      overflow-wrap: break-word;
-    }
-    /* 그 방의 오늘 — 문 안 맨 아래 한 줄. 셈이 도착하기 전에는 자리도 없다 */
-    .door em {
-      display: block;
-      margin-top: 9px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(224, 177, 94, .14);
-      font-style: normal;
-      font-size: 11px;
-      color: var(--brass);
-      opacity: .85;
-      letter-spacing: .04em;
-    }
-    .door em[hidden] { display: none; }
-    /* 구운 셈이 끝내 오늘 것으로 갈리지 못했을 때만 붙는 꼬리 — 언제 것인지
-       밝히는 자리다. 숫자보다 한 걸음 물러서 있되 읽히기는 해야 한다. */
-    .door em .asof {
-      display: block; margin-top: 3px;
-      font-size: 9.5px; letter-spacing: .06em;
-      color: var(--dim);
-    }
-    .door em .prog {
-      display: block; height: 3px; margin-top: 5px;
-      background: rgba(224, 177, 94, .14); border-radius: 2px; overflow: hidden;
-    }
-    .door em .prog i { display: block; height: 100%; background: rgba(224, 177, 94, .5); }
+/* ── 바탕화면 · 오른쪽 아이콘 ── */
+#desktop{position:fixed;inset:30px 0 0 0}
+.app{display:grid;place-items:center;width:54px;height:54px;border-radius:13px;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.35),0 3px 8px rgba(0,0,0,.28)}
+.app svg{width:28px;height:28px;fill:#fff}
+#deskicons{position:absolute;right:14px;top:14px;display:grid;gap:10px}
+#deskicons button{display:grid;justify-items:center;gap:5px;width:88px;padding:8px 0 5px;border-radius:8px;color:#fff;font-size:12px;font-weight:500;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+#deskicons button:hover{background:rgba(255,255,255,.14)}
 
-    /* 문손잡이 */
-    /* 문손잡이 — 위가 둥근 아치 문에 달린 놋쇠 손잡이 한 점.
-       오른쪽 가운데(문이 열리는 쪽)에 선다. 장식이지 상태 표시가 아니다. */
-    .door::after {
-      content: "";
-      position: absolute;
-      right: 13px;
-      top: 50%;
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      background: rgba(224, 177, 94, .5);
-    }
-    .door:hover, .door:focus-visible {
-      background: rgba(224, 177, 94, .08);
-      border-color: rgba(224, 177, 94, .72);
-      outline: none;
-    }
-    @media (prefers-reduced-motion: no-preference) {
-      .door:hover, .door:focus-visible { transform: translateY(-2px); }
-    }
-    /* 누르면 문이 안쪽으로 열린다 — 빛이 먼저 새어 나오고 그다음에 방으로.
-       0.38초는 「열렸다」를 알아볼 만큼은 길고 기다린다고 느끼기엔 짧다.
-       모션 감경을 켠 사람에게는 이 연출이 아예 걸리지 않는다 (js 가 건너뛴다). */
-    .door.opening {
-      transform: perspective(680px) rotateY(-34deg) translateY(-2px);
-      transform-origin: left center;
-      border-color: rgba(224, 177, 94, .85);
-      background: rgba(224, 177, 94, .06);
-      transition: transform .38s cubic-bezier(.4, 0, .25, 1), border-color .2s;
-    }
-    .door.opening::before {
-      content: "";
-      position: absolute;
-      inset: -1px;
-      border-radius: inherit;
-      background: linear-gradient(100deg, rgba(240, 208, 150, .30), transparent 62%);
-      animation: spill .38s ease-out both;
-      pointer-events: none;
-    }
-    @keyframes spill { from { opacity: 0 } to { opacity: 1 } }
+/* ── 창 ── */
+.win{
+  position:absolute;display:none;flex-direction:column;min-width:260px;border-radius:12px;overflow:hidden;
+  background:var(--win);backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);
+  box-shadow:var(--shadow);
+}
+.win.open{display:flex;animation:pop .18s ease-out}
+@keyframes pop{from{opacity:0;transform:scale(.96)}}
+.win.max{left:8px!important;top:8px!important;width:calc(100vw - 16px)!important;height:calc(100vh - 30px - 100px)}
+.win.max .body{max-height:none;flex:1}
+.win .bar{
+  height:40px;flex:none;display:flex;align-items:center;padding:0 14px;position:relative;
+  border-bottom:.5px solid var(--sep);cursor:default;user-select:none;touch-action:none;
+}
+.lights{display:flex;gap:8px;z-index:1}
+.lights button{width:12px;height:12px;border-radius:50%;background:var(--fill2);box-shadow:inset 0 0 0 .5px rgba(0,0,0,.12);display:grid;place-items:center;font-size:9px;line-height:1;color:transparent;font-weight:700}
+.win.active .lights .c,.lights:hover .c{background:#ff5f57}
+.win.active .lights .m,.lights:hover .m{background:#febc2e}
+.win.active .lights .z,.lights:hover .z{background:#28c840}
+.lights:hover button{color:rgba(0,0,0,.55)}
+.win .bar .t{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;font-weight:600;color:var(--text2);pointer-events:none}
+.win.active .bar .t{color:var(--text)}
+.win .body{padding:18px 20px 20px;overflow:auto;max-height:70vh}
+.win h2{font-size:20px;line-height:1.3;letter-spacing:-.3px;margin-bottom:8px}
+.win p{color:var(--text2)}
+.win p+p{margin-top:10px}
+.tag{display:inline-block;padding:2px 10px;margin:2px 4px 0 0;border-radius:99px;background:var(--fill);font-size:12px;color:var(--text)}
 
-    /* 잠긴 문 — 누를 수 없고, 열쇠구멍만 보인다 */
-    .door.locked {
-      border-style: dashed;
-      border-color: rgba(224, 177, 94, .16);
-      color: rgba(224, 177, 94, .34);
-      cursor: default;
-    }
-    .door.locked small { color: rgba(156, 142, 116, .55); }
-    .door.locked::after { background: rgba(224, 177, 94, .16); }
-    .door.locked .hole {
-      display: block;
-      width: 19px;
-      margin: 0 auto 9px;
-      opacity: .45;
-    }
-    footer {
-      padding: 0 0 18px;
-      font-size: 11.5px;
-      color: var(--dim);
-      opacity: .85;
-      letter-spacing: .1em;
-    }
-    footer a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(156,142,116,.3); }
-    /* 손가락이 닿는 자리를 넓힌다 — 보이는 크기는 그대로 두고 ::after 로만.
-       바닥글 링크는 글자 크기 그대로라 12×18 밖에 안 됐다 (WCAG 2.2 의
-       최소는 24×24). 서재가 사다리 눈금과 서표 닫기에 쓴 것과 같은 방법이다. */
-    footer a { position: relative; }
-    footer a::after {
-      content: ""; position: absolute;
-      left: -7px; right: -7px; top: -9px; bottom: -9px;
-    }
-    footer a:hover, footer a:focus-visible { color: var(--brass); outline: none; }
-    @media (prefers-reduced-motion: no-preference) {
-      main { animation: rise .9s ease both; }
-      @keyframes rise {
-        from { opacity: 0; transform: translateY(10px); }
-        to   { opacity: 1; transform: none; }
-      }
-    }
-    /* 문 세 짝이 한 줄에 서려면 152×3 + 틈 36 + 여백 48 = 540px 이 든다.
-       그보다 좁으면 둘만 서고 잠긴 문 하나가 다음 줄에 혼자 남아 어긋난다
-       (430px 짜리 큰 폰에서 실제로 그랬다) — 아예 세로로 쌓는다. */
-    @media (max-width: 560px) {
-      .doors { gap: 12px; }
-      .door { width: 100%; max-width: 260px; border-radius: 40px 40px 4px 4px; padding: 20px 16px 16px; }
-    }
+/* ── 플레이어 ── */
+#w-player{width:min(640px,92vw)}
+#w-player .body{padding:0;max-height:none}
+.tv{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden}
+.tv>*{position:absolute;inset:0;width:100%;height:100%;border:0}
+#poster{object-fit:cover;display:none}
+#embed{display:none;background:#000}
+#embed iframe,#embed video{position:absolute;top:0;height:100%;border:0;left:50%;transform:translateX(-50%);width:100%}
+#embed.vertical iframe{width:auto;aspect-ratio:9/16}
+#bigPlay{display:none;place-items:center;background:rgba(0,0,0,.18)}
+#bigPlay i{display:grid;place-items:center;width:68px;height:68px;border-radius:50%;background:rgba(255,255,255,.28);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.5);transition:transform .15s}
+#bigPlay:hover i{transform:scale(1.08)}
+#bigPlay svg{width:26px;height:26px;fill:#fff;margin-left:4px}
+.tv.poster #poster{display:block}.tv.poster #bigPlay{display:grid}
+.tv.embed #embed{display:block}
+.tv.fade::after{content:"";position:absolute;inset:0;background:#000;animation:fade .35s ease-out forwards;pointer-events:none}
+@keyframes fade{to{opacity:0}}
+.ctrl{display:flex;gap:4px;padding:10px 14px;align-items:center}
+.ctrl .ic{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;flex:none}
+.ctrl .ic:hover{background:var(--fill)}
+.ctrl .ic svg{width:18px;height:18px;fill:currentColor}
+.now{flex:1;min-width:0;padding:0 10px}
+.now b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.now small{display:block;font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{background:var(--accent);color:var(--on-accent);border-radius:8px;padding:6px 14px;font-weight:600;font-size:13px;white-space:nowrap;text-decoration:none;text-align:center}
+.pill:hover{filter:brightness(1.08)}
+.pill:active{filter:brightness(.92)}
 
-    /* ── 키보드로 걷는 사람 (2026-09-03) ────────────────────────────
-       이 집은 곳곳에서 outline 을 끄고 제 방식으로 대답한다 — 문은 살짝
-       들리고, 테가 밝아지고, 글자 색이 바뀐다. 그 대답은 그대로 두되,
-       **어디서든 반드시 보이는 고리**를 하나 깐다. 87곳의 `outline: none`
-       을 하나씩 걷는 대신 한 줄로 덮는 까닭은, 새 단추를 만들 때마다
-       또 꺼질 자리이기 때문이다. !important 는 여기서 옳다 — 이 고리는
-       아래에서 조용히 꺼서는 안 되는 것이다.
-       마우스로 누른 사람에게는 뜨지 않는다 (:focus 가 아니라 :focus-visible). */
-    :focus-visible {
-      outline: 2px solid var(--brass) !important;
-      outline-offset: 2px;
-    }
-  </style>
-  <!-- 이 집이 누구의 것이고 어떤 방이 있는지 — 검색 결과의 얼굴을 정한다 -->
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebSite","name":"로키즈의 방",
-   "alternateName":"rokiz.net","url":"https://www.rokiz.net/","inLanguage":"ko",
-   "description":"문마다 다른 방이 있습니다 — 로키즈의 개인 사이트.",
-   "hasPart":[
-     {"@type":"WebSite","name":"서가 뒤의 방","url":"https://www.rokiz.net/books/",
-      "description":"한 사람의 장서를 그대로 옮겨 담은 밤의 서재."},
-     {"@type":"WebPage","name":"지금","url":"https://www.rokiz.net/now/",
-      "description":"요즘 읽는 것과 만드는 것."}]}
-  </script>
+/* ── 작업물 ── */
+#w-works{width:min(720px,92vw)}
+.finder{display:grid;grid-template-columns:150px 1fr;min-height:320px}
+#w-works .body{padding:0}
+.filters{padding:10px 8px;background:var(--fill);border-right:.5px solid var(--sep);display:flex;flex-direction:column;gap:1px}
+.filters h3{font-size:11px;font-weight:600;color:var(--text2);padding:2px 8px 4px}
+.filters button{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:6px;font-size:13px;text-align:left}
+.filters button i{width:9px;height:9px;border-radius:50%;flex:none}
+.filters button.on{background:var(--fill2)}
+.filters button small{margin-left:auto;color:var(--text2);font-size:11px}
+.works{padding:16px}
+.works{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;align-items:start}
+.work{align-self:start}
+.work{text-align:left;display:block;width:100%}
+.work[hidden]{display:none}
+.work canvas,.work img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;box-shadow:0 0 0 .5px var(--sep),0 4px 12px rgba(0,0,0,.18);transition:transform .15s}
+.work:hover canvas,.work:hover img{transform:scale(1.03)}
+.work span{display:block;padding:8px 2px 0;font-size:13px;font-weight:600}
+.work span small{display:block;font-weight:400;color:var(--text2);font-size:12px}
+
+/* ── 제작 과정 (설정 앱 같은 묶음 목록) ── */
+#w-process{width:min(440px,92vw)}
+.group{list-style:none;background:var(--field);border-radius:10px;box-shadow:0 0 0 .5px var(--sep)}
+.group li{display:flex;gap:12px;padding:11px 14px;align-items:flex-start}
+.group li+li{border-top:.5px solid var(--sep)}
+.group .no{flex:none;width:28px;height:28px;border-radius:7px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;font-style:normal}
+.group b{display:block;font-size:14px}
+.group span{color:var(--text2);font-size:13px}
+
+/* ── 소개 · 문의 ── */
+#w-about{width:min(340px,92vw)}
+#w-about .body{text-align:center;padding:26px 26px 22px}
+#w-about .logo{width:84px;height:84px;margin-bottom:16px;box-shadow:0 8px 20px rgba(0,0,0,.35),inset 0 0 0 .5px rgba(255,255,255,.28)}
+#w-about .wordmark{font-size:26px;margin-bottom:8px}
+#w-about .slogan{display:block;margin-bottom:6px}
+#w-about h2{margin-bottom:0}
+#w-about .sub{font-size:12px;margin-bottom:14px}
+#w-about .acts{display:flex;gap:8px;justify-content:center;margin-top:18px}
+.ghost{border-radius:8px;padding:6px 14px;background:var(--fill);font-weight:500;font-size:13px}
+.ghost:hover{background:var(--fill2)}
+#w-contact{width:min(400px,92vw)}
+.rows{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:12px 0 4px;font-size:13px}
+.rows dt{color:var(--text2)}
+.rows a{text-decoration:none}
+.rows a:hover{text-decoration:underline}
+.brief{display:grid;gap:10px;margin-top:14px}
+.brief label{display:grid;gap:3px;font-size:12px;color:var(--text2)}
+.brief input,.brief select,.brief textarea{
+  font:inherit;font-size:14px;color:var(--text);background:var(--field);border:0;border-radius:6px;padding:6px 9px;width:100%;
+  box-shadow:0 0 0 .5px var(--sep),0 1px 1.5px rgba(0,0,0,.08);outline:0;color-scheme:light;
+}
+:root[data-theme="dark"] .brief :is(input,select,textarea){color-scheme:dark}
+.brief :is(input,select,textarea):focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 50%,transparent)}
+.brief textarea{min-height:76px;resize:vertical}
+.brief .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btnrow{display:grid;grid-template-columns:1fr auto;gap:8px}
+.btnrow button{border-radius:8px;padding:6px 14px;background:var(--fill);font-weight:500;font-size:13px}
+.btnrow button:hover{background:var(--fill2)}
+
+/* ── 배경 고르기 (밝게·어둡게와 따로) ── */
+[data-wall="rokiz"]:root{--base:#050505;--line:rgba(247,206,10,.6);--wall:
+  radial-gradient(60% 55% at 68% 18%,rgba(247,206,10,.2) 0,transparent 62%),radial-gradient(55% 55% at 0% 85%,rgba(247,206,10,.09) 0,transparent 60%),
+  radial-gradient(60% 50% at 100% 100%,#1c1a12 0,transparent 60%),linear-gradient(180deg,#121212,#050505)}
+:root[data-wall="indigo"]{--bar:rgba(30,24,70,.4);--dock:rgba(40,38,70,.42)}
+:root[data-wall="dusk"]{--base:#1a0b1e;--line:rgba(255,210,180,.7);--wall:
+  radial-gradient(80% 70% at 75% 15%,#b0413e 0,transparent 60%),radial-gradient(70% 60% at 0% 90%,#3b1a5c 0,transparent 60%),
+  radial-gradient(60% 50% at 100% 100%,#e0884a 0,transparent 60%),linear-gradient(180deg,#3a1440,#1a0b1e)}
+:root[data-wall="graphite"]{--base:#0e0f12;--line:rgba(220,225,235,.55);--wall:
+  radial-gradient(70% 70% at 60% 20%,#3a3f4a 0,transparent 62%),radial-gradient(60% 60% at 0% 80%,#1f232b 0,transparent 60%),linear-gradient(180deg,#1b1d22,#0e0f12)}
+
+/* ── 위젯 ── */
+#widgets{position:absolute;left:16px;top:16px;display:grid;grid-template-columns:repeat(2,158px);gap:14px}
+.widget{height:158px;border-radius:22px;overflow:hidden;position:relative;text-align:left;color:#fff;
+  background:var(--dock);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
+  box-shadow:inset 0 0 0 .5px var(--edge),0 10px 30px rgba(0,0,0,.25)}
+#wClock{padding:16px;display:flex;flex-direction:column;justify-content:space-between;color:var(--menu)}
+#wClock .d{font-size:13px;font-weight:700;color:#ff453a}
+#wClock .day{font-size:40px;font-weight:300;line-height:1;letter-spacing:-1px}
+#wClock .time{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+#wClock small{font-size:12px;opacity:.65}
+#wLatest canvas,#wLatest img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#wLatest img{transform:scale(1.35)}  /* 유튜브 썸네일 위아래 검은 띠를 잘라 낸다 */
+#wLatest .cap{position:absolute;inset:auto 0 0 0;padding:26px 14px 12px;background:linear-gradient(transparent,rgba(0,0,0,.7));font-size:13px;font-weight:600;line-height:1.3}
+#wLatest .cap small{display:block;font-weight:500;font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.5px}
+#wLatest:hover{filter:brightness(1.08)}
+
+/* ── 스포트라이트 ── */
+#spot{position:fixed;inset:0;z-index:9500;display:none;justify-content:center;align-items:flex-start;padding:18vh 16px 0;background:rgba(0,0,0,.12)}
+#spot.on{display:flex}
+#spot .box{width:min(620px,100%);border-radius:16px;overflow:hidden;background:var(--win);backdrop-filter:blur(50px) saturate(180%);-webkit-backdrop-filter:blur(50px) saturate(180%);box-shadow:var(--shadow);animation:pop .15s ease-out}
+#spot .q{display:flex;align-items:center;gap:12px;padding:0 18px;height:56px}
+#spot .q svg{width:22px;height:22px;fill:var(--text2);flex:none}
+#spot input{flex:1;min-width:0;font:inherit;font-size:22px;font-weight:300;color:var(--text);background:none;border:0;outline:0}
+#spot input::placeholder{color:var(--text2)}
+#spotList{list-style:none;border-top:.5px solid var(--sep);padding:6px;max-height:46vh;overflow:auto}
+#spotList:empty{display:none}
+#spotList li{display:flex;align-items:center;gap:12px;padding:6px 10px;border-radius:8px;cursor:pointer}
+#spotList li.sel{background:var(--accent);color:var(--on-accent)}
+#spotList li.sel small{color:rgba(0,0,0,.6)}
+#spotList .app{width:30px;height:30px;border-radius:7px;flex:none}
+#spotList .app svg{width:16px;height:16px}
+#spotList img,#spotList canvas{width:48px;height:27px;border-radius:4px;object-fit:cover;flex:none}
+#spotList b{font-weight:500}
+#spotList small{margin-left:auto;color:var(--text2);font-size:12px;white-space:nowrap}
+
+/* ── 오른쪽 누름 메뉴 ── */
+#ctx{position:fixed;z-index:9400;display:none;min-width:200px;padding:5px;border-radius:9px;font-size:13.5px;background:var(--win);backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);box-shadow:var(--shadow)}
+#ctx.on{display:block}
+#ctx button{display:block;width:100%;text-align:left;padding:3px 10px;border-radius:5px}
+#ctx button:hover{background:var(--accent);color:var(--on-accent)}
+#ctx hr{border:0;border-top:.5px solid var(--sep);margin:5px 8px}
+
+/* ── 알림 ── */
+#toast{position:fixed;top:40px;right:12px;z-index:9300;width:min(340px,calc(100vw - 24px));display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:18px;text-align:left;
+  background:var(--win);backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);box-shadow:var(--shadow);
+  transform:translateX(calc(100% + 24px));transition:transform .45s cubic-bezier(.2,.9,.3,1)}
+#toast.on{transform:none}
+#toast .logo{width:38px;height:38px;flex:none}
+#toast b{display:block;font-size:13px}
+#toast span{display:block;font-size:13px;color:var(--text2);line-height:1.35}
+#toast .x{position:absolute;top:-6px;left:-6px;width:20px;height:20px;border-radius:50%;background:var(--win);box-shadow:var(--shadow);font-size:12px;line-height:1;opacity:0}
+#toast:hover .x{opacity:1}
+
+/* ── 독 ── */
+#dock{
+  position:fixed;left:50%;bottom:8px;transform:translateX(-50%);z-index:8999;display:flex;align-items:flex-end;gap:8px;padding:7px 9px 5px;
+  border-radius:24px;background:var(--dock);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
+  box-shadow:inset 0 0 0 .5px var(--edge),0 10px 30px rgba(0,0,0,.3);
+}
+#dock .item{position:relative;display:grid;justify-items:center;gap:3px;transition:transform .15s ease-out;transform-origin:bottom;text-decoration:none}
+#dock .item::after{content:"";width:4px;height:4px;border-radius:50%;background:transparent}
+#dock .item.live::after{background:var(--menu);opacity:.75}
+#dock .sep{width:1px;height:46px;background:var(--edge);margin:0 2px 12px}
+#dock .ext .app::after{content:"↗";position:absolute;top:-3px;right:-3px;width:17px;height:17px;border-radius:50%;background:#1c1c1e;color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;box-shadow:0 0 0 1.5px rgba(255,255,255,.25)}
+#dock .app{position:relative}
+#dock .tip{
+  position:absolute;bottom:calc(100% + 10px);padding:3px 10px;border-radius:6px;font-size:12px;white-space:nowrap;color:var(--text);
+  background:var(--win);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:var(--shadow);opacity:0;pointer-events:none
+}
+@media (hover:hover){
+  #dock .item:hover{transform:scale(1.28)}
+  #dock .item:has(+.item:hover),#dock .item:hover+.item{transform:scale(1.12)}
+  #dock .item:hover .tip{opacity:1;transform:scale(.78)}
+}
+
+/* ── 켜지는 화면 ── */
+#boot{position:fixed;inset:0;z-index:9999;background:#000;display:grid;place-items:center;cursor:pointer;transition:opacity .4s}
+#boot.off{display:none}
+#boot.bye{opacity:0}
+#boot>div{text-align:center}
+#boot .logo{display:grid;width:150px;background:none;box-shadow:none;margin:0 auto 14px}
+#boot .logo svg{width:100%}
+#boot .wordmark{font-size:38px;margin-bottom:10px}
+#boot .slogan{display:block;font-size:11px;margin-bottom:34px}
+#boot .pbar{margin:0 auto}
+#boot .pbar{width:200px;height:5px;border-radius:9px;background:rgba(255,255,255,.22);overflow:hidden}
+#boot .pbar i{display:block;height:100%;width:0;background:var(--brand);border-radius:9px;transition:width 1.1s cubic-bezier(.3,.1,.2,1)}
+
+/* ── 좁은 화면: 창을 세로로 쌓는다 ── */
+@media (max-width:760px){
+  body{overflow:auto}
+  #desktop{position:static;padding:44px 12px 104px;display:flex;flex-direction:column;gap:16px}
+  #deskicons{display:none}
+  #widgets{position:static;grid-template-columns:1fr 1fr}
+  .finder{grid-template-columns:1fr}
+  .filters{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:.5px solid var(--sep)}
+  .filters h3{display:none}
+  .filters button{white-space:nowrap}
+  .win{position:static!important;width:100%!important;height:auto!important}
+  .win .body{max-height:none}
+  .lights .z{display:none}
+  #menubar button:not(.keep){display:none}
+  #dock{gap:5px;padding:6px 7px 4px;border-radius:20px}
+  #dock .app{width:44px;height:44px;border-radius:11px}
+  #dock .app svg{width:23px;height:23px}
+  #dock .sep{height:36px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
-<main>
-  <p class="latin">ROKIZ</p>
-  <h1>로키즈의 방</h1>
-  <p class="sub">문마다 다른 방이 있습니다 — 지금은 셋이 열려 있습니다.</p>
-  <!-- 셈은 그 방의 문 안으로 갔다 (아래 .door em). 여기 남는 것은
-       서재 안쪽까지 들어가야 보이던 「지금 펼쳐 둔 책」 한 문장뿐이다 -->
-  <p class="nowline" id="nowline" hidden></p>
-  <div class="doors">
-    <a class="door" href="/books/">
-      <b>서가 뒤의 방</b>
-      <!-- 권수는 적지 않는다 — 장서는 계속 늘고, 정적 파일의 숫자는 반드시 거짓이 된다.
-           오늘의 숫자는 위의 .today 줄이 서재에 직접 물어 온다 -->
-      <small>한 사람의 장서를 그대로<br>옮겨 담은 밤의 서재</small>
-      <em id="d-books" data-baked="2026-09-04">544권 · 27권 읽음</em>
-    </a>
-    <a class="door" href="/now/">
-      <b>지금</b>
-      <small>요즘 읽는 것과<br>만드는 것</small>
-      <em id="d-now" data-baked="2026-09-04" data-at="2026-09-01T14:52:06.469+00:00"></em>
-    </a>
-    <!-- 2026년 9월 3일, 첫 글 「시절 인연」이 놓이면서 열린 문.
-         .door.locked 규칙은 지우지 않았다 — 다음에 또 짓다 만 방이 생기면
-         그때 잠긴 문으로 이름부터 걸어 두려는 것이다. -->
-    <a class="door" href="/notes/">
-      <b>글</b>
-      <small>문장으로 남겨 둔<br>것들</small>
-      <em id="d-notes" data-baked="2026-09-04" data-count="1" data-at="2026-09-03T11:19:52.377+00:00"></em>
-    </a>
+
+<div id="wall" aria-hidden="true">
+  <svg viewBox="0 0 1440 900" preserveAspectRatio="none">
+    <defs><filter id="soft"><feGaussianBlur stdDeviation="1.2"/></filter></defs>
+    <g filter="url(#soft)">
+      <path d="M-20 300 C 300 180, 520 470, 800 400 S 1250 120, 1460 250" stroke-width="1" opacity=".35"/>
+      <path d="M-20 430 C 260 330, 560 640, 860 520 S 1260 300, 1460 380" stroke-width="2.200" opacity=".7"/>
+      <path d="M-20 520 C 300 440, 600 720, 900 600 S 1280 400, 1460 470" stroke-width="1.400" opacity=".5"/>
+      <path d="M-20 640 C 320 560, 640 800, 940 700 S 1300 540, 1460 600" stroke-width="1" opacity=".3"/>
+    </g>
+  </svg>
+</div>
+
+<header id="menubar">
+  <span class="brand"><i class="logo"></i>로키즈미디어</span>
+  <button data-open="about">소개</button>
+  <button data-open="works">작업물</button>
+  <button data-open="process">제작 과정</button>
+  <button data-open="contact">문의</button>
+  <span class="spacer"></span>
+  <button class="keep" id="spotBtn" aria-label="찾기"><svg viewBox="0 0 24 24"><path d="M10.500 3a7.500 7.500 0 0 1 5.900 12.100l4.300 4.300-1.400 1.400-4.300-4.300A7.500 7.500 0 1 1 10.500 3zm0 2a5.500 5.500 0 1 0 0 11 5.500 5.500 0 0 0 0-11z"/></svg></button>
+  <button class="keep" id="themeBtn" aria-label="밝게·어둡게 바꾸기"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 2v14a7 7 0 0 1 0-14z"/></svg></button>
+  <span id="clock">--:--</span>
+</header>
+
+<main id="desktop">
+  <div id="deskicons"></div>
+  <div id="widgets">
+    <div class="widget" id="wClock"><div><div class="d" id="wcDow"></div><div class="day" id="wcDay"></div></div><div><div class="time" id="wcTime"></div><small>서울</small></div></div>
+    <button class="widget" id="wLatest" aria-label="최근 작업 보기"></button>
   </div>
+
+  <section class="win open" id="w-player" data-x="0.5" data-y="0.3" aria-label="쇼릴 플레이어">
+    <div class="bar"><span class="t">쇼릴</span></div>
+    <div class="body">
+      <div class="tv" id="tv">
+        <canvas id="screen" width="320" height="180"></canvas>
+        <img id="poster" alt="">
+        <button id="bigPlay" aria-label="영상 재생"><i><svg viewBox="0 0 24 24"><path d="M6 3.5v17a1 1 0 0 0 1.5.86l14-8.5a1 1 0 0 0 0-1.72l-14-8.5A1 1 0 0 0 6 3.5z"/></svg></i></button>
+        <div id="embed"></div>
+      </div>
+      <div class="ctrl">
+        <button class="ic" id="bPrev" aria-label="이전"><svg viewBox="0 0 24 24"><path d="M4 5h2v14H4zM20 5.6v12.8a.8.8 0 0 1-1.2.7L8 12.7a.8.8 0 0 1 0-1.4l10.8-6.4a.8.8 0 0 1 1.2.7z"/></svg></button>
+        <button class="ic" id="bPlay" aria-label="재생/멈춤"></button>
+        <button class="ic" id="bNext" aria-label="다음"><svg viewBox="0 0 24 24"><path d="M18 5h2v14h-2zM4 5.6v12.8a.8.8 0 0 0 1.2.7L16 12.7a.8.8 0 0 0 0-1.4L5.2 4.9A.8.8 0 0 0 4 5.6z"/></svg></button>
+        <div class="now"><b id="nowTitle">—</b><small><span id="nowCh"></span> · <span id="nowMeta"></span></small></div>
+        <button class="pill" data-open="contact">제작 문의</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="win" id="w-about" data-x="0.03" data-y="0.85" aria-label="소개">
+    <div class="bar"><span class="t">소개</span></div>
+    <div class="body">
+      <i class="logo"></i>
+      <h2 class="wordmark">ROKIZ MEDIA</h2>
+      <span class="slogan">GET VISUALIZED</span>
+      <p class="sub">로키즈미디어 · 영상제작 스튜디오</p>
+      <p id="aboutText"></p>
+      <p id="aboutTags"></p>
+      <div class="acts"><button class="ghost" data-open="works">작업물 보기</button><button class="pill" data-open="contact">제작 문의</button></div>
+    </div>
+  </section>
+
+  <section class="win" id="w-works" data-x="0.1" data-y="0.75" aria-label="작업물">
+    <div class="bar"><span class="t">작업물</span></div>
+    <div class="body"><div class="finder"><nav class="filters" id="filters"></nav><div class="works" id="workList"></div></div></div>
+  </section>
+
+  <section class="win" id="w-contact" data-x="0.82" data-y="0.4" aria-label="문의">
+    <div class="bar"><span class="t">문의</span></div>
+    <div class="body">
+      <h2>같이 만들어요.</h2>
+      <p>어떤 영상이 필요한지 편하게 적어 보내 주세요.</p>
+      <dl class="rows" id="contactRows"></dl>
+      <form class="brief" id="brief">
+        <div class="two">
+          <label>이름·회사<input name="who" autocomplete="organization"></label>
+          <label>남기실 연락처<input name="reply" autocomplete="off" placeholder="전화나 메일"></label>
+        </div>
+        <label>내용<textarea name="msg" placeholder="어디에 쓸 영상인지, 길이, 참고 영상 링크 등"></textarea></label>
+        <div class="btnrow"><a class="pill" id="mailBtn" href="#">메일 앱으로 보내기</a><button type="button" id="copyBtn">복사</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="win" id="w-process" data-x="0.68" data-y="0.8" aria-label="제작 과정">
+    <div class="bar"><span class="t">제작 과정</span></div>
+    <div class="body"><ol class="group" id="stepList"></ol></div>
+  </section>
+
 </main>
-<footer>rokiz.net · <a href="/books/">서재</a> · <a href="/now/">지금</a> · <a href="/notes/">글</a></footer>
+
+<nav id="dock" aria-label="독"></nav>
+
+<div id="spot" role="dialog" aria-label="찾기"><div class="box"><div class="q"><svg viewBox="0 0 24 24"><path d="M10.500 3a7.500 7.500 0 0 1 5.900 12.100l4.300 4.300-1.400 1.400-4.300-4.300A7.500 7.500 0 1 1 10.500 3zm0 2a5.500 5.500 0 1 0 0 11 5.500 5.500 0 0 0 0-11z"/></svg><input id="spotIn" placeholder="작업물, 메뉴 찾기" autocomplete="off" spellcheck="false"></div><ul id="spotList"></ul></div></div>
+<div id="ctx" role="menu"></div>
+<div id="toast" role="status"><button class="x" aria-label="알림 닫기">×</button><i class="logo"></i><div><b>로키즈미디어</b><span id="toastText"></span></div></div>
+
+<div id="boot" class="off" role="presentation"><div><i class="logo"></i><div class="wordmark">ROKIZ MEDIA</div><span class="slogan">GET VISUALIZED</span><div class="pbar"><i id="pfill"></i></div></div></div>
 
 <script>
-/* 램프가 손을 따라온다 — 마우스가 있는 기계에서만.
-   손가락뿐인 기계(폰)에서는 빛이 가운데 머문다: 손가락은 늘 화면을 덮고
-   있어 따라다니게 하면 빛이 손 밑에 숨는다. */
-if (matchMedia("(hover: hover) and (pointer: fine)").matches &&
-    !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-  addEventListener("pointermove", (e) => {
-    document.documentElement.style.setProperty("--mx", (e.clientX / innerWidth * 100).toFixed(1) + "%");
-    document.documentElement.style.setProperty("--my", (e.clientY / innerHeight * 100).toFixed(1) + "%");
-  }, { passive: true });
-}
+// ────────────────────────────────────────────────
+// 내용은 여기만 고치면 된다. (지금 값은 전부 임시)
+// ────────────────────────────────────────────────
+const CONFIG = {
+  about: '기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 끝내는 영상제작 스튜디오입니다. 홍보 영상, 유튜브 콘텐츠, 쇼츠, 설명 영상을 만듭니다.',
+  tags: ['홍보 영상', '유튜브', '쇼츠', '모션그래픽', '자막·TTS'],
+  // src 에는 유튜브 주소(watch · youtu.be · shorts · live) 나 mp4 주소를 넣는다. 비워 두면 움직이는 색 화면이 대신 나온다.
+  // cat 은 작업물 창의 분류 단추가 된다.
+  works: [
+    {title: '(예시) 유튜브 링크 — Big Buck Bunny', meta: 'Blender Foundation · 바꿔 넣을 자리', cat: '유튜브', scene: 'sunset', src: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ'},
+    {title: '브랜드 홍보 영상', meta: '2026 · 60초', cat: '홍보', scene: 'noon', src: ''},
+    {title: '유튜브 설명 영상', meta: '2026 · 8분', cat: '유튜브', scene: 'night', src: ''},
+    {title: '쇼츠 시리즈', meta: '2026 · 30초 × 12', cat: '쇼츠', scene: 'mint', src: ''},
+    {title: '모션그래픽 인트로', meta: '2026 · 10초', cat: '모션', scene: 'sunset', src: ''},
+  ],
+  process: [
+    ['문의', '필요한 영상과 일정, 예산을 알려 주세요.'],
+    ['기획·견적', '구성안과 견적을 보내 드립니다.'],
+    ['촬영·제작', '촬영하거나 그래픽을 만듭니다.'],
+    ['편집·수정', '가편집본을 보고 의견을 주시면 반영합니다.'],
+    ['납품', '쓰실 곳에 맞는 규격으로 드립니다.'],
+  ],
+  contact: {담당: '조민호', 메일: 'rokiz@naver.com'},
+  // 독 오른쪽에 붙는 바깥 링크. 주소를 채우면 나타난다.
+  links: {youtube: '', instagram: ''},
+  // 처음 들어오면 오른쪽 위에 한 번 뜨는 알림. 비우면 안 뜬다.
+  notice: '지금 영상 제작 문의를 받고 있어요. 눌러서 바로 적어 보세요.',
+};
 
-/* 밤에는 문 뒤에 불이 켜진다 — 탭의 작은 얼굴이 시각을 따라 바뀐다.
-   해가 진 뒤(18시~6시)면 열쇠구멍으로 빛이 샌다. 보는 사람의 시계를 따른다. */
-(function () {
-  const 시 = new Date().getHours();
-  if (시 >= 18 || 시 < 6) {
-    const l = document.querySelector('link[rel="icon"]');
-    if (l) l.href = "/favicon-night.svg";
+// ── 앱 아이콘: [창 id, 이름, 바탕 그라데이션, 아이콘 path] ──
+const APPS = [
+  ['player', '쇼릴', ['#1c1c1e', '#000'], 'LOGO'],
+  ['about', '소개', ['#5ac8fa', '#007aff'], 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 4.2a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8zM10.7 11h2.6v6.800h-2.600z'],
+  ['works', '작업물', ['#ffd60a', '#ff9f0a'], 'M3 5.500A1.500 1.500 0 0 1 4.500 4h5l2 2.500h8A1.500 1.500 0 0 1 21 8v10.500a1.500 1.500 0 0 1-1.500 1.500h-15A1.500 1.500 0 0 1 3 18.500z'],
+  ['process', '제작 과정', ['#63e6be', '#30b0c7'], 'M4 5h3v3H4zm5 .5h11v2H9zM4 10.500h3v3H4zm5 .5h11v2H9zM4 16h3v3H4zm5 .5h11v2H9z'],
+  ['contact', '문의', ['#34c759', '#248a3d'], 'M3 6.500A1.500 1.500 0 0 1 4.500 5h15A1.500 1.500 0 0 1 21 6.500v.4l-9 5.600-9-5.600zm0 2.800v8.200A1.500 1.500 0 0 0 4.500 19h15a1.500 1.500 0 0 0 1.500-1.500V9.300l-9 5.600z'],
+];
+const LINKS = {
+  youtube: ['유튜브', ['#ff5a52', '#d70015'], 'M21.6 7.2a2.500 2.500 0 0 0-1.800-1.800C18.200 5 12 5 12 5s-6.200 0-7.800.4A2.500 2.500 0 0 0 2.400 7.200C2 8.800 2 12 2 12s0 3.200.4 4.800a2.500 2.500 0 0 0 1.800 1.800C5.800 19 12 19 12 19s6.200 0 7.800-.4a2.500 2.500 0 0 0 1.800-1.800c.4-1.600.4-4.800.4-4.800s0-3.200-.4-4.800zM10 15V9l5.200 3z'],
+  instagram: ['인스타그램', ['#f9ce34', '#ee2a7b'], 'M12 7.200a4.800 4.800 0 1 0 0 9.600 4.800 4.800 0 0 0 0-9.600zm0 7.900a3.100 3.100 0 1 1 0-6.200 3.100 3.100 0 0 1 0 6.200zM17 3H7a4 4 0 0 0-4 4v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V7a4 4 0 0 0-4-4zm2.300 14a2.300 2.300 0 0 1-2.300 2.300H7A2.300 2.300 0 0 1 4.700 17V7A2.300 2.300 0 0 1 7 4.700h10A2.300 2.300 0 0 1 19.300 7zM17.200 5.700a1.100 1.100 0 1 0 0 2.200 1.100 1.100 0 0 0 0-2.200z'],
+};
+const ROW_COLORS = ['#ff9f0a', '#ff375f', '#5e5ce6', '#30b0c7', '#34c759'];
+
+// ── 색 화면 (영상이 없을 때 대신 나오는 움직이는 그라데이션) ──
+const SCENES = {
+  sunset: ['#2b1b4a', '#ff5f8f', '#ffb36b', '#c86dd7'],
+  night:  ['#070b24', '#1d3f8f', '#5e5ce6', '#0a84ff'],
+  mint:   ['#0e3b43', '#30b0c7', '#63e6be', '#e2f7e1'],
+  noon:   ['#2456a8', '#5ac8fa', '#ffd60a', '#ff9f0a'],
+};
+function drawScene(c, name, t, W = 320, H = 180){
+  const p = SCENES[name] || SCENES.sunset;
+  c.globalCompositeOperation = 'source-over'; c.fillStyle = p[0]; c.fillRect(0, 0, W, H);
+  c.globalCompositeOperation = 'screen';
+  for (let i = 1; i < 4; i++) {
+    const x = W * (.5 + .38 * Math.sin(t * .23 * i + i * 2)), y = H * (.5 + .4 * Math.cos(t * .19 * i + i)), r = H * (.75 + .15 * Math.sin(t * .3 + i));
+    const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, p[i]); g.addColorStop(1, 'transparent');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
   }
-})();
-
-/* ── 문 안의 셈: 구운 것과 오늘 것 ──────────────────────────────
-   문 안의 한 줄은 서재와 글방에 그 자리에서 묻는 값이라, 답이 오기 전에는
-   비어 있었다 — 처음 오는 사람은 몇 초 동안 빈 문 셋을 본다. 그래서
-   tools/bake-doors.mjs 가 그 값을 미리 글자로 구워 둔다(<em data-baked>).
-
-   구운 숫자가 거짓이 되지 않게 두 가지를 지킨다.
-     ① 시간이 흐르면 틀리는 말(「2일 전」)은 굽지 않는다. 그 시각(data-at)만
-        심어 두고 아래 지난말() 이 **오늘 기준으로** 다시 센다.
-     ② 다시 셀 수 없는 것(권수·편수)은 서재가 답하면 갈아 끼우고, 끝내
-        답하지 못하면 그때만 「9.4 기준」이라고 밝힌다. */
-
-/* 두 곳(갈피·글)이 같은 말투를 쓰도록 한 자리에 둔다.
-   ── 집 안에서 한 벌인 규칙이다 ─────────────────────────────
-   이 갈피 시각은 /now/ 의 첫 줄과 서재의 책상에도 그대로 걸린다. 세 자리가
-   저마다 셈하다 여섯 구간이 어긋나 있었다(2026-09-04). 고칠 때는 세 곳을
-   함께 고친다: 여기 · now/index.html · (서재) js/app.js 의 agoOf.
-   tools/check-house.mjs 가 세 자리가 같은 규칙인지 재고 있다.
-
-   달을 열둘까지 세지 않는 것은, 서른 날로 나누면 364일이 「12달 전」이
-   되기 때문이다 — 열두 달은 한 해다. 열한 달에서 멈추고 365일부터 해로.
-
-   날은 **자정을 몇 번 넘었는가**로 센다. 스물네 시간으로 나누면 어제 저녁
-   여덟 시에 놓은 글을 오늘 아침에 보고도 「오늘 놓임」이라 말한다(2026-09-04
-   에 재어 확인). 사람은 그것을 어제라고 안다 — 보는 사람의 달력을 따른다. */
-function 잔날(iso) {
-  const a = new Date(iso), b = new Date();
-  return Math.round((new Date(b.getFullYear(), b.getMonth(), b.getDate())
-                   - new Date(a.getFullYear(), a.getMonth(), a.getDate())) / 86400000);
-}
-function 지난말(iso, 어미) {
-  const 날 = 잔날(iso);
-  if (날 <= 0) return "오늘 " + 어미;
-  if (날 === 1) return "어제 " + 어미;
-  if (날 < 30) return `${날}일 전`;
-  if (날 < 365) return `${Math.min(11, Math.floor(날 / 30))}달 전`;
-  return `${Math.floor(날 / 365)}해 전`;
+  c.globalCompositeOperation = 'source-over';
 }
 
-/* 오늘 것이 왔다 — 구운 자리를 갈아 끼우고 「언제 기준」 꼬리를 걷는다 */
-function 갈아끼움(el, 말) {
-  if (!el) return;
-  el.textContent = 말;
-  el.dataset.fresh = "1";
-  el.hidden = false;
-}
+// ── 내용 채우기 ──
+const $ = s => document.querySelector(s);
+const SVG = d => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
+// 로고(필름 카메라). 명함 그림을 보고 path 로 다시 그린 것 — 원본 벡터 파일이 생기면 이 path 만 바꾸면 된다.
+const LOGO_PATH = 'M125 0H360Q380 0 380 20V155Q380 175 360 175C310 178 300 185 280 215Q272 228 258 228H20Q0 228 0 208V72Q0 53 20 52C70 50 80 42 100 12Q108 0 125 0Z'
+  + [72, 111, 150, 189].map(y => `M20 ${y}h24v22h-24z`).join('') + [15, 54, 93, 132].map(y => `M336 ${y}h24v22h-24z`).join('')
+  + 'M545 22V144Q545 166 526 155L420 94Q402 83 420 72L526 11Q545 0 545 22Z';
+const LOGO = cls => `<svg class="${cls || ''}" viewBox="0 0 548 228" aria-hidden="true"><path fill-rule="evenodd" d="${LOGO_PATH}"/></svg>`;
+document.querySelectorAll('.logo').forEach(el => el.innerHTML = LOGO());
+const appIcon = ([c1, c2], d) => `<span class="app" style="background:linear-gradient(180deg,${c1},${c2})">${d === 'LOGO' ? LOGO('lg') : SVG(d)}</span>`;
+const groupRows = rows => rows.map(([a, b], i) => `<li><i class="no" style="background:${ROW_COLORS[i % ROW_COLORS.length]}">${i + 1}</i><div><b>${a}</b><span>${b}</span></div></li>`).join('');
+$('#aboutText').textContent = CONFIG.about;
+$('#aboutTags').innerHTML = CONFIG.tags.map(t => `<span class="tag">${t}</span>`).join('');
+$('#stepList').innerHTML = groupRows(CONFIG.process);
+const linkOf = (k, v) => k === '메일' ? `mailto:${v}` : k === '전화' ? `tel:${v.replace(/[^\d+]/g, '')}` : k === '웹' ? `https://${v.replace(/^https?:\/\//, '')}` : '';
+$('#contactRows').innerHTML = Object.entries(CONFIG.contact).map(([k, v]) => { const h = linkOf(k, v); return `<dt>${k}</dt><dd>${h ? `<a href="${h}"${k === '웹' ? ' target="_blank" rel="noopener"' : ''}>${v}</a>` : v}</dd>`; }).join('');
+// 창마다 신호등 단추를 넣는다
+document.querySelectorAll('.win .bar').forEach(b => b.insertAdjacentHTML('afterbegin',
+  '<span class="lights"><button class="c" aria-label="닫기">×</button><button class="m" aria-label="독으로 내리기">−</button><button class="z" aria-label="크게·원래대로">+</button></span>'));
 
-/* 구운 것을 먼저 편다 — 서재가 답하기 전에도 문 안이 비어 있지 않도록.
-   시각이 심긴 자리는 그 자리에서 오늘 기준으로 다시 세어 말한다. */
-(function 구운것을편다() {
-  const n = document.getElementById("d-now");
-  if (n?.dataset.at) { n.textContent = 지난말(n.dataset.at, "움직임"); n.hidden = false; }
-  const t = document.getElementById("d-notes");
-  if (t?.dataset.count) {
-    t.textContent = `${t.dataset.count}편` +
-      (t.dataset.at ? " · " + 지난말(t.dataset.at, "놓임") : "");
-    t.hidden = false;
+// ── 문의 양식: 서버로 보내지 않고, 적은 내용을 메일 앱에 채워 연다 ──
+function briefText(){
+  const f = new FormData($('#brief'));
+  return ['이름·회사: ' + (f.get('who') || ''), '연락처: ' + (f.get('reply') || ''), '', f.get('msg') || ''].join('\n');
+}
+function syncMail(){ $('#mailBtn').href = 'mailto:' + CONFIG.contact.메일 + '?subject=' + encodeURIComponent('[영상 제작 문의]') + '&body=' + encodeURIComponent(briefText()); }
+$('#brief').addEventListener('input', syncMail); syncMail();
+$('#copyBtn').onclick = async () => {
+  try { await navigator.clipboard.writeText(briefText()); $('#copyBtn').textContent = '복사됨'; }
+  catch { $('#copyBtn').textContent = '복사 실패'; }
+  setTimeout(() => $('#copyBtn').textContent = '복사', 1500);
+};
+
+// ── 플레이어 ──
+// 유튜브 주소에서 영상 ID(11자)를 뽑는다. 아니면 null.
+function parseYT(url){
+  const m = /(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{11})/.exec(url || '');
+  return m ? {id: m[1], vertical: /\/shorts\//.test(url)} : null;
+}
+const kindOf = w => !w.src ? 'demo' : parseYT(w.src) ? 'yt' : 'file';
+const thumbOf = w => { const y = parseYT(w.src); return y ? `https://i.ytimg.com/vi/${y.id}/hqdefault.jpg` : ''; };
+const PLAY = SVG('M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z'), PAUSE = SVG('M6 4h4.500v16H6zM13.500 4H18v16h-4.500z');
+
+const tv = $('#tv'), sctx = $('#screen').getContext('2d'), embed = $('#embed');
+let ch = 0, playing = true, clockT = 0, last = performance.now();
+function showMedia(){
+  // 지금 영상을 playing 상태에 맞게 화면에 올린다
+  const w = CONFIG.works[ch], kind = kindOf(w);
+  embed.innerHTML = ''; embed.className = ''; tv.classList.remove('poster', 'embed');
+  $('#bPlay').innerHTML = playing ? PAUSE : PLAY;
+  if (kind === 'demo') return;
+  if (!playing) { kind === 'yt' ? $('#poster').src = thumbOf(w) : $('#poster').removeAttribute('src'); tv.classList.add('poster'); return; }
+  if (kind === 'yt') {
+    const y = parseYT(w.src);
+    embed.classList.toggle('vertical', y.vertical);
+    embed.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${y.id}?autoplay=1&rel=0&playsinline=1" title="${w.title.replace(/"/g, '&quot;')}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  } else {
+    const v = document.createElement('video'); v.src = w.src; v.controls = true; v.playsInline = true; v.autoplay = true;
+    embed.append(v);
   }
-})();
+  tv.classList.add('embed');
+}
+function tune(i, autoplay){
+  ch = (i + CONFIG.works.length) % CONFIG.works.length;
+  const w = CONFIG.works[ch];
+  $('#nowTitle').textContent = w.title; $('#nowMeta').textContent = w.meta; $('#nowCh').textContent = `${ch + 1}/${CONFIG.works.length}`;
+  // 실제 영상은 눌러야 틀고(소리 때문에), 색 화면은 바로 움직인다
+  playing = kindOf(w) === 'demo' ? true : !!autoplay;
+  tv.classList.remove('fade'); void tv.offsetWidth; tv.classList.add('fade');
+  showMedia();
+}
+function setPlaying(v){ playing = v; showMedia(); }
+$('#bPrev').onclick = () => tune(ch - 1, false);
+$('#bNext').onclick = () => tune(ch + 1, false);
+$('#bPlay').onclick = () => setPlaying(!playing);
+$('#bigPlay').onclick = () => setPlaying(true);
+function frame(now){
+  const demo = kindOf(CONFIG.works[ch]) === 'demo';
+  if (playing && demo) clockT += (now - last) / 1000;
+  last = now;
+  if (!tv.classList.contains('embed')) drawScene(sctx, CONFIG.works[ch].scene, clockT);
+  requestAnimationFrame(frame);
+}
+tune(0, false); requestAnimationFrame(frame);
 
-/* 셋을 다 물어볼 만한 시간이 지나도 갈리지 않은 자리에는 언제 것인지를
-   밝힌다 — 갈무리를 오늘인 척 두지 않는다 (/now/·/notes/ 와 같은 규칙).
-   다시 셀 수 있는 「지금」 문은 늘 오늘 기준이므로 꼬리가 필요 없다. */
-setTimeout(function () {
-  document.querySelectorAll('.door em[data-baked]:not([data-fresh])').forEach(function (el) {
-    if (el.id === "d-now" || el.querySelector(".asof")) return;
-    const [, 달, 날] = el.dataset.baked.split("-");
-    const 꼬리 = document.createElement("span");
-    꼬리.className = "asof";
-    꼬리.textContent = `${Number(달)}.${Number(날)} 기준`;
-    el.appendChild(꼬리);
-  });
-}, 6000);
-
-/* 서재의 오늘 — 권수와 읽은 권수를 서재에 직접 묻는다.
-   몸통 없이 세기만 하는 질의(Prefer: count=exact + Range: 0-0)라 오가는 것이
-   헤더뿐이다. 무료 요금제의 전송량을 축내지 않으려는 것 — 서재에서 하루
-   3.9GB 를 흘려 본 적이 있다 (books/CLAUDE.md 의 Egress 규칙).
-   못 물어보면 구운 값이 그대로 남는다 — 대문이 서재 때문에 멈추면 안 된다. */
-(async function () {
-  const 집 = "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/books";
-  const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
-  const 머리 = { apikey: 열쇠, Authorization: "Bearer " + 열쇠, Prefer: "count=exact", Range: "0-0" };
-  const 세기 = async (질의) => {
-    const r = await fetch(집 + "?select=id" + 질의, { method: "HEAD", headers: 머리, signal: AbortSignal.timeout(8000) });
-    const m = /\/(\d+)$/.exec(r.headers.get("content-range") || "");
-    return m ? Number(m[1]) : null;
-  };
-  try {
-    const [전부, 읽음] = await Promise.all([
-      세기(""),
-      세기("&read_status=eq." + encodeURIComponent("읽음")),
-    ]);
-    if (!전부) return;
-    갈아끼움(document.getElementById("d-books"),
-      `${전부.toLocaleString()}권 · ${(읽음 || 0).toLocaleString()}권 읽음`);
-  } catch { /* 서재가 자고 있어도 대문은 열려 있어야 한다 — 구운 값이 남는다 */ }
-
-  /* 지금 펼쳐 둔 책 — 서재 안쪽까지 들어가야 보이던 것을 대문에 건다.
-     대문의 얼굴이 매번 조금씩 달라지고, 서재로 들어갈 이유가 하나 생긴다.
-     필요한 칸만 골라 받아 오가는 것이 몇백 바이트를 넘지 않는다. */
-  try {
-    const r = await fetch(
-      집 + "?select=id,title,bookmark_page,page_count,cover_url&read_status=eq." +
-      encodeURIComponent("읽는 중") + "&order=bookmark_at.desc&limit=1",
-      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 },
-        signal: AbortSignal.timeout(8000) });
-    if (!r.ok) return;
-    const [b] = await r.json();
-    if (!b?.title) return;
-    const 쪽 = (b.bookmark_page && b.page_count)
-      ? ` — ${b.page_count}쪽 중 ${b.bookmark_page}쪽` : "";
-    const el = document.getElementById("nowline");
-    el.textContent = "";
-
-    /* 알라딘은 표지가 없을 때 「No Image」 그림 주소를 돌려준다 — 그걸 걸면
-       회색 안내판이 붙는다. 표지가 없는 것으로 친다 (서재와 같은 규칙). */
-    const 표지 = b.cover_url && !/\/noimg/i.test(b.cover_url) ? b.cover_url : null;
-    if (표지) {
-      const im = new Image();
-      im.src = 표지; im.alt = ""; im.loading = "lazy"; im.decoding = "async";
-      im.onerror = () => im.remove();   // 죽은 주소면 그림만 걷고 글은 남긴다
-      el.appendChild(im);
-    }
-    const t = document.createElement("span");
-    t.className = "t";
-    t.textContent = `지금은 「${b.title}」를 펼쳐 두었습니다${쪽}`;
-    /* 갈피 막대 — 쪽수를 둘 다 알 때만. 1% 아래로는 내려가지 않는다 */
-    if (b.bookmark_page && b.page_count) {
-      const bar = document.createElement("span");
-      bar.className = "prog";
-      const i = document.createElement("i");
-      i.style.width = Math.max(1, Math.round(b.bookmark_page / b.page_count * 100)) + "%";
-      bar.appendChild(i);
-      t.appendChild(bar);
-    }
-    el.appendChild(t);
-    el.hidden = false;
-    /* 문 안의 「지금」에도 같은 막대를 얹는다 — 문 앞에서 진도가 보인다 */
-    window.__갈피 = (b.bookmark_page && b.page_count)
-      ? Math.max(1, Math.round(b.bookmark_page / b.page_count * 100)) : null;
-  } catch { /* 없으면 없는 대로 */ }
-
-  /* 「지금」 문 안에는 그 쪽이 마지막으로 움직인 때를 적는다 — 서재의 갈피
-     시각을 그대로 쓴다. now 쪽이 낡았는지 문 앞에서 바로 알 수 있다. */
-  try {
-    const r = await fetch(
-      집 + "?select=bookmark_at&read_status=eq." + encodeURIComponent("읽는 중") +
-      "&bookmark_at=not.is.null&order=bookmark_at.desc&limit=1",
-      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠 },
-        signal: AbortSignal.timeout(8000) });
-    if (!r.ok) return;
-    const [b] = await r.json();
-    if (!b?.bookmark_at) return;
-    const el = document.getElementById("d-now");
-    갈아끼움(el, 지난말(b.bookmark_at, "움직임"));
-    if (window.__갈피) {
-      const bar = document.createElement("span");
-      bar.className = "prog";
-      const i = document.createElement("i");
-      i.style.width = window.__갈피 + "%";
-      bar.appendChild(i);
-      el.appendChild(bar);
-    }
-    el.hidden = false;
-  } catch { /* 없으면 없는 대로 */ }
-})();
-
-/* 글 문 안의 셈 — 몇 편이 놓였고 마지막이 언제였나.
-   Prefer: count=exact 를 얹으면 한 번의 부름으로 최근 한 편과 전체 편수를
-   함께 받는다 (편수는 헤더에 온다). 초고는 오지 않는다 — 공개 열쇠라
-   RLS 가 발행한 것만 내준다. */
-(async function () {
-  const 열쇠 = "sb_publishable_NI4gjQ3YePIO90H7YjHjfA_m_H0udRy";
-  try {
-    const r = await fetch(
-      "https://gaeumegwhxxnfvrhbknp.supabase.co/rest/v1/notes" +
-      "?select=published_at&order=published_at.desc&limit=1",
-      { headers: { apikey: 열쇠, Authorization: "Bearer " + 열쇠,
-                   Prefer: "count=exact" },
-        signal: AbortSignal.timeout(8000) });
-    if (!r.ok) return;
-    const m = /\/(\d+)$/.exec(r.headers.get("content-range") || "");
-    const 편 = m ? Number(m[1]) : 0;
-    if (!편) return;
-    const [n] = await r.json();
-    갈아끼움(document.getElementById("d-notes"),
-      `${편}편` + (n?.published_at ? " · " + 지난말(n.published_at, "놓임") : ""));
-  } catch { /* 글방이 조용해도 문은 열려 있어야 한다 — 구운 값이 남는다 */ }
-})();
-
-/* 문은 열리고 나서 방으로 보낸다 — 누르면 안쪽으로 열리는 0.38초를 보고
-   그다음에 옮겨 간다. 새 탭·가운데 클릭·모션 감경은 건드리지 않는다:
-   그건 「지금 여기서 보겠다」는 뜻이 아니다. */
-let 떠난다 = false;   // 이 쪽에서 나가는 일은 한 번뿐이다
-
-/* 폰의 크롬은 뒤로 가기 때 쪽을 다시 돌리지 않고 **되살린다**(bfcache).
-   그러면 스크립트가 다시 안 돌아 「떠난다」가 true 인 채로 남고 — 문이
-   전부 죽는다. 열린 채 굳은 문의 자국(opening)도 그대로 남는다.
-   되살아난 것이라면 둘 다 걷는다. */
-addEventListener("pageshow", (e) => {
-  if (!e.persisted) return;
-  떠난다 = false;
-  document.querySelectorAll("a.door.opening").forEach((문) => 문.classList.remove("opening"));
+// 글자판: ← → 영상 넘기기, 스페이스 재생. 한글 입력 상태에서도 먹도록 e.code 로 본다.
+addEventListener('keydown', e => {
+  if (e.target.closest('input,textarea,select,button,a,iframe') || e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.code || e.key;
+  if (k === 'ArrowLeft') tune(ch - 1, false);
+  else if (k === 'ArrowRight') tune(ch + 1, false);
+  else if (k === 'Space' || k === ' ') { e.preventDefault(); setPlaying(!playing); }
 });
-if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
-  document.querySelectorAll("a.door").forEach((문) => {
-    문.addEventListener("click", (e) => {
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-      e.preventDefault();
-      if (떠난다) return;      // 두 번 눌러도 한 번만 나간다
-      떠난다 = true;
-      문.classList.add("opening");
-      /* 나가는 일은 반드시 한 번이어야 한다. 예전에는 transitionend 에
-         { once: true } 만 걸고 setTimeout 을 따로 두었는데, 이 문은
-         transform(.38s)과 border-color(.2s) 두 가지를 전이한다 —
-         transitionend 는 속성마다 오므로 0.2초에 먼저 한 번 나가고,
-         이동이 늦으면 0.52초에 한 번 더 나갔다. 같은 주소로 두 번
-         나가면 히스토리에 두 칸이 쌓여 뒤로 가기가 헛돈다. */
-      const 가자 = () => {
-        문.removeEventListener("transitionend", 지켜본다);
-        clearTimeout(늦어도);
-        location.href = 문.href;
-      };
-      const 지켜본다 = (ev) => { if (ev.propertyName === "transform") 가자(); };
-      문.addEventListener("transitionend", 지켜본다);
-      const 늦어도 = setTimeout(가자, 520);   // 전이가 안 걸린 기계에서도 반드시 간다
-    });
+
+// 작업물 목록: 누르면 플레이어에서 튼다
+const cats = ['전체', ...new Set(CONFIG.works.map(w => w.cat).filter(Boolean))];
+$('#filters').innerHTML = '<h3>분류</h3>' + cats.map((c, i) => {
+  const n = i ? CONFIG.works.filter(w => w.cat === c).length : CONFIG.works.length;
+  return `<button class="${i ? '' : 'on'}" data-cat="${c}"><i style="background:${i ? ROW_COLORS[(i - 1) % ROW_COLORS.length] : 'var(--text2)'}"></i>${c}<small>${n}</small></button>`;
+}).join('');
+$('#filters').onclick = e => {
+  const b = e.target.closest('[data-cat]'); if (!b) return;
+  document.querySelectorAll('#filters button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.work').forEach(x => x.hidden = b.dataset.cat !== '전체' && x.dataset.cat !== b.dataset.cat);
+};
+// 작은 그림 하나: 유튜브면 썸네일, 아니면 색 화면
+function thumbEl(w, i){
+  const t = thumbOf(w); if (t) { const im = new Image(); im.src = t; im.alt = ''; return im; }
+  const cv = document.createElement('canvas'); cv.width = 160; cv.height = 90; drawScene(cv.getContext('2d'), w.scene, 3 + i * 7, 160, 90); return cv;
+}
+CONFIG.works.forEach((w, i) => {
+  const b = document.createElement('button'); b.className = 'work'; b.dataset.cat = w.cat || '';
+  b.innerHTML = `<span>${w.title}<small>${w.meta}</small></span>`; b.prepend(thumbEl(w, i));
+  b.onclick = () => { tune(i, true); openWin('player'); };
+  $('#workList').append(b);
+});
+
+// ── 창 열기·닫기·끌기 ──
+const wide = () => matchMedia('(min-width:761px)').matches;
+let zTop = 10;
+function focusWin(w){
+  w.style.zIndex = ++zTop;
+  document.querySelectorAll('.win').forEach(x => x.classList.toggle('active', x === w));
+}
+function syncDock(){ document.querySelectorAll('#dock [data-open]').forEach(b => b.classList.toggle('live', $('#w-' + b.dataset.open).classList.contains('open'))); }
+function openWin(id){
+  const w = $('#w-' + id), was = w.classList.contains('open');
+  w.classList.add('open'); if (!was && wide() && !w.dataset.moved) place(w);
+  focusWin(w); syncDock();
+  if (!wide()) w.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+function closeWin(w){
+  w.classList.remove('open', 'max');
+  if (w.id === 'w-player' && kindOf(CONFIG.works[ch]) !== 'demo') setPlaying(false);  // 닫힌 창에서 소리가 계속 나지 않게
+  syncDock();
+  const top = [...document.querySelectorAll('.win.open')].sort((a, b) => b.style.zIndex - a.style.zIndex)[0];
+  if (top) focusWin(top);
+}
+function place(w){
+  // data-x, data-y 는 남는 공간에 대한 비율(0~1). 오른쪽 아이콘 줄(100px)과 독(96px)은 비워 둔다.
+  const d = $('#desktop').getBoundingClientRect(), r = w.getBoundingClientRect();
+  w.style.left = Math.max(8, (d.width - 100 - r.width) * +w.dataset.x) + 'px';
+  w.style.top = Math.max(8, (d.height - r.height - 96) * +w.dataset.y) + 'px';
+}
+document.querySelectorAll('.win').forEach(w => {
+  w.addEventListener('pointerdown', () => focusWin(w));
+  w.querySelector('.c').onclick = w.querySelector('.m').onclick = e => { e.stopPropagation(); closeWin(w); };
+  w.querySelector('.z').onclick = e => { e.stopPropagation(); w.classList.toggle('max'); };
+  const bar = w.querySelector('.bar'); let ox, oy, drag = false;
+  bar.addEventListener('dblclick', e => { if (wide() && !e.target.closest('.lights')) w.classList.toggle('max'); });
+  bar.addEventListener('pointerdown', e => {
+    if (!wide() || e.target.closest('.lights') || w.classList.contains('max')) return;
+    drag = true; w.dataset.moved = 1; ox = e.clientX - w.offsetLeft; oy = e.clientY - w.offsetTop; bar.setPointerCapture(e.pointerId);
+  });
+  bar.addEventListener('pointermove', e => {
+    if (!drag) return;
+    w.style.left = Math.min(innerWidth - 60, Math.max(-w.offsetWidth + 60, e.clientX - ox)) + 'px';
+    w.style.top = Math.min(innerHeight - 80, Math.max(0, e.clientY - oy)) + 'px';
+  });
+  bar.addEventListener('pointerup', () => drag = false);
+  bar.addEventListener('pointercancel', () => drag = false);
+});
+function placeAll(){
+  if (!wide()) return;
+  document.querySelectorAll('.win.open').forEach(w => { if (!w.dataset.moved) place(w); });
+}
+placeAll(); addEventListener('resize', placeAll);
+document.fonts && document.fonts.ready.then(placeAll);
+focusWin($('#w-player'));
+
+// ── 독 · 바탕화면 아이콘 ──
+APPS.forEach(([id, label, colors, d]) => {
+  const b = document.createElement('button'); b.className = 'item'; b.dataset.open = id; b.setAttribute('aria-label', label);
+  b.innerHTML = `<span class="tip">${label}</span>` + appIcon(colors, d);
+  $('#dock').append(b);
+});
+const ext = Object.entries(CONFIG.links).filter(([k, url]) => url && LINKS[k]);
+if (ext.length) $('#dock').insertAdjacentHTML('beforeend', '<span class="sep"></span>' + ext.map(([k, url]) =>
+  `<a class="item ext" href="${url}" target="_blank" rel="noopener" aria-label="${LINKS[k][0]}"><span class="tip">${LINKS[k][0]}</span>${appIcon(LINKS[k][1], LINKS[k][2])}</a>`).join(''));
+['works', 'about', 'contact'].forEach(id => {
+  const [, label, colors, d] = APPS.find(a => a[0] === id);
+  $('#deskicons').insertAdjacentHTML('beforeend', `<button data-open="${id}">${appIcon(colors, d)}${label}</button>`);
+});
+document.addEventListener('click', e => { const b = e.target.closest('[data-open]'); if (b) openWin(b.dataset.open); });
+syncDock();
+
+// ── 위젯: 최근 작업(목록 맨 위) ──
+{ const w = CONFIG.works[0], b = $('#wLatest');
+  b.innerHTML = `<span class="cap"><small>최근 작업</small>${w.title}</span>`; b.prepend(thumbEl(w, 0));
+  b.onclick = () => { tune(0, true); openWin('player'); }; }
+
+// ── 스포트라이트: 메뉴와 작업물을 찾는다 (⌘K · Ctrl+K · /) ──
+const spot = $('#spot'), spotIn = $('#spotIn'), spotList = $('#spotList');
+let spotItems = [], spotSel = 0;
+function spotAll(){
+  return [
+    ...APPS.map(([id, label, colors, d]) => ({label, hint: '메뉴', icon: appIcon(colors, d), run: () => openWin(id)})),
+    ...CONFIG.works.map((w, i) => ({label: w.title, hint: w.cat || '작업물', key: w.meta, work: [w, i], run: () => { tune(i, true); openWin('player'); }})),
+    {label: '밝게·어둡게 바꾸기', hint: '동작', icon: appIcon(['#8e8e93', '#48484a'], 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 2v14a7 7 0 0 1 0-14z'), run: () => $('#themeBtn').click()},
+    {label: '배경 바꾸기', hint: '동작', icon: appIcon(['#64d2ff', '#5e5ce6'], 'M4 5h16v14H4zm2 12h12l-4-6-3 4-2-2.500z'), run: nextWall},
+  ];
+}
+function spotRender(){
+  const q = spotIn.value.trim().toLowerCase();
+  spotItems = spotAll().filter(x => !q || (x.label + ' ' + x.hint + ' ' + (x.key || '')).toLowerCase().includes(q)).slice(0, 8);
+  spotSel = Math.min(spotSel, Math.max(0, spotItems.length - 1));
+  spotList.innerHTML = '';
+  spotItems.forEach((x, i) => {
+    const li = document.createElement('li'); li.className = i === spotSel ? 'sel' : '';
+    li.innerHTML = (x.icon || '') + `<b>${x.label}</b><small>${x.hint}</small>`;
+    if (x.work) li.prepend(thumbEl(...x.work));
+    li.onmousemove = () => { if (spotSel !== i) { spotSel = i; [...spotList.children].forEach((c, k) => c.classList.toggle('sel', k === i)); } };
+    li.onclick = () => spotRun(i);
+    spotList.append(li);
   });
 }
+function spotOpen(){ spot.classList.add('on'); spotIn.value = ''; spotSel = 0; spotRender(); spotIn.focus(); }
+function spotClose(){ spot.classList.remove('on'); spotIn.blur(); }
+function spotRun(i){ const x = spotItems[i]; spotClose(); if (x) x.run(); }
+$('#spotBtn').onclick = spotOpen;
+spot.addEventListener('pointerdown', e => { if (e.target === spot) spotClose(); });
+spotIn.addEventListener('input', () => { spotSel = 0; spotRender(); });
+spotIn.addEventListener('keydown', e => {
+  if (e.isComposing) return;  // 한글 조합 중 엔터는 글자 확정이다
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); spotSel = (spotSel + (e.key === 'ArrowDown' ? 1 : -1) + spotItems.length) % Math.max(1, spotItems.length); spotRender(); }
+  else if (e.key === 'Enter') { e.preventDefault(); spotRun(spotSel); }
+  else if (e.key === 'Escape') spotClose();
+});
+addEventListener('keydown', e => {
+  const typing = e.target.closest('input,textarea,select');
+  if ((e.metaKey || e.ctrlKey) && e.code === 'KeyK') { e.preventDefault(); spot.classList.contains('on') ? spotClose() : spotOpen(); }
+  else if (e.code === 'Slash' && !typing && !e.metaKey && !e.ctrlKey) { e.preventDefault(); spotOpen(); }
+  else if (e.key === 'Escape') { spotClose(); ctxClose(); }
+});
+
+// ── 배경 ──
+const WALLS = ['rokiz', 'indigo', 'dusk', 'graphite'];
+function setWall(w, save){ document.documentElement.dataset.wall = w; if (save) store.set('rokiz-wall', w); }
+function nextWall(){ setWall(WALLS[(WALLS.indexOf(document.documentElement.dataset.wall) + 1) % WALLS.length], true); }
+
+// ── 바탕화면 오른쪽 누름 메뉴 ──
+const ctx = $('#ctx');
+const CTX = [
+  ['제작 문의 쓰기', () => openWin('contact')], ['작업물 보기', () => openWin('works')], ['찾기…', () => spotOpen()], null,
+  ['배경 바꾸기', () => nextWall()], ['밝게·어둡게 바꾸기', () => $('#themeBtn').click()], null,
+  ['창 모두 닫기', () => document.querySelectorAll('.win.open').forEach(closeWin)],
+];
+ctx.innerHTML = CTX.map((x, i) => x ? `<button data-i="${i}" role="menuitem">${x[0]}</button>` : '<hr>').join('');
+ctx.onclick = e => { const b = e.target.closest('[data-i]'); if (b) { ctxClose(); CTX[b.dataset.i][1](); } };
+function ctxClose(){ ctx.classList.remove('on'); }
+$('#desktop').addEventListener('contextmenu', e => {
+  if (!wide() || e.target.closest('.win')) return;
+  e.preventDefault(); ctx.classList.add('on');
+  ctx.style.left = Math.min(e.clientX, innerWidth - ctx.offsetWidth - 8) + 'px';
+  ctx.style.top = Math.min(e.clientY, innerHeight - ctx.offsetHeight - 8) + 'px';
+});
+addEventListener('pointerdown', e => { if (!e.target.closest('#ctx')) ctxClose(); });
+
+// ── 시계 ──
+function tick(){ const d = new Date();
+  $('#wcDow').textContent = d.toLocaleDateString('ko-KR', {weekday: 'long'}); $('#wcDay').textContent = d.getDate(); $('#wcTime').textContent = d.toLocaleTimeString('ko-KR', {hour: 'numeric', minute: '2-digit'});
+  $('#clock').textContent = d.toLocaleDateString('ko-KR', {month: 'long', day: 'numeric', weekday: 'short'}) + '  ' + d.toLocaleTimeString('ko-KR', {hour: 'numeric', minute: '2-digit'}); }
+tick(); setInterval(tick, 10000);
+
+// ── 밝게·어둡게: 기본은 어둡게, 고르면 기억한다 ──
+const store = {get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }};
+function setTheme(t, save){ document.documentElement.dataset.theme = t; if (save) store.set('rokiz-theme', t); }
+setTheme(store.get('rokiz-theme') === 'light' ? 'light' : 'dark');
+setWall(WALLS.includes(store.get('rokiz-wall')) ? store.get('rokiz-wall') : 'rokiz');
+$('#themeBtn').onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true);
+
+// ── 파비콘: 검은 판에 노란 로고 ──
+{ const cv = document.createElement('canvas'); cv.width = cv.height = 64; const c = cv.getContext('2d');
+  c.fillStyle = '#000'; c.beginPath(); c.roundRect ? c.roundRect(2, 2, 60, 60, 15) : c.rect(2, 2, 60, 60); c.fill();
+  c.translate(8, 22); c.scale(48 / 548, 48 / 548); c.fillStyle = '#f7ce0a'; c.fill(new Path2D(LOGO_PATH), 'evenodd');
+  const l = document.createElement('link'); l.rel = 'icon'; l.href = cv.toDataURL(); document.head.append(l); }
+
+// ── 주소 끝 #works 처럼 붙이면 그 창을 연다 ──
+function fromHash(){ const id = location.hash.slice(1); if (id && $('#w-' + id)) openWin(id); }
+fromHash(); addEventListener('hashchange', fromHash);
+
+// ── 켜지는 화면: 탭마다 한 번만, 움직임 줄이기 설정이면 건너뛴다 ──
+(() => {
+  let seen; try { seen = sessionStorage.getItem('rokiz-boot'); sessionStorage.setItem('rokiz-boot', 1); } catch { seen = 1; }
+  if (seen || matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const boot = $('#boot'); boot.classList.remove('off');
+  const done = () => { boot.classList.add('bye'); setTimeout(() => boot.classList.add('off'), 400); };
+  requestAnimationFrame(() => requestAnimationFrame(() => $('#pfill').style.width = '100%'));
+  setTimeout(done, 1400); boot.onclick = done;
+})();
+
+// ── 알림: 탭마다 한 번, 3초 뒤에 떴다가 9초 뒤에 들어간다 ──
+(() => {
+  let seen; try { seen = sessionStorage.getItem('rokiz-notice'); sessionStorage.setItem('rokiz-notice', 1); } catch { seen = 1; }
+  if (seen || !CONFIG.notice) return;
+  const t = $('#toast'); $('#toastText').textContent = CONFIG.notice;
+  const hide = () => t.classList.remove('on');
+  setTimeout(() => { t.classList.add('on'); setTimeout(hide, 9000); }, 3000);
+  t.onclick = e => { hide(); if (!e.target.closest('.x')) openWin('contact'); };
+})();
 </script>
 </body>
 </html>

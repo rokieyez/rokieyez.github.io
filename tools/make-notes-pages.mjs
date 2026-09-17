@@ -237,7 +237,7 @@ ${책 ? `<aside class="bookcard">
   </nav>` : ""}
   <p><a class="back" href="./">글 목록</a></p>
 </article>
-<footer>rokiz.net · <a href="/">대문</a> · <a href="/books/">서재</a> · <a href="/now/">지금</a></footer>
+<footer>rokiz.net · <a href="/rooms/">대문</a> · <a href="/books/">서재</a> · <a href="/now/">지금</a></footer>
 </body>
 </html>
 `;
@@ -346,7 +346,7 @@ const 바뀐날 = (파일) => {
   } catch { return 오늘날; }
 };
 const 방 = [
-  { 곳: `${집}/`,       때: 바뀐날("index.html"),       잦기: "monthly", 무게: "1.0" },
+  { 곳: `${집}/rooms/`, 때: 바뀐날("rooms/index.html"),       잦기: "monthly", 무게: "1.0" },
   { 곳: `${집}/now/`,   때: 바뀐날("now/index.html"),   잦기: "weekly",  무게: "0.8" },
   /* 글방은 목록이라 새 글이 놓이면 실제로 달라진다 — 파일보다 글이 정확하다 */
   { 곳: `${집}/notes/`, 때: 글들[0] ? String(글들[0].published_at).slice(0, 10)

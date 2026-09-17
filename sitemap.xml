@@ -3,7 +3,7 @@
      방을 새로 열면 그 도구의 「방」 목록에 한 줄 더합니다. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://www.rokiz.net/</loc>
+    <loc>https://www.rokiz.net/rooms/</loc>
     <lastmod>2026-09-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>

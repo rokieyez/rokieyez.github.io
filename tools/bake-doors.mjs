@@ -78,7 +78,7 @@ if (!전부) {
 }
 
 /* ── 문 안에 글자로 박는다 ──────────────────────────────────── */
-const 쪽 = join(뿌리, "index.html");
+const 쪽 = join(뿌리, "rooms", "index.html");
 let s = await readFile(쪽, "utf8");
 
 /* 화면의 스크립트가 만드는 말과 **같은 꼴**이어야 한다 — 서재가 답하는
@@ -110,7 +110,7 @@ for (const [id, 새것] of Object.entries(새문)) {
 
 await writeFile(쪽, s, "utf8");
 
-console.log(`대문의 문 ${바꾼수}짝에 오늘을 구웠습니다 → index.html`);
+console.log(`대문의 문 ${바꾼수}짝에 오늘을 구웠습니다 → rooms/index.html`);
 console.log(`  서재  ${책말}`);
 console.log(`  지금  ${갈피?.bookmark_at ? `갈피 ${갈피.bookmark_at.slice(0, 10)}` : "갈피 없음"}`);
 console.log(`  글    ${글?.편 ?? 0}편${글?.때 ? ` · 마지막 ${글.때.slice(0, 10)}` : ""}`);

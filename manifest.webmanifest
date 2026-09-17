@@ -2,7 +2,7 @@
   "name": "로키즈의 방",
   "short_name": "rokiz",
   "description": "문마다 다른 방이 있습니다 — 로키즈의 개인 사이트.",
-  "start_url": "/",
+  "start_url": "/rooms/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#171009",

@@ -105,7 +105,7 @@ const 피드 = `<?xml version="1.0" encoding="UTF-8"?>
   <title>로키즈의 방</title>
   <subtitle>문마다 다른 방이 있습니다 — 집 전체의 소식</subtitle>
   <link href="${집}/feed.xml" rel="self"/>
-  <link href="${집}/"/>
+  <link href="${집}/rooms/"/>
   <id>${집}/</id>
   <updated>${갱신}</updated>
   <author><name>로키즈</name></author>
