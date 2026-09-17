@@ -346,7 +346,9 @@ const 바뀐날 = (파일) => {
   } catch { return 오늘날; }
 };
 const 방 = [
-  { 곳: `${집}/rooms/`, 때: 바뀐날("rooms/index.html"),       잦기: "monthly", 무게: "1.0" },
+  /* 첫 화면은 로키즈미디어 홈페이지다 (대문은 /rooms/) */
+  { 곳: `${집}/`,       때: 바뀐날("index.html"),             잦기: "monthly", 무게: "1.0" },
+  { 곳: `${집}/rooms/`, 때: 바뀐날("rooms/index.html"),       잦기: "monthly", 무게: "0.9" },
   { 곳: `${집}/now/`,   때: 바뀐날("now/index.html"),   잦기: "weekly",  무게: "0.8" },
   /* 글방은 목록이라 새 글이 놓이면 실제로 달라진다 — 파일보다 글이 정확하다 */
   { 곳: `${집}/notes/`, 때: 글들[0] ? String(글들[0].published_at).slice(0, 10)

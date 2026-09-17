@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>로키즈미디어 — GET VISUALIZED</title>
 <meta name="description" content="로키즈미디어 — 기획부터 촬영, 편집, 모션그래픽까지. 영상제작 스튜디오.">
-<!-- 작업물이 임시 값인 동안은 검색에 걸리지 않게 둔다. 실제 내용이 들어가면 이 줄을 지운다. -->
-<meta name="robots" content="noindex">
+<link rel="canonical" href="https://www.rokiz.net/">
+<meta property="og:url" content="https://www.rokiz.net/">
 <meta property="og:title" content="로키즈미디어 — GET VISUALIZED">
 <meta property="og:description" content="기획부터 촬영, 편집, 모션그래픽까지. 영상제작 스튜디오.">
 <meta property="og:type" content="website">
@@ -157,7 +157,8 @@ svg{display:block}
 .work[hidden]{display:none}
 .work canvas,.work img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;box-shadow:0 0 0 .5px var(--sep),0 4px 12px rgba(0,0,0,.18);transition:transform .15s}
 .work:hover canvas,.work:hover img{transform:scale(1.03)}
-.work span{display:block;padding:8px 2px 0;font-size:13px;font-weight:600}
+.work span{display:block;padding:8px 2px 0;font-size:13px;font-weight:600;line-height:1.4}
+.work span>b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:600}
 .work span small{display:block;font-weight:400;color:var(--text2);font-size:12px}
 
 /* ── 제작 과정 (설정 앱 같은 묶음 목록) ── */
@@ -223,6 +224,7 @@ svg{display:block}
 #wLatest canvas,#wLatest img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #wLatest img{transform:scale(1.35)}  /* 유튜브 썸네일 위아래 검은 띠를 잘라 낸다 */
 #wLatest .cap{position:absolute;inset:auto 0 0 0;padding:26px 14px 12px;background:linear-gradient(transparent,rgba(0,0,0,.7));font-size:13px;font-weight:600;line-height:1.3}
+#wLatest .cap b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:600}
 #wLatest .cap small{display:block;font-weight:500;font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.5px}
 #wLatest:hover{filter:brightness(1.08)}
 
@@ -424,7 +426,7 @@ svg{display:block}
 
 <script>
 // ────────────────────────────────────────────────
-// 내용은 여기만 고치면 된다. (지금 값은 전부 임시)
+// 내용은 여기만 고치면 된다.
 // ────────────────────────────────────────────────
 const CONFIG = {
   about: '기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 끝내는 영상제작 스튜디오입니다. 홍보 영상, 유튜브 콘텐츠, 쇼츠, 설명 영상을 만듭니다.',
@@ -432,11 +434,13 @@ const CONFIG = {
   // src 에는 유튜브 주소(watch · youtu.be · shorts · live) 나 mp4 주소를 넣는다. 비워 두면 움직이는 색 화면이 대신 나온다.
   // cat 은 작업물 창의 분류 단추가 된다.
   works: [
-    {title: '(예시) 유튜브 링크 — Big Buck Bunny', meta: 'Blender Foundation · 바꿔 넣을 자리', cat: '유튜브', scene: 'sunset', src: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ'},
-    {title: '브랜드 홍보 영상', meta: '2026 · 60초', cat: '홍보', scene: 'noon', src: ''},
-    {title: '유튜브 설명 영상', meta: '2026 · 8분', cat: '유튜브', scene: 'night', src: ''},
-    {title: '쇼츠 시리즈', meta: '2026 · 30초 × 12', cat: '쇼츠', scene: 'mint', src: ''},
-    {title: '모션그래픽 인트로', meta: '2026 · 10초', cat: '모션', scene: 'sunset', src: ''},
+    {title: '이름은 어렵지만 한 번 맛보면 멈출 수 없는 스페인식 조개찜 / 알메하스 기사다스', meta: 'CombleTV', cat: '푸드', scene: 'sunset', src: 'https://youtu.be/0oIEkjTkipA'},
+    {title: '친구가 되기까지 (2026)', meta: '수아연아TV', cat: '단편', scene: 'night', src: 'https://youtu.be/sdi8azMyPoA'},
+    {title: '꽁블의 새로운 도전, 모스가든과 함께하는 꽁블 가든스 커리', meta: 'CombleTV', cat: '푸드', scene: 'mint', src: 'https://youtu.be/m0dngXFhW4s'},
+    {title: '선이 머문 자리, 되돌아오는 시간 | 양정화 작가 개인전', meta: '이건음악회 Eagon Concert', cat: '문화·예술', scene: 'noon', src: 'https://youtu.be/UfETRtQDOp4'},
+    {title: '러시아와 우크라이나, 그리고 폴란드에 뒤엉킨 슬픈 역사 / 조한범 박사 (3부)', meta: '와이스트릿', cat: '교양·정보', scene: 'night', src: 'https://www.youtube.com/watch?v=xifeMjtYaq4'},
+    {title: 'AI - 8분안에 전부 알려드림', meta: '수아연아TV', cat: '교양·정보', scene: 'mint', src: 'https://youtu.be/UcML5fOneWs'},
+    {title: '계촌클래식축제 아세요?', meta: '이건음악회 Eagon Concert', cat: '문화·예술', scene: 'sunset', src: 'https://youtu.be/WGwolr-Q4CM'},
   ],
   process: [
     ['문의', '필요한 영상과 일정, 예산을 알려 주세요.'],
@@ -528,6 +532,12 @@ const kindOf = w => !w.src ? 'demo' : parseYT(w.src) ? 'yt' : 'file';
 const thumbOf = w => { const y = parseYT(w.src); return y ? `https://i.ytimg.com/vi/${y.id}/hqdefault.jpg` : ''; };
 const PLAY = SVG('M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z'), PAUSE = SVG('M6 4h4.500v16H6zM13.500 4H18v16h-4.500z');
 
+// 큰 화면용 썸네일: 고화질(maxres)이 없는 영상은 120px 짜리 빈 그림이 오므로 그때는 hqdefault 로 물러난다
+function bigPoster(id){
+  const im = $('#poster');
+  im.onload = () => { if (im.naturalWidth <= 120) { im.onload = null; im.src = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`; } };
+  im.src = `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
+}
 const tv = $('#tv'), sctx = $('#screen').getContext('2d'), embed = $('#embed');
 let ch = 0, playing = true, clockT = 0, last = performance.now();
 function showMedia(){
@@ -536,7 +546,7 @@ function showMedia(){
   embed.innerHTML = ''; embed.className = ''; tv.classList.remove('poster', 'embed');
   $('#bPlay').innerHTML = playing ? PAUSE : PLAY;
   if (kind === 'demo') return;
-  if (!playing) { kind === 'yt' ? $('#poster').src = thumbOf(w) : $('#poster').removeAttribute('src'); tv.classList.add('poster'); return; }
+  if (!playing) { kind === 'yt' ? bigPoster(parseYT(w.src).id) : $('#poster').removeAttribute('src'); tv.classList.add('poster'); return; }
   if (kind === 'yt') {
     const y = parseYT(w.src);
     embed.classList.toggle('vertical', y.vertical);
@@ -597,7 +607,7 @@ function thumbEl(w, i){
 }
 CONFIG.works.forEach((w, i) => {
   const b = document.createElement('button'); b.className = 'work'; b.dataset.cat = w.cat || '';
-  b.innerHTML = `<span>${w.title}<small>${w.meta}</small></span>`; b.prepend(thumbEl(w, i));
+  b.innerHTML = `<span><b>${w.title}</b><small>${w.meta}</small></span>`; b.title = w.title; b.prepend(thumbEl(w, i));
   b.onclick = () => { tune(i, true); openWin('player'); };
   $('#workList').append(b);
 });
@@ -673,7 +683,7 @@ syncDock();
 
 // ── 위젯: 최근 작업(목록 맨 위) ──
 { const w = CONFIG.works[0], b = $('#wLatest');
-  b.innerHTML = `<span class="cap"><small>최근 작업</small>${w.title}</span>`; b.prepend(thumbEl(w, 0));
+  b.innerHTML = `<span class="cap"><small>최근 작업</small><b>${w.title}</b></span>`; b.prepend(thumbEl(w, 0));
   b.onclick = () => { tune(0, true); openWin('player'); }; }
 
 // ── 스포트라이트: 메뉴와 작업물을 찾는다 (⌘K · Ctrl+K · /) ──
