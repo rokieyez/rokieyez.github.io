@@ -447,7 +447,7 @@ const CONFIG = {
   about: '기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 끝내는 영상제작 스튜디오입니다. 홍보 영상, 유튜브 콘텐츠, 쇼츠, 설명 영상을 만듭니다.',
   tags: ['홍보 영상', '유튜브', '쇼츠', '모션그래픽', '자막·TTS'],
   // src 에는 유튜브 주소(watch · youtu.be · shorts · live) 나 mp4 주소를 넣는다. 비워 두면 움직이는 색 화면이 대신 나온다.
-  // cat 은 작업물 창의 분류 단추가 된다.
+  // cat 은 작업물 창의 분류 단추가 된다. meta(채널명)는 적어만 두고 화면에는 내보이지 않는다 — 제목 아래에는 분류가 나온다.
   works: [
     {title: '계촌클래식축제 아세요?', meta: '이건음악회 Eagon Concert', cat: '문화·예술', scene: 'sunset', src: 'https://youtu.be/WGwolr-Q4CM'},
     {title: '이름은 어렵지만 한 번 맛보면 멈출 수 없는 스페인식 조개찜 / 알메하스 기사다스', meta: 'CombleTV', cat: '푸드', scene: 'sunset', src: 'https://youtu.be/0oIEkjTkipA'},
@@ -603,7 +603,7 @@ function showMedia(){
 function tune(i, autoplay){
   ch = (i + CONFIG.works.length) % CONFIG.works.length;
   const w = CONFIG.works[ch];
-  $('#nowTitle').textContent = w.title; $('#nowMeta').textContent = w.meta; $('#nowCh').textContent = `${ch + 1}/${CONFIG.works.length}`;
+  $('#nowTitle').textContent = w.title; $('#nowMeta').textContent = w.cat || ''; $('#nowCh').textContent = `${ch + 1}/${CONFIG.works.length}`;
   // 실제 영상은 눌러야 틀고(소리 때문에), 색 화면은 바로 움직인다
   playing = kindOf(w) === 'demo' ? true : !!autoplay;
   tv.classList.remove('fade'); void tv.offsetWidth; tv.classList.add('fade');
@@ -650,7 +650,7 @@ function thumbEl(w, i){
 }
 CONFIG.works.forEach((w, i) => {
   const b = document.createElement('button'); b.className = 'work'; b.dataset.cat = w.cat || '';
-  b.innerHTML = `<span><b>${w.title}</b><small>${w.meta}</small></span>`; b.title = w.title; b.prepend(thumbEl(w, i));
+  b.innerHTML = `<span><b>${w.title}</b><small>${w.cat || ''}</small></span>`; b.title = w.title; b.prepend(thumbEl(w, i));
   b.onclick = () => { tune(i, true); openWin('player'); };
   $('#workList').append(b);
 });
@@ -735,7 +735,7 @@ let spotItems = [], spotSel = 0;
 function spotAll(){
   return [
     ...APPS.map(([id, label, colors, d]) => ({label, hint: '메뉴', icon: appIcon(colors, d), run: () => openWin(id)})),
-    ...CONFIG.works.map((w, i) => ({label: w.title, hint: w.cat || '작업물', key: w.meta, work: [w, i], run: () => { tune(i, true); openWin('player'); }})),
+    ...CONFIG.works.map((w, i) => ({label: w.title, hint: w.cat || '작업물', work: [w, i], run: () => { tune(i, true); openWin('player'); }})),
     {label: '밝게·어둡게 바꾸기', hint: '동작', icon: appIcon(['#8e8e93', '#48484a'], 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 2v14a7 7 0 0 1 0-14z'), run: () => $('#themeBtn').click()},
     {label: '배경 바꾸기', hint: '동작', icon: appIcon(['#64d2ff', '#5e5ce6'], 'M4 5h16v14H4zm2 12h12l-4-6-3 4-2-2.500z'), run: nextWall},
   ];
