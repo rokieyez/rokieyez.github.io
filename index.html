@@ -56,6 +56,7 @@ body{
 #wall svg{position:absolute;inset:0;width:100%;height:100%}
 #wall .grain{mix-blend-mode:overlay;opacity:.5}
 #wall stop{stop-color:var(--line)}
+#wall .rings circle{fill:none;stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 /* 모바일 크롬이 누를 때 씌우는 파란 상자를 끈다. 글자판으로 옮겨 다닐 때의 테두리(:focus-visible)는 남긴다 */
 *{-webkit-tap-highlight-color:transparent}
@@ -226,9 +227,8 @@ body:has(#toast.on) #deskicons{transform:translateY(92px)}
 /* 고를 수 있는 배경은 넷 다 어둡다. 밝게(테마)는 창 안쪽만 바꾸고, 바탕 위에 얹히는 메뉴 막대·위젯·독은 늘 어두운 유리 + 흰 글자다
    (이게 없어서 밝은 테마에서 검은 배경 위 검은 글자가 됐었다) */
 :root[data-wall]{--menu:#fff;--bar:rgba(16,16,18,.45);--dock:rgba(44,44,48,.45);--edge:rgba(255,255,255,.16)}
-[data-wall="rokiz"]:root{--base:#050505;--line:rgba(247,206,10,.6);--wall:
-  radial-gradient(60% 55% at 68% 18%,rgba(247,206,10,.2) 0,transparent 62%),radial-gradient(55% 55% at 0% 85%,rgba(247,206,10,.09) 0,transparent 60%),
-  radial-gradient(60% 50% at 100% 100%,#1c1a12 0,transparent 60%),linear-gradient(180deg,#121212,#050505)}
+[data-wall="rokiz"]:root{--base:#030303;--line:rgba(247,206,10,.7);--wall:
+  radial-gradient(50% 45% at 72% 62%,rgba(247,206,10,.05) 0,transparent 70%),linear-gradient(180deg,#0b0b0c,#030303)}
 :root[data-wall="indigo"]{--bar:rgba(30,24,70,.4);--dock:rgba(40,38,70,.42)}
 :root[data-wall="dusk"]{--base:#1a0b1e;--line:rgba(255,210,180,.7);--wall:
   radial-gradient(80% 70% at 75% 15%,#b0413e 0,transparent 60%),radial-gradient(70% 60% at 0% 90%,#3b1a5c 0,transparent 60%),
@@ -352,31 +352,22 @@ body:has(#toast.on) #deskicons{transform:translateY(92px)}
 <body>
 
 <div id="wall" aria-hidden="true">
-  <!-- 겹겹이 흐르는 빛 띠. 색은 배경마다 --line 을 따른다 -->
+  <!-- 렌즈를 들여다보는 듯한 동심원 고리 + 옅은 빛 + 필름 입자. 색은 배경마다 --line 을 따른다 -->
   <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
     <defs>
-      <linearGradient id="rb1" gradientUnits="userSpaceOnUse" x1="0" y1="900" x2="1440" y2="200"><stop offset="0" stop-opacity="0"/><stop offset=".45" stop-opacity=".55"/><stop offset="1" stop-opacity="0"/></linearGradient>
-      <linearGradient id="rb2" gradientUnits="userSpaceOnUse" x1="0" y1="700" x2="1440" y2="400"><stop offset="0" stop-opacity="0"/><stop offset=".6" stop-opacity=".3"/><stop offset="1" stop-opacity=".05"/></linearGradient>
-      <linearGradient id="rb3" gradientUnits="userSpaceOnUse" x1="200" y1="900" x2="1440" y2="0"><stop offset="0" stop-opacity=".02"/><stop offset=".7" stop-opacity=".22"/><stop offset="1" stop-opacity="0"/></linearGradient>
-      <filter id="soft" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="14"/></filter>
-      <filter id="grainf"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .55 0"/></filter>
+      <radialGradient id="glow" gradientUnits="userSpaceOnUse" cx="1040" cy="560" r="620"><stop offset="0" stop-opacity=".16"/><stop offset=".35" stop-opacity=".06"/><stop offset="1" stop-opacity="0"/></radialGradient>
+      <linearGradient id="flare" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1440" y2="0"><stop offset="0" stop-opacity="0"/><stop offset=".72" stop-opacity=".5"/><stop offset="1" stop-opacity="0"/></linearGradient>
+      <filter id="grainf"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .5 0"/></filter>
     </defs>
-    <g filter="url(#soft)">
-      <path fill="url(#rb3)" d="M-60 940 C 260 700, 520 760, 820 520 S 1300 60, 1520 -40 L1520 260 C 1320 300, 1100 520, 860 700 S 300 900, -60 1100Z"/>
-      <path fill="url(#rb2)" d="M-60 560 C 240 470, 520 700, 860 560 S 1300 300, 1520 340 L1520 520 C 1300 470, 1120 640, 880 720 S 300 760, -60 760Z"/>
-      <path fill="url(#rb1)" d="M-60 760 C 280 640, 560 860, 900 690 S 1320 380, 1520 420 L1520 500 C 1330 470, 1140 700, 900 790 S 320 850, -60 880Z"/>
-    </g>
-    <path fill="none" stroke="url(#rb1)" stroke-width="1.500" d="M-60 760 C 280 640, 560 860, 900 690 S 1320 380, 1520 420"/>
+    <rect width="1440" height="900" fill="url(#glow)"/>
+    <g class="rings"><circle cx="1040" cy="560" r="90" stroke-opacity="0.34"/><circle cx="1040" cy="560" r="170" stroke-opacity="0.26"/><circle cx="1040" cy="560" r="270" stroke-opacity="0.2"/><circle cx="1040" cy="560" r="390" stroke-opacity="0.15"/><circle cx="1040" cy="560" r="530" stroke-opacity="0.11"/><circle cx="1040" cy="560" r="690" stroke-opacity="0.08"/><circle cx="1040" cy="560" r="870" stroke-opacity="0.06"/><circle cx="1040" cy="560" r="1070" stroke-opacity="0.04"/></g>
+    <rect x="0" y="559.500" width="1440" height="1" fill="url(#flare)" opacity=".5"/>
     <rect class="grain" width="1440" height="900" filter="url(#grainf)"/>
   </svg>
 </div>
 
 <header id="menubar">
   <span class="brand"><i class="logo"></i>로키즈미디어</span>
-  <button data-open="about">소개</button>
-  <button data-open="works">작업물</button>
-  <button data-open="process">제작 과정</button>
-  <button data-open="contact">문의</button>
   <span class="spacer"></span>
   <button class="keep" id="spotBtn" aria-label="찾기"><svg viewBox="0 0 24 24"><path d="M10.500 3a7.500 7.500 0 0 1 5.900 12.100l4.300 4.300-1.400 1.400-4.300-4.300A7.500 7.500 0 1 1 10.500 3zm0 2a5.500 5.500 0 1 0 0 11 5.500 5.500 0 0 0 0-11z"/></svg></button>
   <button class="keep" id="themeBtn" aria-label="밝게·어둡게 바꾸기"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 2v14a7 7 0 0 1 0-14z"/></svg></button>
