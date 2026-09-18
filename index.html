@@ -86,7 +86,7 @@ svg{display:block}
 #menubar button{display:inline-flex;align-items:center;padding:0 9px;border-radius:5px;height:22px;font-weight:500;line-height:1}
 #menubar button:hover{background:rgba(255,255,255,.22)}
 #menubar .spacer{flex:1}
-#themeBtn svg,#spotBtn svg{width:15px;height:15px;fill:currentColor}
+#spotBtn svg{width:15px;height:15px;fill:currentColor}
 #clock{padding:0 6px;font-weight:500;font-variant-numeric:tabular-nums}
 
 /* ── 바탕화면 · 오른쪽 아이콘 ── */
@@ -228,7 +228,7 @@ body:has(#toast.on) #deskicons{transform:translateY(92px)}
    (이게 없어서 밝은 테마에서 검은 배경 위 검은 글자가 됐었다) */
 :root[data-wall]{--menu:#fff;--bar:rgba(16,16,18,.45);--dock:rgba(44,44,48,.45);--edge:rgba(255,255,255,.16)}
 [data-wall="rokiz"]:root{--base:#030303;--line:rgba(247,206,10,.7);--wall:
-  radial-gradient(50% 45% at 72% 62%,rgba(247,206,10,.05) 0,transparent 70%),linear-gradient(180deg,#0b0b0c,#030303)}
+  radial-gradient(50% 45% at 50% 50%,rgba(247,206,10,.05) 0,transparent 70%),linear-gradient(180deg,#0b0b0c,#030303)}
 :root[data-wall="indigo"]{--bar:rgba(30,24,70,.4);--dock:rgba(40,38,70,.42)}
 :root[data-wall="dusk"]{--base:#1a0b1e;--line:rgba(255,210,180,.7);--wall:
   radial-gradient(80% 70% at 75% 15%,#b0413e 0,transparent 60%),radial-gradient(70% 60% at 0% 90%,#3b1a5c 0,transparent 60%),
@@ -355,13 +355,13 @@ body:has(#toast.on) #deskicons{transform:translateY(92px)}
   <!-- 렌즈를 들여다보는 듯한 동심원 고리 + 옅은 빛 + 필름 입자. 색은 배경마다 --line 을 따른다 -->
   <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
     <defs>
-      <radialGradient id="glow" gradientUnits="userSpaceOnUse" cx="1040" cy="560" r="620"><stop offset="0" stop-opacity=".16"/><stop offset=".35" stop-opacity=".06"/><stop offset="1" stop-opacity="0"/></radialGradient>
-      <linearGradient id="flare" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1440" y2="0"><stop offset="0" stop-opacity="0"/><stop offset=".72" stop-opacity=".5"/><stop offset="1" stop-opacity="0"/></linearGradient>
+      <radialGradient id="glow" gradientUnits="userSpaceOnUse" cx="720" cy="450" r="620"><stop offset="0" stop-opacity=".16"/><stop offset=".35" stop-opacity=".06"/><stop offset="1" stop-opacity="0"/></radialGradient>
+      <linearGradient id="flare" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1440" y2="0"><stop offset="0" stop-opacity="0"/><stop offset=".5" stop-opacity=".5"/><stop offset="1" stop-opacity="0"/></linearGradient>
       <filter id="grainf"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .5 0"/></filter>
     </defs>
     <rect width="1440" height="900" fill="url(#glow)"/>
-    <g class="rings"><circle cx="1040" cy="560" r="90" stroke-opacity="0.34"/><circle cx="1040" cy="560" r="170" stroke-opacity="0.26"/><circle cx="1040" cy="560" r="270" stroke-opacity="0.2"/><circle cx="1040" cy="560" r="390" stroke-opacity="0.15"/><circle cx="1040" cy="560" r="530" stroke-opacity="0.11"/><circle cx="1040" cy="560" r="690" stroke-opacity="0.08"/><circle cx="1040" cy="560" r="870" stroke-opacity="0.06"/><circle cx="1040" cy="560" r="1070" stroke-opacity="0.04"/></g>
-    <rect x="0" y="559.500" width="1440" height="1" fill="url(#flare)" opacity=".5"/>
+    <g class="rings"><circle cx="720" cy="450" r="90" stroke-opacity="0.34"/><circle cx="720" cy="450" r="170" stroke-opacity="0.26"/><circle cx="720" cy="450" r="270" stroke-opacity="0.2"/><circle cx="720" cy="450" r="390" stroke-opacity="0.15"/><circle cx="720" cy="450" r="530" stroke-opacity="0.11"/><circle cx="720" cy="450" r="690" stroke-opacity="0.08"/><circle cx="720" cy="450" r="870" stroke-opacity="0.06"/><circle cx="720" cy="450" r="1070" stroke-opacity="0.04"/></g>
+    <rect x="0" y="449.500" width="1440" height="1" fill="url(#flare)" opacity=".5"/>
     <rect class="grain" width="1440" height="900" filter="url(#grainf)"/>
   </svg>
 </div>
@@ -370,7 +370,6 @@ body:has(#toast.on) #deskicons{transform:translateY(92px)}
   <span class="brand"><i class="logo"></i>로키즈미디어</span>
   <span class="spacer"></span>
   <button class="keep" id="spotBtn" aria-label="찾기"><svg viewBox="0 0 24 24"><path d="M10.500 3a7.500 7.500 0 0 1 5.900 12.100l4.300 4.300-1.400 1.400-4.300-4.300A7.500 7.500 0 1 1 10.500 3zm0 2a5.500 5.500 0 1 0 0 11 5.500 5.500 0 0 0 0-11z"/></svg></button>
-  <button class="keep" id="themeBtn" aria-label="밝게·어둡게 바꾸기"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 2v14a7 7 0 0 1 0-14z"/></svg></button>
   <span id="clock">--:--</span>
 </header>
 
@@ -760,7 +759,6 @@ function spotAll(){
   return [
     ...APPS.map(([id, label, colors, d]) => ({label, hint: '메뉴', icon: appIcon(colors, d), run: () => openWin(id)})),
     ...CONFIG.works.map((w, i) => ({label: w.title, hint: w.cat || '작업물', work: [w, i], run: () => { tune(i, true); openWin('player'); }})),
-    {label: '밝게·어둡게 바꾸기', hint: '동작', icon: appIcon(TILE, 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 2v14a7 7 0 0 1 0-14z', true), run: () => $('#themeBtn').click()},
     {label: '배경 바꾸기', hint: '동작', icon: appIcon(TILE, 'M4 5.500h16v13H4zM4 16l4.500-4.500 3.500 3.500 2.500-2.500L20 18', false), run: nextWall},
   ];
 }
@@ -806,7 +804,7 @@ function nextWall(){ setWall(WALLS[(WALLS.indexOf(document.documentElement.datas
 const ctx = $('#ctx');
 const CTX = [
   ['제작 문의 쓰기', () => openWin('contact')], ['작업물 보기', () => openWin('works')], ['찾기…', () => spotOpen()], null,
-  ['배경 바꾸기', () => nextWall()], ['밝게·어둡게 바꾸기', () => $('#themeBtn').click()], null,
+  ['배경 바꾸기', () => nextWall()], null,
   ['창 모두 닫기', () => document.querySelectorAll('.win.open').forEach(closeWin)],
 ];
 ctx.innerHTML = CTX.map((x, i) => x ? `<button data-i="${i}" role="menuitem">${x[0]}</button>` : '<hr>').join('');
@@ -826,12 +824,10 @@ function tick(){ const d = new Date();
   $('#clock').textContent = d.toLocaleDateString('ko-KR', {month: 'long', day: 'numeric', weekday: 'short'}) + '  ' + d.toLocaleTimeString('ko-KR', {hour: 'numeric', minute: '2-digit'}); }
 tick(); setInterval(tick, 10000);
 
-// ── 밝게·어둡게: 기본은 어둡게, 고르면 기억한다 ──
+// ── 늘 어둡게 (밝게 스위치는 뺐다 — 바탕이 전부 어두워서 밝은 창이 붕 떠 보였다) ──
 const store = {get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }};
-function setTheme(t, save){ document.documentElement.dataset.theme = t; if (save) store.set('rokiz-theme', t); }
-setTheme(store.get('rokiz-theme') === 'light' ? 'light' : 'dark');
+document.documentElement.dataset.theme = 'dark';
 setWall(WALLS.includes(store.get('rokiz-wall')) ? store.get('rokiz-wall') : 'rokiz');
-$('#themeBtn').onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true);
 
 // ── 파비콘: 검은 판에 노란 로고 ──
 { const cv = document.createElement('canvas'); cv.width = cv.height = 64; const c = cv.getContext('2d');
