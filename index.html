@@ -115,13 +115,8 @@ img{display:block;max-width:100%}
 /* ── 작업물 ── */
 .shead{display:flex;justify-content:space-between;align-items:end;gap:22px;padding:var(--section-gap) 0 22px;border-bottom:1px solid var(--color-ink-black);margin-bottom:28px}
 .shead h2{font-size:clamp(56px,6vw,86px)}
-#filters{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:17px;justify-content:flex-end}
-#filters button{text-underline-offset:3px}
-#filters button.on{text-decoration:underline;text-decoration-thickness:1px}
-#filters small{font-size:12px;color:var(--color-charcoal);margin-left:3px}
 #workList{display:grid;grid-template-columns:repeat(3,1fr);gap:28px var(--element-gap);padding-bottom:var(--section-gap)}
 .work{display:block;text-align:left;background:var(--color-bone-cream);border-radius:var(--radius-cards);box-shadow:var(--shadow-sm);overflow:hidden}
-.work[hidden]{display:none}
 .work img,.work .blank{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--color-ink-black)}
 .work div{padding:16px 18px 18px}
 .work b{display:block;font-weight:300;font-size:20px;line-height:1.16;letter-spacing:-.02em}
@@ -180,7 +175,6 @@ footer .r{text-align:right;display:flex;gap:18px;justify-content:flex-end;flex-w
   #steps li:first-child{border-top:0}
   #steps i{font-size:64px;grid-row:span 2;margin:0}
   .shead{flex-direction:column;align-items:flex-start}
-  #filters{justify-content:flex-start}
 }
 @media (max-width:600px){
   #masthead .page{grid-template-columns:1fr auto}
@@ -240,7 +234,7 @@ footer .r{text-align:right;display:flex;gap:18px;justify-content:flex-end;flex-w
   </section>
 
   <section id="works" aria-label="작업물">
-    <div class="shead"><h2 class="display">ALL WORK!</h2><nav id="filters" aria-label="분류"></nav></div>
+    <div class="shead"><h2 class="display">ALL WORK!</h2></div>
     <div id="workList"></div>
   </section>
 
@@ -287,7 +281,7 @@ footer .r{text-align:right;display:flex;gap:18px;justify-content:flex-end;flex-w
 const CONFIG = {
   about: '기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 끝내는 영상제작 스튜디오입니다. 홍보 영상, 유튜브 콘텐츠, 쇼츠, 설명 영상을 만듭니다.',
   // src 에는 유튜브 주소(watch · youtu.be · shorts · live) 나 mp4 주소를 넣는다.
-  // cat 은 작업물 분류 단추가 된다. meta(채널명)는 적어만 두고 화면에는 내보이지 않는다.
+  // cat 은 카드 아래 작은 글씨로 나오는 분류다. meta(채널명)는 적어만 두고 화면에는 내보이지 않는다.
   // 맨 위 = 쇼릴 첫 화면 · 첫 줄 왼쪽 사진, 둘째 = 첫 줄 오른쪽 사진. 맨 위에는 NEW 딱지가 붙는다.
   works: [
     {title: '작가가 직접 말아주는 전시회 - 양정화 작가 | 더쇼머스트고온 : 거제', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/Q_pYmeZIxwc'},
@@ -430,18 +424,8 @@ tune(0, false);
 });
 
 // ── 작업물 ──
-const cats = ['전체', ...new Set(CONFIG.works.map(w => w.cat).filter(Boolean))];
-$('#filters').innerHTML = cats.map((c, i) => {
-  const n = i ? CONFIG.works.filter(w => w.cat === c).length : CONFIG.works.length;
-  return `<button class="${i ? '' : 'on'}" data-cat="${esc(c)}">${esc(c)}<small>${n}</small></button>`;
-}).join('');
-$('#filters').onclick = e => {
-  const b = e.target.closest('[data-cat]'); if (!b) return;
-  document.querySelectorAll('#filters button').forEach(x => x.classList.toggle('on', x === b));
-  document.querySelectorAll('.work').forEach(x => x.hidden = b.dataset.cat !== '전체' && x.dataset.cat !== b.dataset.cat);
-};
 CONFIG.works.forEach((w, i) => {
-  const b = document.createElement('button'); b.className = 'work'; b.dataset.cat = w.cat || ''; b.title = w.title;
+  const b = document.createElement('button'); b.className = 'work'; b.title = w.title;
   const t = thumbOf(w);
   b.innerHTML = (t ? `<img loading="lazy" alt="" src="${t}">` : '<span class="blank"></span>')
     + `<div><b>${esc(w.title)}${i === 0 ? '<span class="new">NEW</span>' : ''}</b><span class="cap">${esc(w.cat || '')} · ${String(i + 1).padStart(2, '0')}</span></div>`;
