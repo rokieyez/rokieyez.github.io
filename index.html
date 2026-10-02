@@ -76,7 +76,7 @@ img{display:block;max-width:100%}
 /* WebGL 이 없으면 망점 대신 옅은 흑백 영상을 그대로 보인다 */
 #front video{filter:grayscale(1) contrast(1.05);opacity:.45}
 #front canvas+video{visibility:hidden}
-#front h2{position:relative;font-size:clamp(64px,10.5vw,168px);text-align:center;text-shadow:0 0 3px var(--color-parchment),0 0 22px var(--color-parchment)}
+#front h2{position:relative;pointer-events:none;-webkit-user-select:none;user-select:none;font-size:clamp(64px,10.5vw,168px);text-align:center;text-shadow:0 0 3px var(--color-parchment),0 0 22px var(--color-parchment)}
 
 /* ── 검은 띠 배너 ── */
 .banner{background:var(--color-ink-black);color:var(--color-parchment);overflow:hidden;margin:0 calc(var(--gutter) * -1)}
