@@ -11,7 +11,8 @@
 {"@context":"https://schema.org","@type":"Organization","name":"로키즈미디어","alternateName":["ROKIZ MEDIA","Rokiz Media"],
  "url":"https://www.rokiz.net/","slogan":"GET VISUALIZED","email":"rokiz@naver.com",
  "description":"기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 끝내는 영상제작 스튜디오",
- "founder":{"@type":"Person","name":"조민호"},
+ "founder":{"@type":"Person","name":"조민호"},"taxID":"398-02-02568",
+ "address":{"@type":"PostalAddress","addressCountry":"KR","addressRegion":"서울특별시","addressLocality":"광진구","streetAddress":"능동로1길 15, 101-102"},
  "contactPoint":{"@type":"ContactPoint","contactType":"영상 제작 문의","email":"rokiz@naver.com","availableLanguage":"ko"}}
 </script>
 <meta property="og:site_name" content="로키즈미디어">
@@ -163,8 +164,10 @@ img{display:block;max-width:100%}
 .sendmsg.err{color:var(--color-ember-orange)}
 
 /* ── 발문 ── */
-footer{border-top:1px solid var(--color-ink-black);padding:22px 0 36px;display:grid;grid-template-columns:1fr 1fr;gap:22px;font-size:16px}
-footer .r{text-align:right;display:flex;gap:18px;justify-content:flex-end;flex-wrap:wrap}
+footer{border-top:1px solid var(--color-ink-black);padding:26px 0 40px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;font-size:16px}
+footer .biz{color:var(--color-charcoal);font-size:14px;line-height:1.7}
+footer .biz span{white-space:nowrap}  /* 좁은 화면에서도 항목 가운데서 줄이 꺾이지 않게 */
+footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
 
 /* ── 좁은 화면 ── */
 @media (max-width:900px){
@@ -184,8 +187,6 @@ footer .r{text-align:right;display:flex;gap:18px;justify-content:flex-end;flex-w
   #masthead nav{gap:12px;font-size:16px}
   #workList{grid-template-columns:1fr}
   .brief .two{grid-template-columns:1fr}
-  footer{grid-template-columns:1fr}
-  footer .r{justify-content:flex-start;text-align:left}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
 </style>
@@ -268,8 +269,9 @@ footer .r{text-align:right;display:flex;gap:18px;justify-content:flex-end;flex-w
   </section>
 
   <footer>
-    <span>© 로키즈미디어 · ROKIZ MEDIA</span>
     <span class="r" id="footLinks"></span>
+    <p class="biz" id="footBiz"></p>
+    <span>© 로키즈미디어 · ROKIZ MEDIA</span>
   </footer>
 </main>
 
@@ -311,7 +313,9 @@ const CONFIG = {
     url: 'https://gaeumegwhxxnfvrhbknp.supabase.co/functions/v1/media-inquiry',
     key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhZXVtZWd3aHh4bmZ2cmhia25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxODMzNDksImV4cCI6MjEwMzc1OTM0OX0.B0aeSgxymFG_oZIJ1p0sKcbkAz1CjmpzaQK3F54x1KA',
   },
-  // 발문 오른쪽에 붙는 바깥 링크. 주소를 채우면 나타난다.
+  // 맨 아래 발문의 사업자 정보. 한 줄씩 나온다(넓은 화면에선 첫 줄 항목들이 · 로 이어진다).
+  biz: {상호: '로키즈미디어', 대표: '조민호', 사업자등록번호: '398-02-02568', 주소: '서울시 광진구 능동로1길 15, 101-102'},
+  // 발문에 붙는 바깥 링크. 주소를 채우면 나타난다.
   links: {youtube: '', instagram: ''},
   // 머리띠 아래 한 줄 알림. 비우면 안 뜬다.
   notice: '지금 영상 제작 문의를 받고 있어요. 눌러서 바로 적어 보세요.',
@@ -339,6 +343,7 @@ $('#contactRows').innerHTML = Object.entries(CONFIG.contact).map(([k, v]) => { c
 const EXT = {youtube: '유튜브', instagram: '인스타그램'};
 $('#footLinks').innerHTML = [`<a class="tl" href="mailto:${CONFIG.contact.메일}">${CONFIG.contact.메일}</a>`,
   ...Object.entries(CONFIG.links).filter(([k, u]) => u && EXT[k]).map(([k, u]) => `<a class="tl" href="${u}" target="_blank" rel="noopener">${EXT[k]} ↗</a>`)].join('');
+$('#footBiz').innerHTML = [['상호', '대표', '사업자등록번호'].map(k => `<span>${k} ${esc(CONFIG.biz[k])}</span>`).join(' · '), `<span>주소 ${esc(CONFIG.biz.주소)}</span>`].join('<br>');
 if (CONFIG.notice) { const a = $('#navContact'); a.insertAdjacentHTML('afterbegin', '<b aria-hidden="true">●</b>'); a.title = CONFIG.notice; }
 
 // ── 문의 양식: 서버가 메일로 바로 보낸다. 서버가 못 보내면 적은 내용을 채워 메일 앱을 연다 ──
