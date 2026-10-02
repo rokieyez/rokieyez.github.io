@@ -67,22 +67,19 @@ img{display:block;max-width:100%}
 #masthead .brand svg{width:30px;fill:var(--color-ink-black)}
 #masthead nav{display:flex;gap:18px;justify-content:flex-end}
 #dateline{font-size:16px;white-space:nowrap}
-#notice{display:block;border-bottom:1px solid var(--color-ink-black);text-decoration:none;font-size:14px}
-#notice .page{display:flex;gap:10px;align-items:baseline;padding-top:6px;padding-bottom:6px;line-height:1.3}
-#notice b{font-weight:500;color:var(--color-ember-orange)}
-#notice:hover span{text-decoration:underline;text-underline-offset:3px}
+#navContact b{font-weight:500;color:var(--color-ember-orange);font-size:.6em;vertical-align:.35em;margin-right:5px}
 
-/* ── 첫 줄: 사진 · 글 · 사진 ── */
-#front{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:var(--element-gap);padding:var(--section-gap) 0}
-#front .ph{position:relative;display:block;width:100%;aspect-ratio:4/5;overflow:hidden;background:var(--color-bone-cream)}
-#front .ph img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.05);transition:filter .3s}
-#front .ph:hover img{filter:none}
-#front .ph span{position:absolute;left:0;right:0;bottom:0;padding:10px 12px;background:var(--color-parchment);font-size:14px;line-height:1.18;text-align:left}
-/* 두 줄로 자른다 — 자르기를 바깥(여백 있는) 상자에 걸면 셋째 줄이 아래 여백에 비친다 */
-#front .ph em{font-style:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-#front .mid-col{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:22px}
-#front h2{font-size:clamp(56px,7.4vw,112px)}
-#front .lede{font-size:20px;line-height:1.18;max-width:22em}
+/* ── 첫 화면: 망점 쇼릴 위 큰 제목 ── */
+#front{margin:0 calc(var(--gutter) * -1)}
+#front .stage{position:relative;display:grid;place-items:center;height:clamp(420px,calc(100svh - 112px),820px);overflow:hidden;background:var(--color-parchment)}
+#front canvas,#front video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* WebGL 이 없으면 망점 대신 옅은 흑백 영상을 그대로 보인다 */
+#front video{filter:grayscale(1) contrast(1.05);opacity:.45}
+#front canvas+video{visibility:hidden}
+#front h2{position:relative;font-size:clamp(64px,10.5vw,168px);text-align:center;text-shadow:0 0 3px var(--color-parchment),0 0 22px var(--color-parchment)}
+#front .caption{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:14px var(--gutter);border-top:1px solid var(--color-ink-black)}
+#front .lede{font-size:20px;line-height:1.25}
+#front .caption .tl{white-space:nowrap}
 
 /* ── 검은 띠 배너 ── */
 .banner{background:var(--color-ink-black);color:var(--color-parchment);overflow:hidden;margin:0 calc(var(--gutter) * -1)}
@@ -165,9 +162,10 @@ footer .r{text-align:right;display:flex;gap:18px;justify-content:flex-end;flex-w
 
 /* ── 좁은 화면 ── */
 @media (max-width:900px){
-  #front{grid-template-columns:1fr 1fr}
-  #front .mid-col{grid-column:1/-1;order:-1;padding:14px 0 22px}
+  #front .stage{height:56svh;min-height:340px}
   #front h2{font-size:13vw}
+  #front .caption{flex-direction:column;gap:8px}
+  #front .lede{font-size:17px}
   #about,#reel,#contact{grid-template-columns:1fr}
   #workList{grid-template-columns:1fr 1fr}
   #steps{grid-template-columns:1fr}
@@ -194,22 +192,23 @@ footer .r{text-align:right;display:flex;gap:18px;justify-content:flex-end;flex-w
   <div class="page">
     <span id="dateline">서울, KR</span>
     <a class="brand" href="#top"><i id="mastLogo"></i>로키즈미디어</a>
-    <nav aria-label="바로 가기"><a class="tl" href="#works">작업물</a><a class="tl" href="#contact">문의</a></nav>
+    <nav aria-label="바로 가기"><a class="tl" href="#works">작업물</a><a class="tl" href="#contact" id="navContact">문의</a></nav>
   </div>
 </header>
-<a id="notice" href="#contact" hidden><div class="page"><b>●</b><span id="noticeText"></span></div></a>
 
 <main class="page" id="top">
   <h1 class="sr">로키즈미디어 — 영상제작 스튜디오 (ROKIZ MEDIA · GET VISUALIZED)</h1>
 
-  <section id="front" aria-label="대표 작업">
-    <button class="ph" id="front1"></button>
-    <div class="mid-col">
+  <section id="front" aria-label="첫 화면">
+    <div class="stage">
+      <canvas id="halftone" aria-hidden="true"></canvas>
+      <video id="bgReel" src="showreel.mp4" muted loop playsinline autoplay preload="auto" aria-hidden="true"></video>
       <h2 class="display">GET<br>VISUALIZED!</h2>
-      <p class="lede">기획부터 촬영, 편집, 모션그래픽까지 — 로키즈미디어 영상제작 스튜디오.</p>
-      <a class="tl" href="#works">작업물 모두 보기</a>
     </div>
-    <button class="ph" id="front2"></button>
+    <div class="caption">
+      <p class="lede">기획부터 촬영, 편집, 모션그래픽까지 — 로키즈미디어 영상제작 스튜디오.</p>
+      <a class="tl" href="#works">작업물 모두 보기 →</a>
+    </div>
   </section>
 
   <div class="banner" aria-hidden="true"><p class="display">ROKIZ</p></div>
@@ -282,7 +281,7 @@ const CONFIG = {
   about: '기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 끝내는 영상제작 스튜디오입니다. 홍보 영상, 유튜브 콘텐츠, 쇼츠, 설명 영상을 만듭니다.',
   // src 에는 유튜브 주소(watch · youtu.be · shorts · live) 나 mp4 주소를 넣는다.
   // cat 은 카드 아래 작은 글씨로 나오는 분류다. meta(채널명)는 적어만 두고 화면에는 내보이지 않는다.
-  // 맨 위 = 쇼릴 첫 화면 · 첫 줄 왼쪽 사진, 둘째 = 첫 줄 오른쪽 사진. 맨 위에는 NEW 딱지가 붙는다.
+  // 맨 위 = 쇼릴 칸의 첫 편. 맨 위에는 NEW 딱지가 붙는다.
   works: [
     {title: '작가가 직접 말아주는 전시회 - 양정화 작가 | 더쇼머스트고온 : 거제', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/Q_pYmeZIxwc'},
     {title: '인하대 건축학 418 클럽 - 40주년 일본나들이', meta: '효도왕꽁피디', cat: '행사·기록', src: 'https://www.youtube.com/watch?v=trjaf9PTMcE'},
@@ -340,7 +339,7 @@ $('#contactRows').innerHTML = Object.entries(CONFIG.contact).map(([k, v]) => { c
 const EXT = {youtube: '유튜브', instagram: '인스타그램'};
 $('#footLinks').innerHTML = [`<a class="tl" href="mailto:${CONFIG.contact.메일}">${CONFIG.contact.메일}</a>`,
   ...Object.entries(CONFIG.links).filter(([k, u]) => u && EXT[k]).map(([k, u]) => `<a class="tl" href="${u}" target="_blank" rel="noopener">${EXT[k]} ↗</a>`)].join('');
-if (CONFIG.notice) { $('#noticeText').textContent = CONFIG.notice; $('#notice').hidden = false; }
+if (CONFIG.notice) { const a = $('#navContact'); a.insertAdjacentHTML('afterbegin', '<b aria-hidden="true">●</b>'); a.title = CONFIG.notice; }
 
 // ── 문의 양식: 서버가 메일로 바로 보낸다. 서버가 못 보내면 적은 내용을 채워 메일 앱을 연다 ──
 function briefText(){
@@ -415,14 +414,6 @@ $('#bigPlay').onclick = start;
 const playWork = i => { tune(i, true); $('#reel').scrollIntoView({behavior: 'smooth', block: 'center'}); };
 tune(0, false);
 
-// 첫 줄 사진 둘 = 맨 위 두 편
-[0, 1].forEach(i => {
-  const w = CONFIG.works[i], b = $('#front' + (i + 1)); if (!w) return b.remove();
-  const im = new Image(); im.alt = ''; bigImg(im, w);
-  b.append(im); b.insertAdjacentHTML('beforeend', `<span><em>${esc(w.title)}</em></span>`);
-  b.setAttribute('aria-label', w.title + ' 보기'); b.onclick = () => playWork(i);
-});
-
 // ── 작업물 ──
 CONFIG.works.forEach((w, i) => {
   const b = document.createElement('button'); b.className = 'work'; b.title = w.title;
@@ -448,6 +439,62 @@ $('#dateline').textContent = '서울, KR · ' + new Date().toLocaleDateString('k
   c.fillStyle = '#1d1d1b'; c.fillRect(2, 2, 60, 60);
   c.translate(8, 22); c.scale(48 / 548, 48 / 548); c.fillStyle = '#e2dedb'; c.fill(new Path2D(LOGO_PATH), 'evenodd');
   const l = document.createElement('link'); l.rel = 'icon'; l.href = cv.toDataURL(); document.head.append(l); }
+
+// ── 첫 화면 망점: 쇼릴 밝기를 45° 격자의 점 크기로 바꿔 종이 위에 먹으로 찍는다 ──
+// 영상은 흑백 저화질로 가볍게 두고, 점은 화면 해상도로 여기서 그린다(점을 영상에 구우면 압축에 뭉개지고 파일이 커진다).
+// 가운데는 점을 작게 해서 제목이 읽히게 한다. 화면 밖이면 영상을 멈추고, 움직임 줄이기 설정이면 첫 장면에 멈춰 둔다.
+{ const cv = $('#halftone'), v = $('#bgReel');
+  const gl = cv.getContext('webgl', {alpha: false, antialias: false});
+  if (!gl) cv.remove();
+  else {
+    const fs = `precision mediump float;varying vec2 uv;uniform sampler2D t;uniform vec2 res,vid;uniform float cell;
+    const vec3 PAPER=vec3(.886,.871,.859),INK=vec3(.114,.114,.106);
+    float h(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
+    void main(){
+      vec2 s=res/vid,sc=vec2(max(s.x,s.y))/s;                       // object-fit: cover
+      float a=.785398;mat2 r=mat2(cos(a),-sin(a),sin(a),cos(a)),ri=mat2(cos(a),sin(a),-sin(a),cos(a));
+      vec2 px=uv*res,g=r*px/cell,c=floor(g)+.5;
+      vec2 cuv=(ri*(c*cell))/res;                                      // 칸 가운데에서 밝기를 읽는다
+      float L=dot(texture2D(t,clamp((cuv-.5)/sc+.5,0.,1.)).rgb,vec3(.299,.587,.114));
+      float e=length((uv-.5)*vec2(.8,1.9));                           // 제목 자리(가운데 가로 띠)
+      float dark=(1.-clamp((L-.06)/.86,0.,1.))*mix(.14,1.,smoothstep(.15,.62,e));
+      float rad=sqrt(dark)*.6,d=length(g-c),aa=1.2/cell;
+      float ink=1.-smoothstep(rad-aa,rad+aa,d);
+      gl_FragColor=vec4(mix(PAPER,INK,ink*.9)+(h(floor(px))-.5)*.04,1);
+    }`;
+    const vs = 'attribute vec2 p;varying vec2 uv;void main(){uv=p*.5+.5;uv.y=1.-uv.y;gl_Position=vec4(p,0,1);}';
+    const sh = (type, src) => { const o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); return o; };
+    const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(pr);
+    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) cv.remove();
+    else {
+      gl.useProgram(pr);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+      [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T].forEach(k => gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE));
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      const U = n => gl.getUniformLocation(pr, n);
+      gl.clearColor(.886, .871, .859, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+      const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let seen = true, lastT = -1;
+      if (still) v.pause();
+      new IntersectionObserver(([en]) => { seen = en.isIntersecting; if (!still) seen ? v.play().catch(() => {}) : v.pause(); }).observe(cv);
+      const frame = () => {
+        requestAnimationFrame(frame);
+        if (!seen || v.readyState < 2) return;
+        const dpr = Math.min(devicePixelRatio, 2), w = cv.clientWidth * dpr | 0, h = cv.clientHeight * dpr | 0;
+        const resized = cv.width !== w || cv.height !== h;
+        if (!resized && v.currentTime === lastT) return;           // 새 장면이 없으면 다시 안 그린다
+        if (resized) { cv.width = w; cv.height = h; gl.viewport(0, 0, w, h); }
+        lastT = v.currentTime;
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, v);
+        gl.uniform2f(U('res'), w, h); gl.uniform2f(U('vid'), v.videoWidth, v.videoHeight); gl.uniform1f(U('cell'), 7 * dpr);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      };
+      frame();
+    }
+  }
+}
 </script>
 </body>
 </html>
