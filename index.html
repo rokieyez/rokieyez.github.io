@@ -137,7 +137,6 @@ img{display:block;max-width:100%}
 
 /* ── 문의 ── */
 #contact{display:grid;grid-template-columns:1fr 1fr;gap:var(--section-gap);padding:var(--section-gap) 0 58px}
-#contact h2{font-size:clamp(56px,7vw,109px);margin-bottom:22px}
 #contact .intro{font-size:20px;max-width:24em}
 .rows{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;margin:28px 0;font-size:19px;align-items:baseline}
 .rows dt{font-size:12px;letter-spacing:.08em;color:var(--color-charcoal)}
@@ -161,6 +160,7 @@ img{display:block;max-width:100%}
 .solid:disabled{opacity:.6;cursor:default}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 .sendmsg{font-size:16px;min-height:1.3em}
+.consent{font-size:14px;color:var(--color-charcoal);margin:0}
 .sendmsg.err{color:var(--color-ember-orange)}
 
 /* ── 발문 ── */
@@ -247,7 +247,6 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
 
   <section id="contact" aria-label="문의">
     <div>
-      <h2 class="display ko">같이<br>만들어요.</h2>
       <p class="intro">어떤 영상이 필요한지 편하게 적어 보내 주세요.</p>
       <dl class="rows" id="contactRows"></dl>
       <div class="stamp" aria-hidden="true">
@@ -263,6 +262,7 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
       <label>내용<textarea name="msg" placeholder="어디에 쓸 영상인지, 길이, 참고 영상 링크 등"></textarea></label>
       <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
       <div class="btnrow"><button class="solid" id="sendBtn" type="submit">보내기</button><button class="tl" type="button" id="copyBtn">복사</button></div>
+      <p class="consent">보내기를 누르면 문의에 답하기 위해 <a class="tl" href="/privacy.html">개인정보 처리방침</a>에 따라 처리됩니다.</p>
       <p class="sendmsg" id="sendMsg" role="status"></p>
       <a id="mailBtn" href="#" hidden>메일 앱으로 보내기</a>
     </form>
@@ -341,7 +341,7 @@ $('#steps').innerHTML = CONFIG.process.map(([a, b], i) => `<li><i>${String(i + 1
 const linkOf = (k, v) => k === '메일' ? `mailto:${v}` : k === '전화' ? `tel:${v.replace(/[^\d+]/g, '')}` : '';
 $('#contactRows').innerHTML = Object.entries(CONFIG.contact).map(([k, v]) => { const h = linkOf(k, v); return `<dt>${esc(k)}</dt><dd>${h ? `<a class="tl" href="${h}">${esc(v)}</a>` : esc(v)}</dd>`; }).join('');
 const EXT = {youtube: '유튜브', instagram: '인스타그램'};
-$('#footLinks').innerHTML = [`<a class="tl" href="mailto:${CONFIG.contact.메일}">${CONFIG.contact.메일}</a>`,
+$('#footLinks').innerHTML = [`<a class="tl" href="mailto:${CONFIG.contact.메일}">${CONFIG.contact.메일}</a>`, '<a class="tl" href="/privacy.html">개인정보 처리방침</a>',
   ...Object.entries(CONFIG.links).filter(([k, u]) => u && EXT[k]).map(([k, u]) => `<a class="tl" href="${u}" target="_blank" rel="noopener">${EXT[k]} ↗</a>`)].join('');
 $('#footBiz').innerHTML = [['상호', '대표', '사업자등록번호'].map(k => `<span>${k} ${esc(CONFIG.biz[k])}</span>`).join(' · '), `<span>주소 ${esc(CONFIG.biz.주소)}</span>`].join('<br>');
 if (CONFIG.notice) { const a = $('#navContact'); a.insertAdjacentHTML('afterbegin', '<b aria-hidden="true">●</b>'); a.title = CONFIG.notice; }
