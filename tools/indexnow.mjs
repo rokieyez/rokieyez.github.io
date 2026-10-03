@@ -20,10 +20,10 @@ const 열쇠 = "9ea4480d4cbad8983eaf5ad7e326b82c";
 const 집 = "www.rokiz.net";
 const 마른연습 = process.argv.includes("--dry");
 
-/* 두 지도를 다 읽는다 — 대문 것과 서재 것 */
+/* 지도를 다 읽는다 — 대문 것, 서재 것, 로키즈미디어 작품 쪽 것 */
 async function 주소들() {
   const out = [];
-  for (const 지도 of [`https://${집}/sitemap.xml`, `https://${집}/books/sitemap.xml`]) {
+  for (const 지도 of [`https://${집}/sitemap.xml`, `https://${집}/books/sitemap.xml`, `https://${집}/work/sitemap.xml`]) {
     const r = await fetch(지도);
     if (!r.ok) { console.warn(`  ${지도} 를 읽지 못했습니다 (${r.status})`); continue; }
     const xml = await r.text();

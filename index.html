@@ -236,6 +236,68 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
 .rv .banner .reveal{transform:translateY(12%)}
 .rv .reveal.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+/* ── 인쇄: 이 쪽을 인쇄하거나 PDF 로 저장하면 A4 회사 소개서가 된다 ──
+   인쇄 쪽 폭(약 700px)에도 위의 좁은 화면 규칙이 걸리므로 여기서 다시 짠다. 움직이는 것·양식·검은 띠는 뺀다 */
+.print-only{display:none}
+@media print{
+  @page{size:A4;margin:11mm 12mm}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  html{scroll-behavior:auto}
+  body{background:#fff}
+  .print-only{display:block}
+  .banner,#masthead nav,#masthead::after,#front canvas,#front video,.brief,#footLinks,#moreWorks,.work .th video,#bigPlay,#embed,#reel .kicker,#reel .ctrl{display:none!important}
+  .rv .reveal{opacity:1!important;transform:none!important;transition:none!important}
+  /* 1쪽: 제목·소개·대표작·제작 과정 / 2쪽: 작업물 12편·연락처 — 제작 과정을 작업물 앞으로 올린다 */
+  main{display:flex;flex-direction:column}
+  #process{order:1;margin-top:5mm}
+  #works,#contact,footer{order:2}
+  #masthead{position:static;background:none;border-bottom:2px solid var(--color-ink-black)}
+  #masthead .page{grid-template-columns:1fr auto 1fr;height:auto;padding-bottom:2mm;font-size:10pt}
+  #dateline{display:block!important}
+  #masthead .pmeta{justify-self:end;font-size:9pt;color:var(--color-charcoal)}
+  #front{margin:0}
+  #front .stage{display:block;height:auto;min-height:0;padding:9mm 0 5mm;text-align:center;background:none}
+  #front h2{font-size:50pt;text-shadow:none;-webkit-mask:none!important;mask:none!important;animation:none}
+  #front .psub{margin-top:5mm;font-size:11pt;letter-spacing:.08em}
+  #about{grid-template-columns:1fr 1fr;gap:8mm;padding:6mm 0;border-top:1px solid var(--color-ink-black)}
+  #about .bio{font-size:10.5pt}
+  #about .bio::first-letter{font-size:38pt}
+  #about h2{font-size:24pt}
+  #reel{grid-template-columns:2fr 1fr;gap:7mm;padding:6mm 0;break-inside:avoid}
+  .tv{box-shadow:none}
+  .tv.embed #poster{display:block}
+  #reel .placard .no{font-size:42pt}
+  #reel .placard h3{font-size:14pt}
+  #works{break-before:page}
+  .shead{flex-direction:row;align-items:end;padding:0 0 3mm;margin-bottom:4mm}
+  .shead h2{font-size:30pt;line-height:1.05}  /* 화면용 좁은 줄 간격(.79)이면 글자 꼭대기가 앞 쪽 맨 아래에 찍힌다 */
+  #workList{--col-gap:5mm;grid-template-columns:repeat(4,1fr);gap:4mm var(--col-gap);padding-bottom:5mm}
+  .work{padding-top:2mm;break-inside:avoid}
+  .work.more{display:flex}
+  .work:nth-child(n+13){display:none}  /* 4칸 3줄로 딱 맞게 — 대표작(1쪽) 말고 최근 12편 */
+  .work::before{top:calc(-4mm - 1px)}
+  .work:nth-child(n)::before{display:block}
+  .work:nth-child(4n+1)::before{display:none}
+  .work div{padding:1.5mm 0 0}
+  .work b{font-size:8.5pt}
+  .work .cap{font-size:7pt;margin-top:1mm}
+  .work .len{font-size:6.5pt;padding:2px 4px 1px;right:3px;bottom:3px}
+  #steps{grid-template-columns:repeat(5,1fr);margin-bottom:5mm;break-inside:avoid}
+  #steps li{display:block;padding:3mm;border-top:0;border-left:1px solid var(--color-ink-black)}
+  #steps li:first-child{border-left:0;padding-left:0}
+  #steps i{font-size:24pt;margin-bottom:2mm}
+  #steps b{font-size:10.5pt}
+  #steps span{font-size:8.5pt}
+  #contact{grid-template-columns:1fr;padding:4mm 0;break-inside:avoid}
+  #contact>div{display:grid;grid-template-columns:1fr auto;column-gap:10mm;align-items:center}
+  #contact .stamp{grid-column:2;grid-row:1 / span 2}
+  #contact .intro{font-size:12pt}
+  .rows{margin:3mm 0 0;font-size:11pt}
+  footer{padding:4mm 0 0;gap:2mm}
+  footer .end{font-size:8pt}
+  footer .biz{font-size:8pt}
+}
 </style>
 </head>
 <body>
@@ -245,6 +307,7 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
     <span id="dateline">서울, KR</span>
     <a class="brand" href="#top"><i id="mastLogo"></i>로키즈미디어</a>
     <nav aria-label="바로 가기"><a class="tl" href="#works">작업물</a><a class="tl" href="#contact" id="navContact">문의</a></nav>
+    <span class="print-only pmeta">www.rokiz.net · rokiz@naver.com</span>
   </div>
 </header>
 
@@ -256,6 +319,7 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
       <canvas id="halftone" aria-hidden="true"></canvas>
       <video id="bgReel" src="showreel.mp4" muted loop playsinline autoplay preload="auto" aria-hidden="true"></video>
       <h2 class="display">GET<br>VISUALIZED!</h2>
+      <p class="print-only psub">로키즈미디어 · 영상제작 스튜디오 — 회사 소개서</p>
     </div>
   </section>
 
@@ -278,7 +342,7 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
       <div class="no" id="nowNo">01</div>
       <h3 class="mid" id="nowTitle">—</h3>
       <p class="cap" id="nowMeta"></p>
-      <div class="ctrl"><button class="tl" id="bPrev">← 이전</button><button class="tl" id="bNext">다음 →</button></div>
+      <div class="ctrl"><button class="tl" id="bPrev">← 이전</button><button class="tl" id="bNext">다음 →</button><a class="tl" id="workLink" href="#">따로 보기 ↗</a></div>
       </div>
     </div>
   </section>
@@ -334,24 +398,26 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
 const CONFIG = {
   about: '기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 끝내는 영상제작 스튜디오입니다. 홍보 영상, 유튜브 콘텐츠, 쇼츠, 설명 영상을 만듭니다.',
   // src 에는 유튜브 주소(watch · youtu.be · shorts · live) 나 mp4 주소를 넣는다.
-  // len 은 영상 길이(카드 썸네일 오른쪽 아래에 나온다). 비우면 안 나온다.
+  // slug 는 작품 주소 이름 — www.rokiz.net/#slug(대문 쇼릴에 뜸) · www.rokiz.net/work/slug/(작품 쪽). 영어 소문자·숫자·- 만. 한번 정하면 바꾸지 않는다(보낸 주소가 깨진다).
+  // date 는 영상을 올린 날(작품 쪽·검색엔진용). len 은 영상 길이(카드 썸네일 오른쪽 아래에 나온다). 비우면 안 나온다.
+  // 작품을 더하거나 고치면 tools/build-work.mjs 로 작품 쪽을 다시 짓는다.
   // cat 은 카드 아래 작은 글씨로 나오는 분류다. meta(채널명)는 적어만 두고 화면에는 내보이지 않는다.
   // 맨 위 = 쇼릴 칸의 첫 편(NEW 딱지). 쇼릴 칸에 크게 나오므로 아래 작업물 목록에는 둘째부터 나온다.
   works: [
-    {title: '작가가 직접 말아주는 전시회 - 양정화 작가 | 더쇼머스트고온 : 거제', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/Q_pYmeZIxwc', len: '10:20'},
-    {title: '현해탄에서 사라진 조선 최초의 소프라노 | 윤심덕을 아십니까', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/eQRXRc4Z0K0', len: '8:07'},
-    {title: '인하대 건축학 418 클럽 - 40주년 일본나들이', meta: '효도왕꽁피디', cat: '행사·기록', src: 'https://www.youtube.com/watch?v=trjaf9PTMcE', len: '15:58'},
-    {title: '14시간 불 위에 있던 냄비가 아직 살아있습니다 | 요리전문가가 15년을 주구장창 써온 스타우브 이야기', meta: 'CombleTV', cat: '푸드', src: 'https://youtu.be/u3WpgOFahmo', len: '7:30'},
-    {title: '계촌클래식축제 아세요?', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/WGwolr-Q4CM', len: '5:38'},
-    {title: '선이 머문 자리, 되돌아오는 시간 | 양정화 작가 개인전', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/UfETRtQDOp4', len: '17:59'},
-    {title: '친구가 되기까지 (2026)', meta: '수아연아TV', cat: '단편', src: 'https://youtu.be/sdi8azMyPoA', len: '33:52'},
-    {title: '이름은 어렵지만 한 번 맛보면 멈출 수 없는 스페인식 조개찜 / 알메하스 기사다스', meta: 'CombleTV', cat: '푸드', src: 'https://youtu.be/0oIEkjTkipA', len: '7:16'},
-    {title: '러시아와 우크라이나, 그리고 폴란드에 뒤엉킨 슬픈 역사 / 조한범 박사 (3부)', meta: '와이스트릿', cat: '교양·정보', src: 'https://www.youtube.com/watch?v=xifeMjtYaq4', len: '23:01'},
-    {title: 'AI - 8분안에 전부 알려드림', meta: '수아연아TV', cat: '교양·정보', src: 'https://youtu.be/UcML5fOneWs', len: '9:06'},
-    {title: '비트코인에 대한 생각을 완전히 바꿔 버릴 겁니다 / 오태민 교수 (풀버전)', meta: '와이스트릿', cat: '교양·정보', src: 'https://www.youtube.com/watch?v=9cVC-kHQNoU', len: '1:15:17'},
-    {title: '초록우산, 인천시교육청과 함께하는 토닥토닥 마음교실', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/MyfM6ybVROE', len: '7:09'},
-    {title: '나라의 부름받은 음악가의 긍지와 명예 - 존 필립 수자', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://www.youtube.com/watch?v=aB9ea3jZZVM', len: '9:47'},
-    {title: '자클린 뒤 프레, 클라라 하스킬 - 천재가 음악을 멈춘 이유', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://www.youtube.com/watch?v=khwVvIo1zmg', len: '10:13'},
+    {slug: 'yang-geoje', title: '작가가 직접 말아주는 전시회 - 양정화 작가 | 더쇼머스트고온 : 거제', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/Q_pYmeZIxwc', len: '10:20', date: '2026-01-09'},
+    {slug: 'yoon-simdeok', title: '현해탄에서 사라진 조선 최초의 소프라노 | 윤심덕을 아십니까', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/eQRXRc4Z0K0', len: '8:07', date: '2026-10-02'},
+    {slug: 'inha-418', title: '인하대 건축학 418 클럽 - 40주년 일본나들이', meta: '효도왕꽁피디', cat: '행사·기록', src: 'https://www.youtube.com/watch?v=trjaf9PTMcE', len: '15:58', date: '2026-05-21'},
+    {slug: 'staub', title: '14시간 불 위에 있던 냄비가 아직 살아있습니다 | 요리전문가가 15년을 주구장창 써온 스타우브 이야기', meta: 'CombleTV', cat: '푸드', src: 'https://youtu.be/u3WpgOFahmo', len: '7:30', date: '2026-10-01'},
+    {slug: 'gyechon', title: '계촌클래식축제 아세요?', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/WGwolr-Q4CM', len: '5:38', date: '2026-06-17'},
+    {slug: 'yang-solo', title: '선이 머문 자리, 되돌아오는 시간 | 양정화 작가 개인전', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/UfETRtQDOp4', len: '17:59', date: '2026-08-17'},
+    {slug: 'becoming-friends', title: '친구가 되기까지 (2026)', meta: '수아연아TV', cat: '단편', src: 'https://youtu.be/sdi8azMyPoA', len: '33:52', date: '2026-08-01'},
+    {slug: 'almejas', title: '이름은 어렵지만 한 번 맛보면 멈출 수 없는 스페인식 조개찜 / 알메하스 기사다스', meta: 'CombleTV', cat: '푸드', src: 'https://youtu.be/0oIEkjTkipA', len: '7:16', date: '2026-08-27'},
+    {slug: 'ukraine-poland', title: '러시아와 우크라이나, 그리고 폴란드에 뒤엉킨 슬픈 역사 / 조한범 박사 (3부)', meta: '와이스트릿', cat: '교양·정보', src: 'https://www.youtube.com/watch?v=xifeMjtYaq4', len: '23:01', date: '2025-09-15'},
+    {slug: 'ai-in-8min', title: 'AI - 8분안에 전부 알려드림', meta: '수아연아TV', cat: '교양·정보', src: 'https://youtu.be/UcML5fOneWs', len: '9:06', date: '2025-07-19'},
+    {slug: 'bitcoin', title: '비트코인에 대한 생각을 완전히 바꿔 버릴 겁니다 / 오태민 교수 (풀버전)', meta: '와이스트릿', cat: '교양·정보', src: 'https://www.youtube.com/watch?v=9cVC-kHQNoU', len: '1:15:17', date: '2025-11-10'},
+    {slug: 'todak', title: '초록우산, 인천시교육청과 함께하는 토닥토닥 마음교실', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/MyfM6ybVROE', len: '7:09', date: '2025-12-24'},
+    {slug: 'sousa', title: '나라의 부름받은 음악가의 긍지와 명예 - 존 필립 수자', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://www.youtube.com/watch?v=aB9ea3jZZVM', len: '9:47', date: '2025-05-25'},
+    {slug: 'du-pre-haskil', title: '자클린 뒤 프레, 클라라 하스킬 - 천재가 음악을 멈춘 이유', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://www.youtube.com/watch?v=khwVvIo1zmg', len: '10:13', date: '2025-06-21'},
   ],
   process: [
     ['문의', '필요한 영상과 일정, 예산을 알려 주세요.'],
@@ -395,9 +461,10 @@ $('#steps').innerHTML = CONFIG.process.map(([a, b], i) => `<li><i>${String(i + 1
 const linkOf = (k, v) => k === '메일' ? `mailto:${v}` : k === '전화' ? `tel:${v.replace(/[^\d+]/g, '')}` : '';
 $('#contactRows').innerHTML = Object.entries(CONFIG.contact).map(([k, v]) => { const h = linkOf(k, v); return `<dt>${esc(k)}</dt><dd>${h ? `<a class="tl" href="${h}">${esc(v)}</a>` : esc(v)}</dd>`; }).join('');
 const EXT = {youtube: '유튜브', instagram: '인스타그램'};
-$('#footLinks').innerHTML = [`<a class="tl" href="mailto:${CONFIG.contact.메일}">${CONFIG.contact.메일}</a>`, '<a class="tl" href="/privacy.html">개인정보 처리방침</a>', '<a class="tl" href="#">맨 위로 ↑</a>',
+$('#footLinks').innerHTML = [`<a class="tl" href="mailto:${CONFIG.contact.메일}">${CONFIG.contact.메일}</a>`, '<a class="tl" href="/privacy.html">개인정보 처리방침</a>', '<button class="tl" type="button" id="printBtn">회사 소개서(인쇄·PDF)</button>', '<a class="tl" href="#">맨 위로 ↑</a>',
   ...Object.entries(CONFIG.links).filter(([k, u]) => u && EXT[k]).map(([k, u]) => `<a class="tl" href="${u}" target="_blank" rel="noopener">${EXT[k]} ↗</a>`)].join('');
 $('#footBiz').innerHTML = [['상호', '대표', '사업자등록번호'].map(k => `<span>${k} ${esc(CONFIG.biz[k])}</span>`).join(' · '), `<span>주소 ${esc(CONFIG.biz.주소)}</span>`].join('<br>');
+$('#printBtn').onclick = () => print();
 if (CONFIG.notice) { const a = $('#navContact'); a.insertAdjacentHTML('afterbegin', '<b aria-hidden="true">●</b>'); a.title = CONFIG.notice; }
 
 // ── 문의 양식: 서버가 메일로 바로 보낸다. 서버가 못 보내면 적은 내용을 채워 메일 앱을 연다 ──
@@ -450,9 +517,14 @@ function bigImg(im, w){
 }
 const tv = $('#tv'), embed = $('#embed');
 let ch = 0;
-function tune(i, play){
+// 작품 주소 이름: slug, 없으면 유튜브 ID
+const keyOf = w => w.slug || (parseYT(w.src) || {}).id || '';
+function tune(i, play, mark){
   ch = (i + CONFIG.works.length) % CONFIG.works.length;
-  const w = CONFIG.works[ch];
+  const w = CONFIG.works[ch], k = keyOf(w);
+  // 고른 작품을 주소창에 적는다(www.rokiz.net/#slug) — 그대로 복사해 보내면 그 작품이 뜬다. 방문 기록은 늘리지 않는다
+  if (mark && k) history.replaceState(null, '', '#' + k);
+  $('#workLink').hidden = !parseYT(w.src); $('#workLink').href = `/work/${k}/`;
   $('#nowNo').textContent = String(ch + 1).padStart(2, '0');
   $('#nowTitle').innerHTML = esc(w.title) + (ch === 0 ? '<span class="new">NEW</span>' : ''); $('#nowMeta').textContent = `${w.cat || ''} · ${ch + 1}/${CONFIG.works.length}`;
   embed.innerHTML = ''; tv.classList.remove('embed');
@@ -470,11 +542,19 @@ function start(){
   } else return;
   tv.classList.add('embed');
 }
-$('#bPrev').onclick = () => tune(ch - 1, false);
-$('#bNext').onclick = () => tune(ch + 1, false);
+$('#bPrev').onclick = () => tune(ch - 1, false, true);
+$('#bNext').onclick = () => tune(ch + 1, false, true);
 $('#bigPlay').onclick = start;
-const playWork = i => { tune(i, true); $('#reel').scrollIntoView({behavior: 'smooth', block: 'center'}); };
+const playWork = i => { tune(i, true, true); $('#reel').scrollIntoView({behavior: 'smooth', block: 'center'}); };
 tune(0, false);
+// www.rokiz.net/#slug 로 들어오면(또는 주소의 # 뒤가 바뀌면) 그 작품을 쇼릴 칸에 띄우고 그리로 내려간다. #works 같은 구간 이름은 건드리지 않는다
+function fromHash(){
+  const k = decodeURIComponent(location.hash.slice(1)), i = k ? CONFIG.works.findIndex(w => keyOf(w) === k) : -1;
+  if (i < 0) return;
+  tune(i, false); $('#reel').scrollIntoView({block: 'center', behavior: 'instant'});
+}
+addEventListener('hashchange', fromHash); fromHash();
+addEventListener('load', fromHash);  // 글꼴·그림이 다 놓인 뒤 자리가 바뀌므로 한 번 더 맞춘다
 
 // ── 작업물 ──
 // 미리보기: 카드에 마우스를 올리면(휴대폰은 화면 가운데 오면) 그 작업의 몇 초를 소리 없이 돌린다.
@@ -527,8 +607,8 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObse
 // 글자판: ← → 영상 넘기기. 한글 입력 상태에서도 먹도록 e.code 로 본다.
 addEventListener('keydown', e => {
   if (e.target.closest('input,textarea,select,button,a,iframe') || e.metaKey || e.ctrlKey || e.altKey) return;
-  if (e.code === 'ArrowLeft') tune(ch - 1, false);
-  else if (e.code === 'ArrowRight') tune(ch + 1, false);
+  if (e.code === 'ArrowLeft') tune(ch - 1, false, true);
+  else if (e.code === 'ArrowRight') tune(ch + 1, false, true);
 });
 
 // 읽은 만큼 머리띠 아랫줄이 주홍으로 찬다

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 손으로 고치지 마세요 — rokiz-media-site 의 tools/build-work.mjs 가 index.html 의 CONFIG.works 로 짓습니다. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+  <url>
+    <loc>https://www.rokiz.net/work/yang-geoje/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/Q_pYmeZIxwc/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>작가가 직접 말아주는 전시회 - 양정화 작가 | 더쇼머스트고온 : 거제</video:title>
+      <video:description>로키즈미디어가 만든 문화·예술 영상입니다. 기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 만듭니다.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/Q_pYmeZIxwc</video:player_loc>
+      <video:duration>620</video:duration>
+      <video:publication_date>2026-01-09</video:publication_date>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/work/yoon-simdeok/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/eQRXRc4Z0K0/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>현해탄에서 사라진 조선 최초의 소프라노 | 윤심덕을 아십니까</video:title>
+      <video:description>로키즈미디어가 만든 문화·예술 영상입니다. 기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 만듭니다.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/eQRXRc4Z0K0</video:player_loc>
+      <video:duration>487</video:duration>
+      <video:publication_date>2026-10-02</video:publication_date>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/work/inha-418/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/trjaf9PTMcE/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>인하대 건축학 418 클럽 - 40주년 일본나들이</video:title>
+      <video:description>로키즈미디어가 만든 행사·기록 영상입니다. 기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 만듭니다.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/trjaf9PTMcE</video:player_loc>
+      <video:duration>958</video:duration>
+      <video:publication_date>2026-05-21</video:publication_date>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/work/staub/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/u3WpgOFahmo/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>14시간 불 위에 있던 냄비가 아직 살아있습니다 | 요리전문가가 15년을 주구장창 써온 스타우브 이야기</video:title>
+      <video:description>로키즈미디어가 만든 푸드 영상입니다. 기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 만듭니다.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/u3WpgOFahmo</video:player_loc>
+      <video:duration>450</video:duration>
+      <video:publication_date>2026-10-01</video:publication_date>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/work/gyechon/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/WGwolr-Q4CM/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>계촌클래식축제 아세요?</video:title>
+      <video:description>로키즈미디어가 만든 문화·예술 영상입니다. 기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 만듭니다.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/WGwolr-Q4CM</video:player_loc>
+      <video:duration>338</video:duration>
+      <video:publication_date>2026-06-17</video:publication_date>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/work/yang-solo/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/UfETRtQDOp4/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>선이 머문 자리, 되돌아오는 시간 | 양정화 작가 개인전</video:title>
+      <video:description>로키즈미디어가 만든 문화·예술 영상입니다. 기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 만듭니다.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/UfETRtQDOp4</video:player_loc>
+      <video:duration>1079</video:duration>
+      <video:publication_date>2026-08-17</video:publication_date>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/work/becoming-friends/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/sdi8azMyPoA/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>친구가 되기까지 (2026)</video:title>
+      <video:description>로키즈미디어가 만든 단편 영상입니다. 기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 만듭니다.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/sdi8azMyPoA</video:player_loc>
+      <video:duration>2032</video:duration>
+      <video:publication_date>2026-08-01</video:publication_date>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/work/almejas/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/0oIEkjTkipA/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>이름은 어렵지만 한 번 맛보면 멈출 수 없는 스페인식 조개찜 / 알메하스 기사다스</video:title>
+      <video:description>로키즈미디어가 만든 푸드 영상입니다. 기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 만듭니다.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/0oIEkjTkipA</video:player_loc>
+      <video:duration>436</video:duration>
+      <video:publication_date>2026-08-27</video:publication_date>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/work/ukraine-poland/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/xifeMjtYaq4/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>러시아와 우크라이나, 그리고 폴란드에 뒤엉킨 슬픈 역사 / 조한범 박사 (3부)</video:title>
+      <video:description>로키즈미디어가 만든 교양·정보 영상입니다. 기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 만듭니다.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/xifeMjtYaq4</video:player_loc>
+      <video:duration>1381</video:duration>
+      <video:publication_date>2025-09-15</video:publication_date>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/work/ai-in-8min/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/UcML5fOneWs/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>AI - 8분안에 전부 알려드림</video:title>
+      <video:description>로키즈미디어가 만든 교양·정보 영상입니다. 기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 만듭니다.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/UcML5fOneWs</video:player_loc>
+      <video:duration>546</video:duration>
+      <video:publication_date>2025-07-19</video:publication_date>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/work/bitcoin/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/9cVC-kHQNoU/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>비트코인에 대한 생각을 완전히 바꿔 버릴 겁니다 / 오태민 교수 (풀버전)</video:title>
+      <video:description>로키즈미디어가 만든 교양·정보 영상입니다. 기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 만듭니다.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/9cVC-kHQNoU</video:player_loc>
+      <video:duration>4517</video:duration>
+      <video:publication_date>2025-11-10</video:publication_date>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/work/todak/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/MyfM6ybVROE/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>초록우산, 인천시교육청과 함께하는 토닥토닥 마음교실</video:title>
+      <video:description>로키즈미디어가 만든 문화·예술 영상입니다. 기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 만듭니다.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/MyfM6ybVROE</video:player_loc>
+      <video:duration>429</video:duration>
+      <video:publication_date>2025-12-24</video:publication_date>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/work/sousa/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/aB9ea3jZZVM/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>나라의 부름받은 음악가의 긍지와 명예 - 존 필립 수자</video:title>
+      <video:description>로키즈미디어가 만든 문화·예술 영상입니다. 기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 만듭니다.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/aB9ea3jZZVM</video:player_loc>
+      <video:duration>587</video:duration>
+      <video:publication_date>2025-05-25</video:publication_date>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://www.rokiz.net/work/du-pre-haskil/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/khwVvIo1zmg/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>자클린 뒤 프레, 클라라 하스킬 - 천재가 음악을 멈춘 이유</video:title>
+      <video:description>로키즈미디어가 만든 문화·예술 영상입니다. 기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 만듭니다.</video:description>
+      <video:player_loc>https://www.youtube.com/embed/khwVvIo1zmg</video:player_loc>
+      <video:duration>613</video:duration>
+      <video:publication_date>2025-06-21</video:publication_date>
+    </video:video>
+  </url>
+</urlset>

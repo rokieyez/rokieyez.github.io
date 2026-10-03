@@ -2,6 +2,7 @@
 User-agent: *
 Allow: /
 
-# 지도는 방마다 하나씩 — 대문과 서재
+# 지도는 방마다 하나씩 — 대문, 서재, 로키즈미디어 작품 쪽(영상 지도)
 Sitemap: https://www.rokiz.net/sitemap.xml
 Sitemap: https://www.rokiz.net/books/sitemap.xml
+Sitemap: https://www.rokiz.net/work/sitemap.xml
