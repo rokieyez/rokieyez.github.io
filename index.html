@@ -198,6 +198,8 @@ img{display:block;max-width:100%}
 .solid{background:var(--color-ink-black);color:var(--color-parchment);border-radius:var(--radius-tags);padding:12px 28px;font-size:19px}
 .solid:hover{background:var(--color-pure-black)}
 .solid:disabled{opacity:.6;cursor:default}
+/* 휴대폰: 쇼릴을 지나 내려가면 화면 아래에 「문의하기」가 뜬다(스크립트가 .on). 문의 칸이 보이면 거둔다. 넓은 화면은 머리띠 「문의」로 충분 */
+#fab{display:none;text-decoration:none}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 .sendmsg{font-size:16px;min-height:1.3em}
 .consent{font-size:14px;color:var(--color-charcoal);margin:0}
@@ -231,6 +233,10 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
   #workList{grid-template-columns:1fr}
   .work:nth-child(n)::before{display:none}
   .brief .two{grid-template-columns:1fr}
+  html{scroll-padding-bottom:72px}  /* 초점이 화면 아래로 내려온 카드를 떠 있는 「문의하기」가 가리지 않게 */
+  #fab{display:block;position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;padding:10px 20px;font-size:17px;box-shadow:0 0 0 3px var(--color-parchment);
+    visibility:hidden;opacity:0;transform:translateY(12px);transition:opacity .25s ease,transform .25s ease,visibility 0s linear .25s}
+  #fab.on{visibility:visible;opacity:1;transform:none;transition-delay:0s}
 }
 /* 스크롤하면 구간 제목·검은 띠가 옅게 떠오른다. 스크립트가 html 에 .rv 를 붙였을 때만(없으면 그냥 보임) */
 .rv .reveal{opacity:0;transform:translateY(28px);transition:opacity .9s ease,transform .9s cubic-bezier(.2,.7,.2,1)}
@@ -247,7 +253,7 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
   html{scroll-behavior:auto}
   body{background:#fff}
   .print-only{display:block}
-  .banner,#masthead nav,#masthead::after,#front canvas,#front video,.brief,#footLinks,#moreWorks,.work .th video,#reel{display:none!important}
+  .banner,#masthead nav,#masthead::after,#front canvas,#front video,.brief,#footLinks,#moreWorks,.work .th video,#reel,#fab{display:none!important}
   .rv .reveal{opacity:1!important;transform:none!important;transition:none!important}
   /* 1쪽: 제목·소개·대표작·제작 과정 / 2쪽: 작업물 12편·연락처 — 제작 과정을 작업물 앞으로 올린다 */
   main{display:flex;flex-direction:column}
@@ -391,6 +397,7 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
     <span>© 로키즈미디어 · ROKIZ MEDIA</span>
   </footer>
 </main>
+<a id="fab" class="solid" href="#contact">문의하기</a>
 
 <script>
 // ────────────────────────────────────────────────
@@ -555,6 +562,8 @@ function fromHash(e){
   let k = ''; try { k = decodeURIComponent(location.hash.slice(1)); } catch (_) { return; }  // #50% 같은 깨진 주소에도 스크립트가 멈추지 않게
   const i = k ? CONFIG.works.findIndex(w => keyOf(w) === k) : -1;
   if (i < 0) return;
+  // 「문의하기」 등으로 갔다가 뒤로 와서 이미 띄운 작품 주소로 돌아온 것이면 브라우저가 보던 자리로 돌려놓게 둔다
+  if (e && e.type === 'hashchange' && i === ch) return;
   if (e && e.type === 'load') {
     // 글꼴·그림이 다 놓이면 자리가 바뀌므로 한 번 더 맞춘다. 그새 재생했거나 스크롤했으면 건드리지 않는다
     if (i === ch && scrollY === jumped && !tv.classList.contains('embed')) { $('#reel').scrollIntoView({block: 'center', behavior: 'instant'}); jumped = scrollY; }
@@ -628,9 +637,11 @@ addEventListener('keydown', e => {
   else if (e.code === 'ArrowRight') tune(ch + 1, false, true);
 });
 
-// 읽은 만큼 머리띠 아랫줄이 주홍으로 찬다
-{ const m = $('#masthead'); let q = 0;
-  const upd = () => { q = 0; const h = document.documentElement.scrollHeight - innerHeight; m.style.setProperty('--read', h > 0 ? Math.min(1, scrollY / h).toFixed(4) : 0); };
+// 읽은 만큼 머리띠 아랫줄이 주홍으로 찬다. 휴대폰 「문의하기」는 쇼릴을 다 지나고 문의 칸이 아직 안 보일 때만 띄운다(넓은 화면은 CSS 가 숨김)
+{ const m = $('#masthead'), fab = $('#fab'), reel = $('#reel'), contact = $('#contact'); let q = 0;
+  const upd = () => { q = 0;
+    const h = document.documentElement.scrollHeight - innerHeight, on = reel.getBoundingClientRect().bottom < 0 && contact.getBoundingClientRect().top > innerHeight;  // 읽기를 먼저 몰아 둔다
+    m.style.setProperty('--read', h > 0 ? Math.min(1, scrollY / h).toFixed(4) : 0); fab.classList.toggle('on', on); };
   addEventListener('scroll', () => { if (!q) q = requestAnimationFrame(upd); }, {passive: true});
   addEventListener('resize', upd); upd(); }
 
