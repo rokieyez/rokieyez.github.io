@@ -139,7 +139,7 @@ img{display:block;max-width:100%}
 .shead h2{font-size:clamp(56px,6vw,86px)}
 #workList{--col-gap:30px;display:grid;grid-template-columns:repeat(3,1fr);gap:28px var(--col-gap);padding-bottom:var(--section-gap)}
 /* 신문 지면처럼 — 판·그림자 없이 위 괘선 하나로 칸을 나눈다 */
-.work{position:relative;display:flex;flex-direction:column;justify-content:flex-start;text-align:left;border-top:1px solid var(--color-ink-black);padding-top:14px}
+.work{text-decoration:none;position:relative;display:flex;flex-direction:column;justify-content:flex-start;text-align:left;border-top:1px solid var(--color-ink-black);padding-top:14px}
 /* 칸 사이 세로 괘선 — 위쪽 틈(28px)까지 올려 제목 아랫줄·윗줄 칸과 이어지게, 신문 단 나누기처럼 */
 .work::before{content:'';position:absolute;top:-29px;bottom:0;left:calc(var(--col-gap) / -2);border-left:1px solid var(--color-ink-black)}
 .work:nth-child(3n+1)::before{display:none}
@@ -230,8 +230,15 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
   #masthead .page{grid-template-columns:1fr auto}
   #dateline{display:none}
   #masthead nav{gap:12px;font-size:16px}
-  #workList{grid-template-columns:1fr}
+  #workList{grid-template-columns:1fr;gap:0}
   .work:nth-child(n)::before{display:none}
+  /* 휴대폰 작업물은 신문 단신처럼 — 왼쪽 작은 썸네일, 오른쪽 제목. 한 화면에 여러 편이 보인다(크게 보는 건 위 쇼릴 칸 몫) */
+  .work{flex-direction:row;align-items:flex-start;gap:14px;padding:12px 0 14px}
+  .work .th{flex:none;width:42%}
+  .work div{flex:1;min-width:0;padding:0}
+  .work b{height:auto;-webkit-line-clamp:3;font-size:17px;line-height:1.25}
+  .work .cap{margin-top:6px;font-size:14px}
+  .work .len{right:5px;bottom:5px;font-size:11px}
   .brief .two{grid-template-columns:1fr}
   html{scroll-padding-bottom:72px}  /* 초점이 화면 아래로 내려온 카드를 떠 있는 「문의하기」가 가리지 않게 */
   #fab{display:block;position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;padding:10px 20px;font-size:17px;box-shadow:0 0 0 3px var(--color-parchment);
@@ -412,20 +419,20 @@ const CONFIG = {
   // cat 은 카드 아래 작은 글씨로 나오는 분류다. meta(채널명)는 적어만 두고 화면에는 내보이지 않는다.
   // 맨 위 = 쇼릴 칸의 첫 편(NEW 딱지). 쇼릴 칸에 크게 나오므로 아래 작업물 목록에는 둘째부터 나온다.
   works: [
-    {slug: 'yang-geoje', title: '작가가 직접 말아주는 전시회 - 양정화 작가 | 더쇼머스트고온 : 거제', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/Q_pYmeZIxwc', len: '10:20', date: '2026-01-09'},
-    {slug: 'yoon-simdeok', title: '현해탄에서 사라진 조선 최초의 소프라노 | 윤심덕을 아십니까', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/eQRXRc4Z0K0', len: '8:07', date: '2026-10-02'},
-    {slug: 'inha-418', title: '인하대 건축학 418 클럽 - 40주년 일본나들이', meta: '효도왕꽁피디', cat: '행사·기록', src: 'https://www.youtube.com/watch?v=trjaf9PTMcE', len: '15:58', date: '2026-05-21'},
-    {slug: 'staub', title: '14시간 불 위에 있던 냄비가 아직 살아있습니다 | 요리전문가가 15년을 주구장창 써온 스타우브 이야기', meta: 'CombleTV', cat: '푸드', src: 'https://youtu.be/u3WpgOFahmo', len: '7:30', date: '2026-10-01'},
-    {slug: 'gyechon', title: '계촌클래식축제 아세요?', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/WGwolr-Q4CM', len: '5:38', date: '2026-06-17'},
-    {slug: 'yang-solo', title: '선이 머문 자리, 되돌아오는 시간 | 양정화 작가 개인전', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/UfETRtQDOp4', len: '17:59', date: '2026-08-17'},
-    {slug: 'becoming-friends', title: '친구가 되기까지 (2026)', meta: '수아연아TV', cat: '단편', src: 'https://youtu.be/sdi8azMyPoA', len: '33:52', date: '2026-08-01'},
-    {slug: 'almejas', title: '이름은 어렵지만 한 번 맛보면 멈출 수 없는 스페인식 조개찜 / 알메하스 기사다스', meta: 'CombleTV', cat: '푸드', src: 'https://youtu.be/0oIEkjTkipA', len: '7:16', date: '2026-08-27'},
-    {slug: 'ukraine-poland', title: '러시아와 우크라이나, 그리고 폴란드에 뒤엉킨 슬픈 역사 / 조한범 박사 (3부)', meta: '와이스트릿', cat: '교양·정보', src: 'https://www.youtube.com/watch?v=xifeMjtYaq4', len: '23:01', date: '2025-09-15'},
-    {slug: 'ai-in-8min', title: 'AI - 8분안에 전부 알려드림', meta: '수아연아TV', cat: '교양·정보', src: 'https://youtu.be/UcML5fOneWs', len: '9:06', date: '2025-07-19'},
-    {slug: 'bitcoin', title: '비트코인에 대한 생각을 완전히 바꿔 버릴 겁니다 / 오태민 교수 (풀버전)', meta: '와이스트릿', cat: '교양·정보', src: 'https://www.youtube.com/watch?v=9cVC-kHQNoU', len: '1:15:17', date: '2025-11-10'},
-    {slug: 'todak', title: '초록우산, 인천시교육청과 함께하는 토닥토닥 마음교실', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/MyfM6ybVROE', len: '7:09', date: '2025-12-24'},
-    {slug: 'sousa', title: '나라의 부름받은 음악가의 긍지와 명예 - 존 필립 수자', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://www.youtube.com/watch?v=aB9ea3jZZVM', len: '9:47', date: '2025-05-25'},
-    {slug: 'du-pre-haskil', title: '자클린 뒤 프레, 클라라 하스킬 - 천재가 음악을 멈춘 이유', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://www.youtube.com/watch?v=khwVvIo1zmg', len: '10:13', date: '2025-06-21'},
+    {slug: 'yang-geoje', title: '작가가 직접 말아주는 전시회 - 양정화 작가 | 더쇼머스트고온 : 거제', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/Q_pYmeZIxwc', len: '10:20', date: '2026-01-09', desc: '경남 거제의 복합문화공간 아그네스 파크에서 열린 이동형 전시 「더쇼머스트고온: 거제」 현장을 담은 영상입니다. 드로잉·설치·조각을 넘나드는 양정화 작가가 직접 작품과 작업 세계를 들려줍니다.'},
+    {slug: 'yoon-simdeok', title: '현해탄에서 사라진 조선 최초의 소프라노 | 윤심덕을 아십니까', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/eQRXRc4Z0K0', len: '8:07', date: '2026-10-02', desc: '1926년 현해탄에서 사라진 조선 최초의 소프라노 윤심덕의 삶을 따라가는 해설 영상입니다. 홍승찬 교수와 함께 「사의 찬미」를 둘러싼 소문과 사실, 5년 뒤의 생존설까지 짚어 봅니다.'},
+    {slug: 'inha-418', title: '인하대 건축학 418 클럽 - 40주년 일본나들이', meta: '효도왕꽁피디', cat: '행사·기록', src: 'https://www.youtube.com/watch?v=trjaf9PTMcE', len: '15:58', date: '2026-05-21', desc: '인하대학교 건축학과 동문 모임 「418 클럽」이 40주년을 맞아 떠난 3박 4일 교토 나들이 기록입니다. 은사 니시카와 코지 선생과의 만남과 여정을 담았습니다.'},
+    {slug: 'staub', title: '14시간 불 위에 있던 냄비가 아직 살아있습니다 | 요리전문가가 15년을 주구장창 써온 스타우브 이야기', meta: 'CombleTV', cat: '푸드', src: 'https://youtu.be/u3WpgOFahmo', len: '7:30', date: '2026-10-01', desc: '요리 채널 꽁블의 새 시리즈 「꽁블의 부엌」 첫 편입니다. 14시간 불 위에서도 살아남은 스타우브 오벌 냄비를 15년째 쓰는 이유를 요리 전문가가 직접 이야기합니다.'},
+    {slug: 'gyechon', title: '계촌클래식축제 아세요?', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/WGwolr-Q4CM', len: '5:38', date: '2026-06-17', desc: '폐교 위기의 강원도 시골 초등학교 「전교생 오케스트라」에서 시작된 계촌클래식축제를 소개하는 영상입니다. 축제가 생겨난 과정과 올해 프로그램을 담았습니다.'},
+    {slug: 'yang-solo', title: '선이 머문 자리, 되돌아오는 시간 | 양정화 작가 개인전', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/UfETRtQDOp4', len: '17:59', date: '2026-08-17', desc: '연희동 전시 공간 「10의 n승」에서 열린 양정화 작가 개인전 「선이 머문 자리, 되돌아오는 시간」 소개 영상입니다. 심장 박동을 첼로 음악과 4m 드로잉으로 옮긴 작업 과정을 작가의 설명으로 따라갑니다.'},
+    {slug: 'becoming-friends', title: '친구가 되기까지 (2026)', meta: '수아연아TV', cat: '단편', src: 'https://youtu.be/sdi8azMyPoA', len: '33:52', date: '2026-08-01', desc: '학교 폭력을 지켜보기만 했던 아이와 그 피해자가 2년 뒤 다시 만나 친구가 되어 가는 이야기를 그린 단편 영화입니다(연출·각본 조수아).'},
+    {slug: 'almejas', title: '이름은 어렵지만 한 번 맛보면 멈출 수 없는 스페인식 조개찜 / 알메하스 기사다스', meta: 'CombleTV', cat: '푸드', src: 'https://youtu.be/0oIEkjTkipA', len: '7:16', date: '2026-08-27', desc: '스페인식 바지락 조림 「알메하스 기사다스」를 집에서 만드는 법을 담은 요리 영상입니다. 조개 손질부터 감칠맛을 살리는 양념까지 따라 하기 쉽게 차례로 보여 줍니다.'},
+    {slug: 'ukraine-poland', title: '러시아와 우크라이나, 그리고 폴란드에 뒤엉킨 슬픈 역사 / 조한범 박사 (3부)', meta: '와이스트릿', cat: '교양·정보', src: 'https://www.youtube.com/watch?v=xifeMjtYaq4', len: '23:01', date: '2025-09-15', desc: '조한범 통일연구원 선임연구위원과 함께 러시아·우크라이나 전쟁과 폴란드의 얽힌 역사를 짚는 대담 영상입니다. K-방산의 주요 고객 폴란드와 우크라이나 사이의 아픈 과거를 다룹니다.'},
+    {slug: 'ai-in-8min', title: 'AI - 8분안에 전부 알려드림', meta: '수아연아TV', cat: '교양·정보', src: 'https://youtu.be/UcML5fOneWs', len: '9:06', date: '2025-07-19', desc: '인공지능의 정의부터 일상 속 쓰임, 그림·영상·음악 만들기와 공부 도우미, 앞으로의 전망까지 8분에 정리한 설명 영상입니다.'},
+    {slug: 'bitcoin', title: '비트코인에 대한 생각을 완전히 바꿔 버릴 겁니다 / 오태민 교수 (풀버전)', meta: '와이스트릿', cat: '교양·정보', src: 'https://www.youtube.com/watch?v=9cVC-kHQNoU', len: '1:15:17', date: '2025-11-10', desc: '오태민 한양대학교 교수와 함께 비트코인 투자자의 심리, 10만 달러 돌파 배경, 안전자산 논쟁을 짚는 대담 영상입니다.'},
+    {slug: 'todak', title: '초록우산, 인천시교육청과 함께하는 토닥토닥 마음교실', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/MyfM6ybVROE', len: '7:09', date: '2025-12-24', desc: '초록우산·인천시교육청·이건박영주문화재단이 학교 안에 심리치료실을 마련하는 「토닥토닥마음교실」을 기록한 영상입니다. 상담 장면과 교사·관계자 인터뷰, 새 공간을 쓰는 아이들의 목소리를 담았습니다.'},
+    {slug: 'sousa', title: '나라의 부름받은 음악가의 긍지와 명예 - 존 필립 수자', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://www.youtube.com/watch?v=aB9ea3jZZVM', len: '9:47', date: '2025-05-25', desc: '미국 행진곡의 아버지 존 필립 수자의 삶과 음악을 홍승찬 교수의 해설로 따라가는 영상입니다. 군악대와의 인연과 대표 행진곡에 담긴 이야기를 다룹니다.'},
+    {slug: 'du-pre-haskil', title: '자클린 뒤 프레, 클라라 하스킬 - 천재가 음악을 멈춘 이유', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://www.youtube.com/watch?v=khwVvIo1zmg', len: '10:13', date: '2025-06-21', desc: '희귀병으로 너무 일찍 무대를 떠나야 했던 음악가들 — 첼리스트 자클린 뒤 프레, 피아니스트 클라라 하스킬, 그리고 셀린 디옹의 이야기를 담은 클래식 해설 영상입니다.'},
   ],
   process: [
     ['문의', '필요한 영상과 일정, 예산을 알려 주세요.'],
@@ -603,12 +610,13 @@ function preview(card, on){
 const SHOW = 6;  // 처음에 보이는 작업물 수. 나머지는 「더 보기」로 편다. 첫 편은 쇼릴 칸에 있으니 목록에서 뺀다
 CONFIG.works.forEach((w, i) => {
   if (i === 0) return;
-  const b = document.createElement('button'); b.className = 'work' + (i > SHOW ? ' more' : ''); b.title = w.title;
-  const t = thumbOf(w), y = parseYT(w.src);
-  if (y) b.dataset.pv = y.id;
+  // 카드는 그 작품 쪽(work/<slug>/)으로 가는 진짜 링크다 — 검색 로봇·새 탭·「링크 복사」·PDF 소개서가 따라간다. 그냥 누르면 쇼릴 칸에서 튼다
+  const t = thumbOf(w), y = parseYT(w.src), b = document.createElement(y ? 'a' : 'button');
+  b.className = 'work' + (i > SHOW ? ' more' : ''); b.title = w.title;
+  if (y) { b.dataset.pv = y.id; b.href = `/work/${keyOf(w)}/`; }
   b.innerHTML = `<span class="th">${t ? `<img loading="lazy" alt="" src="${t}">` : '<span class="blank"></span>'}${w.len ? `<i class="len">${esc(w.len)}</i>` : ''}</span>`
     + `<div><b>${esc(w.title)}</b><span class="cap">${esc(w.cat || '')} · ${String(i + 1).padStart(2, '0')}</span></div>`;
-  b.onclick = () => playWork(i);
+  b.onclick = e => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; e.preventDefault(); playWork(i); };  // ⌘·Ctrl·Shift 누르고 누르면 브라우저 몫(새 탭·창)
   b.onmouseenter = () => preview(b, true); b.onmouseleave = () => preview(b, false);
   $('#workList').append(b);
 });
@@ -616,9 +624,9 @@ if (CONFIG.works.length - 1 > SHOW) {
   const m = $('#moreWorks'); m.hidden = false; m.textContent = `작업물 더 보기 (${CONFIG.works.length - 1 - SHOW}편) ↓`;
   m.onclick = () => { const more = [...document.querySelectorAll('.work.more')]; more.forEach(e => e.classList.remove('more')); m.remove(); if (more[0]) more[0].focus(); };
 }
-// 휴대폰(마우스 없음): 카드가 화면 가운데 띠에 들어오면 썸네일 색을 돌려준다
+// 휴대폰(마우스 없음): 카드가 화면 한가운데 가는 띠에 걸리면 썸네일 색을 돌려준다(낮은 줄이 여러 개 함께 켜지지 않게 띠를 가늘게)
 if (matchMedia('(hover: none)').matches) {
-  const io = new IntersectionObserver(es => es.forEach(e => { e.target.classList.toggle('lit', e.isIntersecting); preview(e.target, e.isIntersecting); }), {rootMargin: '-35% 0px -35% 0px'});
+  const io = new IntersectionObserver(es => es.forEach(e => { e.target.classList.toggle('lit', e.isIntersecting); preview(e.target, e.isIntersecting); }), {rootMargin: '-48% 0px -48% 0px'});
   document.querySelectorAll('.work').forEach(e => io.observe(e));
 }
 // 스크롤하면 떠오르기 — 「동작 줄이기」면 안 한다

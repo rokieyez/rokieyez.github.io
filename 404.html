@@ -8,6 +8,17 @@
   <meta name="color-scheme" content="dark">
   <!-- 없는 주소의 안내판이다 — 검색 결과에 「잠긴 문」이 뜨면 안 된다 -->
   <meta name="robots" content="noindex">
+  <script>
+    /* 첫 화면(www.rokiz.net)은 로키즈미디어다. 명함·카톡으로 온 손님이 주소를 줄이거나 잘못 쳤으면
+       잠긴 문(과 개인 방)으로 보내지 말고 로키즈미디어 안의 맞는 자리로 곧장 돌려보낸다.
+       다른 방(/rooms/·/notes/·/books/…)에서 길을 잃은 사람은 아래 안내 그대로다. */
+    (function () {
+      var 길 = location.pathname.replace(/\/+$/, "").toLowerCase();
+      var 갈곳 = { "/works": "/work/", "/portfolio": "/work/", "/contact": "/#contact", "/about": "/#about", "/media": "/" }[길];
+      if (!갈곳 && 길.indexOf("/work/") === 0) 갈곳 = "/work/";   // 없는 작품 이름 → 작업물 전체
+      if (갈곳) location.replace(갈곳);
+    })();
+  </script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
