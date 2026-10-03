@@ -305,7 +305,7 @@ const CONFIG = {
   about: '기획부터 촬영, 편집, 모션그래픽까지 한 팀에서 끝내는 영상제작 스튜디오입니다. 홍보 영상, 유튜브 콘텐츠, 쇼츠, 설명 영상을 만듭니다.',
   // src 에는 유튜브 주소(watch · youtu.be · shorts · live) 나 mp4 주소를 넣는다.
   // cat 은 카드 아래 작은 글씨로 나오는 분류다. meta(채널명)는 적어만 두고 화면에는 내보이지 않는다.
-  // 맨 위 = 쇼릴 칸의 첫 편. 맨 위에는 NEW 딱지가 붙는다.
+  // 맨 위 = 쇼릴 칸의 첫 편(NEW 딱지). 쇼릴 칸에 크게 나오므로 아래 작업물 목록에는 둘째부터 나온다.
   works: [
     {title: '작가가 직접 말아주는 전시회 - 양정화 작가 | 더쇼머스트고온 : 거제', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/Q_pYmeZIxwc'},
     {title: '현해탄에서 사라진 조선 최초의 소프라노 | 윤심덕을 아십니까', meta: '이건음악회 Eagon Concert', cat: '문화·예술', src: 'https://youtu.be/eQRXRc4Z0K0'},
@@ -420,7 +420,7 @@ function tune(i, play){
   ch = (i + CONFIG.works.length) % CONFIG.works.length;
   const w = CONFIG.works[ch];
   $('#nowNo').textContent = String(ch + 1).padStart(2, '0');
-  $('#nowTitle').textContent = w.title; $('#nowMeta').textContent = `${w.cat || ''} · ${ch + 1}/${CONFIG.works.length}`;
+  $('#nowTitle').innerHTML = esc(w.title) + (ch === 0 ? '<span class="new">NEW</span>' : ''); $('#nowMeta').textContent = `${w.cat || ''} · ${ch + 1}/${CONFIG.works.length}`;
   embed.innerHTML = ''; tv.classList.remove('embed');
   bigImg($('#poster'), w);
   if (play) start();
@@ -443,17 +443,18 @@ const playWork = i => { tune(i, true); $('#reel').scrollIntoView({behavior: 'smo
 tune(0, false);
 
 // ── 작업물 ──
-const SHOW = 6;  // 처음에 보이는 작업물 수. 나머지는 「더 보기」로 편다
+const SHOW = 6;  // 처음에 보이는 작업물 수. 나머지는 「더 보기」로 편다. 첫 편은 쇼릴 칸에 있으니 목록에서 뺀다
 CONFIG.works.forEach((w, i) => {
-  const b = document.createElement('button'); b.className = 'work' + (i >= SHOW ? ' more' : ''); b.title = w.title;
+  if (i === 0) return;
+  const b = document.createElement('button'); b.className = 'work' + (i > SHOW ? ' more' : ''); b.title = w.title;
   const t = thumbOf(w);
   b.innerHTML = (t ? `<img loading="lazy" alt="" src="${t}">` : '<span class="blank"></span>')
-    + `<div><b>${esc(w.title)}${i === 0 ? '<span class="new">NEW</span>' : ''}</b><span class="cap">${esc(w.cat || '')} · ${String(i + 1).padStart(2, '0')}</span></div>`;
+    + `<div><b>${esc(w.title)}</b><span class="cap">${esc(w.cat || '')} · ${String(i + 1).padStart(2, '0')}</span></div>`;
   b.onclick = () => playWork(i);
   $('#workList').append(b);
 });
-if (CONFIG.works.length > SHOW) {
-  const m = $('#moreWorks'); m.hidden = false; m.textContent = `작업물 더 보기 (${CONFIG.works.length - SHOW}편) ↓`;
+if (CONFIG.works.length - 1 > SHOW) {
+  const m = $('#moreWorks'); m.hidden = false; m.textContent = `작업물 더 보기 (${CONFIG.works.length - 1 - SHOW}편) ↓`;
   m.onclick = () => { document.querySelectorAll('.work.more').forEach(e => e.classList.remove('more')); m.remove(); };
 }
 // 휴대폰(마우스 없음): 카드가 화면 가운데 띠에 들어오면 썸네일 색을 돌려준다
