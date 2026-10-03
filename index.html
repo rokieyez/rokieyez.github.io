@@ -156,6 +156,7 @@ img{display:block;max-width:100%}
 .work div{padding:12px 0 0}
 .work.more{display:none}
 #moreWorks{display:block;margin:-12px auto var(--section-gap);font-size:19px}
+#moreWorks[hidden]{display:none}
 .work b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;height:2.32em;font-weight:300;font-size:20px;line-height:1.16;letter-spacing:-.02em}
 .work .cap{display:block;margin-top:10px}
 .work:hover b{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
@@ -246,7 +247,7 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
   html{scroll-behavior:auto}
   body{background:#fff}
   .print-only{display:block}
-  .banner,#masthead nav,#masthead::after,#front canvas,#front video,.brief,#footLinks,#moreWorks,.work .th video,#bigPlay,#embed,#reel .kicker,#reel .ctrl{display:none!important}
+  .banner,#masthead nav,#masthead::after,#front canvas,#front video,.brief,#footLinks,#moreWorks,.work .th video,#reel{display:none!important}
   .rv .reveal{opacity:1!important;transform:none!important;transition:none!important}
   /* 1쪽: 제목·소개·대표작·제작 과정 / 2쪽: 작업물 12편·연락처 — 제작 과정을 작업물 앞으로 올린다 */
   main{display:flex;flex-direction:column}
@@ -264,11 +265,11 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
   #about .bio{font-size:10.5pt}
   #about .bio::first-letter{font-size:38pt}
   #about h2{font-size:24pt}
-  #reel{grid-template-columns:2fr 1fr;gap:7mm;padding:6mm 0;break-inside:avoid}
-  .tv{box-shadow:none}
-  .tv.embed #poster{display:block}
-  #reel .placard .no{font-size:42pt}
-  #reel .placard h3{font-size:14pt}
+  /* 1쪽 대표작은 쇼릴 칸이 아니라 따로 지은 #plead — 바로가기 주소로 와서 쇼릴이 다른 작품이어도 늘 맨 위 작품이 실린다 */
+  #plead{display:grid;grid-template-columns:2fr 1fr;gap:7mm;align-items:center;padding:6mm 0;break-inside:avoid}
+  #plead img{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--color-ink-black);filter:grayscale(1) contrast(1.06)}
+  #plead .no{font-family:var(--font-canopee);font-weight:900;font-size:42pt;line-height:.79;letter-spacing:-.04em}
+  #plead h3{font-size:14pt;line-height:1.08;margin:3mm 0 2mm}
   #works{break-before:page}
   .shead{flex-direction:row;align-items:end;padding:0 0 3mm;margin-bottom:4mm}
   .shead h2{font-size:30pt;line-height:1.05}  /* 화면용 좁은 줄 간격(.79)이면 글자 꼭대기가 앞 쪽 맨 아래에 찍힌다 */
@@ -477,12 +478,12 @@ $('#brief').addEventListener('input', syncMail); syncMail();
 function say(text, kind){ const m = $('#sendMsg'); m.textContent = text; m.className = 'sendmsg ' + (kind || ''); }
 // 「접수」 도장 — 보낸 뒤 양식 위에 찍고, 다시 적기 시작하면 걷는다
 function stampIt(){
-  $('#brief .received')?.remove();
+  const old = $('#brief .received'); if (old) old.remove();
   const d = new Date(), el = document.createElement('div'); el.className = 'received'; el.setAttribute('aria-hidden', 'true');
   el.innerHTML = `<b>접수</b><small>${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}. · ROKIZ MEDIA</small>`;
   $('#brief').append(el);
 }
-$('#brief').addEventListener('input', () => $('#brief .received')?.remove());
+$('#brief').addEventListener('input', () => { const r = $('#brief .received'); if (r) r.remove(); });
 function toMailApp(why){ say(why + ' 메일 앱을 엽니다 — 거기서 보내기를 눌러 주세요.', 'err'); syncMail(); location.href = $('#mailBtn').href; }
 $('#brief').addEventListener('submit', async e => {
   e.preventDefault();
@@ -522,14 +523,15 @@ const keyOf = w => w.slug || (parseYT(w.src) || {}).id || '';
 function tune(i, play, mark){
   ch = (i + CONFIG.works.length) % CONFIG.works.length;
   const w = CONFIG.works[ch], k = keyOf(w);
-  // 고른 작품을 주소창에 적는다(www.rokiz.net/#slug) — 그대로 복사해 보내면 그 작품이 뜬다. 방문 기록은 늘리지 않는다
-  if (mark && k) history.replaceState(null, '', '#' + k);
   $('#workLink').hidden = !parseYT(w.src); $('#workLink').href = `/work/${k}/`;
   $('#nowNo').textContent = String(ch + 1).padStart(2, '0');
   $('#nowTitle').innerHTML = esc(w.title) + (ch === 0 ? '<span class="new">NEW</span>' : ''); $('#nowMeta').textContent = `${w.cat || ''} · ${ch + 1}/${CONFIG.works.length}`;
   embed.innerHTML = ''; tv.classList.remove('embed');
   bigImg($('#poster'), w);
   if (play) start();
+  // 고른 작품을 주소창에 적는다(www.rokiz.net/#slug) — 그대로 복사해 보내면 그 작품이 뜬다. 방문 기록은 늘리지 않는다.
+  // 사파리는 30초에 100번 넘게 바꾸면 오류를 내므로(글자판 ←→ 꾹 누르기) 맨 끝에서 하고, 실패해도 넘어간다
+  if (mark && k) try { history.replaceState(null, '', '#' + k); } catch (_) {}
 }
 function start(){
   // 실제 영상은 눌러야 튼다(소리 때문에)
@@ -548,13 +550,28 @@ $('#bigPlay').onclick = start;
 const playWork = i => { tune(i, true, true); $('#reel').scrollIntoView({behavior: 'smooth', block: 'center'}); };
 tune(0, false);
 // www.rokiz.net/#slug 로 들어오면(또는 주소의 # 뒤가 바뀌면) 그 작품을 쇼릴 칸에 띄우고 그리로 내려간다. #works 같은 구간 이름은 건드리지 않는다
-function fromHash(){
-  const k = decodeURIComponent(location.hash.slice(1)), i = k ? CONFIG.works.findIndex(w => keyOf(w) === k) : -1;
+let jumped = null;  // #slug 로 내려간 자리
+function fromHash(e){
+  let k = ''; try { k = decodeURIComponent(location.hash.slice(1)); } catch (_) { return; }  // #50% 같은 깨진 주소에도 스크립트가 멈추지 않게
+  const i = k ? CONFIG.works.findIndex(w => keyOf(w) === k) : -1;
   if (i < 0) return;
-  tune(i, false); $('#reel').scrollIntoView({block: 'center', behavior: 'instant'});
+  if (e && e.type === 'load') {
+    // 글꼴·그림이 다 놓이면 자리가 바뀌므로 한 번 더 맞춘다. 그새 재생했거나 스크롤했으면 건드리지 않는다
+    if (i === ch && scrollY === jumped && !tv.classList.contains('embed')) { $('#reel').scrollIntoView({block: 'center', behavior: 'instant'}); jumped = scrollY; }
+    return;
+  }
+  if (i !== ch) tune(i, false);
+  $('#reel').scrollIntoView({block: 'center', behavior: 'instant'}); jumped = scrollY;
 }
 addEventListener('hashchange', fromHash); fromHash();
-addEventListener('load', fromHash);  // 글꼴·그림이 다 놓인 뒤 자리가 바뀌므로 한 번 더 맞춘다
+addEventListener('load', fromHash);
+
+// 인쇄용 대표작(소개서 1쪽): 쇼릴 칸이 지금 무엇을 띄웠든 맨 위 작품을 싣는다 — 2쪽 목록은 둘째부터라 겹치지도 빠지지도 않는다.
+// 화면에선 안 보이고(그림도 안 받는다), 인쇄할 때만 나타난다
+{ const w = CONFIG.works[0], el = document.createElement('section');
+  el.id = 'plead'; el.className = 'print-only'; el.setAttribute('aria-hidden', 'true');
+  el.innerHTML = `<img alt="" loading="lazy"><div><div class="no">01</div><h3 class="mid">${esc(w.title)}<span class="new">NEW</span></h3><p class="cap">${esc([w.cat, w.len].filter(Boolean).join(' · '))}</p></div>`;
+  bigImg(el.querySelector('img'), w); $('#reel').after(el); }
 
 // ── 작업물 ──
 // 미리보기: 카드에 마우스를 올리면(휴대폰은 화면 가운데 오면) 그 작업의 몇 초를 소리 없이 돌린다.
@@ -588,7 +605,7 @@ CONFIG.works.forEach((w, i) => {
 });
 if (CONFIG.works.length - 1 > SHOW) {
   const m = $('#moreWorks'); m.hidden = false; m.textContent = `작업물 더 보기 (${CONFIG.works.length - 1 - SHOW}편) ↓`;
-  m.onclick = () => { const more = [...document.querySelectorAll('.work.more')]; more.forEach(e => e.classList.remove('more')); m.remove(); more[0]?.focus(); };
+  m.onclick = () => { const more = [...document.querySelectorAll('.work.more')]; more.forEach(e => e.classList.remove('more')); m.remove(); if (more[0]) more[0].focus(); };
 }
 // 휴대폰(마우스 없음): 카드가 화면 가운데 띠에 들어오면 썸네일 색을 돌려준다
 if (matchMedia('(hover: none)').matches) {
@@ -614,7 +631,7 @@ addEventListener('keydown', e => {
 // 읽은 만큼 머리띠 아랫줄이 주홍으로 찬다
 { const m = $('#masthead'); let q = 0;
   const upd = () => { q = 0; const h = document.documentElement.scrollHeight - innerHeight; m.style.setProperty('--read', h > 0 ? Math.min(1, scrollY / h).toFixed(4) : 0); };
-  addEventListener('scroll', () => { q ||= requestAnimationFrame(upd); }, {passive: true});
+  addEventListener('scroll', () => { if (!q) q = requestAnimationFrame(upd); }, {passive: true});
   addEventListener('resize', upd); upd(); }
 
 // 첫 화면 제목: 찍히는 효과(CSS)가 끝나면 망점 가리개를 걷는다
