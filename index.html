@@ -33,7 +33,7 @@
    크림 종이 · 먹 하나 · 주홍(ember) 도장 하나. 그라데이션·유리·블러 금지, 모서리 12px 넘지 않음. */
 :root{
   --color-parchment:#e2dedb; --color-bone-cream:#cdc6be; --color-ink-black:#1d1d1b;
-  --color-charcoal:#69645f; --color-pure-black:#000; --color-ember-orange:#c03f13;
+  --color-charcoal:#605b56; --color-pure-black:#000; --color-ember-orange:#c03f13; --color-ember-text:#a8370f;  /* 주홍 글자·작은 딱지용(종이 위 대비 4.5 넘게) */
   /* Canopee → Bodoni Moda, Domaine Display → Playfair Display, Editorial New → Source Serif 4. 한글은 모두 Noto Serif KR 로 떨어진다 */
   --font-canopee:"Bodoni Moda","Noto Serif KR",serif;
   --font-domaine-display:"Playfair Display","Noto Serif KR",serif;
@@ -68,7 +68,7 @@ img{display:block;max-width:100%}
 .cap{font-size:14px;line-height:1.18;letter-spacing:-.02em;color:var(--color-charcoal)}
 .tl{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
 .tl:hover{color:var(--color-pure-black)}
-.new{display:inline-block;vertical-align:.2em;margin-left:8px;padding:2px 6px 1px;border-radius:var(--radius-tags);background:var(--color-ember-orange);color:var(--color-parchment);font-size:12px;line-height:1.2;letter-spacing:0}
+.new{display:inline-block;vertical-align:.2em;margin-left:8px;padding:2px 6px 1px;border-radius:var(--radius-tags);background:var(--color-ember-text);color:var(--color-parchment);font-size:12px;line-height:1.2;letter-spacing:0}
 
 /* ── 지면 머리띠 ── */
 #masthead{position:sticky;top:0;z-index:50;background:var(--color-parchment);border-bottom:1px solid var(--color-ink-black)}
@@ -200,7 +200,7 @@ img{display:block;max-width:100%}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 .sendmsg{font-size:16px;min-height:1.3em}
 .consent{font-size:14px;color:var(--color-charcoal);margin:0}
-.sendmsg.err{color:var(--color-ember-orange)}
+.sendmsg.err{color:var(--color-ember-text)}
 
 /* ── 발문 ── */
 footer{border-top:1px solid var(--color-ink-black);padding:26px 0 40px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;font-size:16px}
@@ -332,7 +332,7 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
 
   <section id="reel" aria-label="쇼릴">
     <div class="tv" id="tv">
-      <img id="poster" alt="">
+      <img id="poster" alt="" loading="lazy">
       <button id="bigPlay" aria-label="영상 재생"><i><svg viewBox="0 0 24 24"><path d="M6 3.500v17a1 1 0 0 0 1.500.86l14-8.500a1 1 0 0 0 0-1.720l-14-8.500A1 1 0 0 0 6 3.500z"/></svg></i></button>
       <div id="embed"></div>
     </div>
@@ -588,7 +588,7 @@ CONFIG.works.forEach((w, i) => {
 });
 if (CONFIG.works.length - 1 > SHOW) {
   const m = $('#moreWorks'); m.hidden = false; m.textContent = `작업물 더 보기 (${CONFIG.works.length - 1 - SHOW}편) ↓`;
-  m.onclick = () => { document.querySelectorAll('.work.more').forEach(e => e.classList.remove('more')); m.remove(); };
+  m.onclick = () => { const more = [...document.querySelectorAll('.work.more')]; more.forEach(e => e.classList.remove('more')); m.remove(); more[0]?.focus(); };
 }
 // 휴대폰(마우스 없음): 카드가 화면 가운데 띠에 들어오면 썸네일 색을 돌려준다
 if (matchMedia('(hover: none)').matches) {
