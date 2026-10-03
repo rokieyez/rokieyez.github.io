@@ -312,7 +312,7 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
       </div>
       <label>내용<textarea name="msg" placeholder="어디에 쓸 영상인지, 길이, 참고 영상 링크 등"></textarea></label>
       <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <div class="btnrow"><button class="solid" id="sendBtn" type="submit">보내기</button><button class="tl" type="button" id="copyBtn">복사</button></div>
+      <div class="btnrow"><button class="solid" id="sendBtn" type="submit">보내기</button></div>
       <p class="consent">보내기를 누르면 문의에 답하기 위해 <a class="tl" href="/privacy.html">개인정보 처리방침</a>에 따라 처리됩니다.</p>
       <p class="sendmsg" id="sendMsg" role="status"></p>
       <a id="mailBtn" href="#" hidden>메일 앱으로 보내기</a>
@@ -435,11 +435,6 @@ $('#brief').addEventListener('submit', async e => {
   } catch { toMailApp('연결이 안 돼서'); }
   btn.disabled = false; btn.textContent = '보내기';
 });
-$('#copyBtn').onclick = async () => {
-  try { await navigator.clipboard.writeText(briefText()); $('#copyBtn').textContent = '복사됨'; }
-  catch { $('#copyBtn').textContent = '복사 실패'; }
-  setTimeout(() => $('#copyBtn').textContent = '복사', 1500);
-};
 
 // ── 쇼릴 ──
 // 유튜브 주소에서 영상 ID(11자)를 뽑는다. 아니면 null.
