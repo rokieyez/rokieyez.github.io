@@ -6,3 +6,6 @@ Allow: /
 Sitemap: https://www.rokiz.net/sitemap.xml
 Sitemap: https://www.rokiz.net/books/sitemap.xml
 Sitemap: https://www.rokiz.net/work/sitemap.xml
+
+# 다음(카카오) 웹마스터도구 소유 확인 — 지우지 말 것
+#DaumWebMasterTool:10121e588bce4721fca4a0f5b89bd07901c6df2bf21cd493effcb03b980f4b37:2foI+94fNqCuWPFvBNifxw==
