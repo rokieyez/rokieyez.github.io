@@ -276,7 +276,6 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
 #front .frame{position:absolute;border:1px solid var(--color-ink-black);pointer-events:none}
 #front .frame>span{position:absolute;top:100%;left:0;right:0;margin-top:10px;display:flex;justify-content:space-between;gap:12px}
 #front .frame b{font-family:var(--font-domaine-display);font-weight:500;letter-spacing:.12em;color:var(--color-ink-black)}
-#front .frame em{font-style:normal}
 /* 검은 띠: 같은 낱말이 옆으로 흐른다(스크립트가 낱말을 여섯 번 깔고 반 칸씩 민다) */
 .banner p.flow{display:flex;width:max-content;text-align:left}
 .banner p.flow span{padding-right:.22em}
@@ -700,7 +699,7 @@ function motion(){
       // ① 쇼릴 내려앉기: 화면 가득한 망점이 가운데 16:9 사진 칸으로 줄고, 제목은 그 위로 작아져 올라가며, 아래에 사진 설명이 붙는다
       const stage = $('#front .stage'), h2 = $('#front h2'), shots = [...stage.querySelectorAll('canvas,video')];
       const frame = document.createElement('i'); frame.className = 'frame'; frame.setAttribute('aria-hidden', 'true');
-      frame.innerHTML = '<span class="cap"><b>SHOWREEL</b><em>로키즈미디어 작업물에서 고른 장면 · 마우스를 올려 보세요</em></span>';
+      frame.innerHTML = '<span class="cap"><b>SHOWREEL</b></span>';
       stage.append(frame); undo.push(() => frame.remove(), () => { HT.band = 1; HT.dirty = true; });
       const geo = () => { const W = stage.clientWidth, H = stage.clientHeight, fw = Math.min(W * .58, H * .56 * 16 / 9), x = (W - fw) / 2, y = H * .36;
         return {H, x, y, b: H - y - fw * 9 / 16}; };
