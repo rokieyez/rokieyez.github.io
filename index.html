@@ -28,6 +28,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Playfair+Display:wght@500&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;1,8..60,300&family=Noto+Serif+KR:wght@300;500;900&display=swap">
+<!-- 움직임(GSAP). defer 라 화면을 막지 않고, 못 받아도 페이지는 그대로 돈다(옛 떠오르기로 물러남) -->
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
+<script>
+// 윤전기 인트로: 한 세션에 한 번만. 작품 주소(#slug)로 바로 온 사람·동작 줄이기면 건너뛴다.
+// CDN 을 기다리지 않게 CSS 로만 돌고, 1.5초 뒤엔 무슨 일이 있어도 걷힌다
+try { if (!sessionStorage.pressed && !location.hash && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  sessionStorage.pressed = 1; const r = document.documentElement; r.classList.add('intro'); setTimeout(() => r.classList.remove('intro'), 1500); } } catch (_) {}
+</script>
 <style>
 /* 지면(Miranda) 스타일 — 기준은 remocn-studio/docs/style-refs/miranda-original.md
    크림 종이 · 먹 하나 · 주홍(ember) 도장 하나. 그라데이션·유리·블러 금지, 모서리 12px 넘지 않음. */
@@ -82,8 +92,8 @@ img{display:block;max-width:100%}
 #navContact b{font-weight:500;color:var(--color-ember-orange);font-size:.6em;vertical-align:.35em;margin-right:5px}
 
 /* ── 첫 화면: 망점 쇼릴 위 큰 제목 ── */
-#front{margin:0 calc(var(--gutter) * -1)}
-#front .stage{position:relative;display:grid;place-items:center;height:clamp(420px,calc(100svh - 112px),820px);overflow:hidden;background:var(--color-parchment)}
+/* 화면 끝까지 넓히는 음수 여백은 안쪽 .stage 에 — #front 를 화면에 붙잡을(GSAP pin) 때 바깥 여백은 본문 폭으로 줄어든다 */
+#front .stage{margin:0 calc(var(--gutter) * -1);position:relative;display:grid;place-items:center;height:clamp(420px,calc(100svh - 112px),820px);overflow:hidden;background:var(--color-parchment)}
 #front canvas,#front video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 /* WebGL 이 없으면 망점 대신 옅은 흑백 영상을 그대로 보인다 */
 #front video{filter:grayscale(1) contrast(1.05);opacity:.45}
@@ -143,7 +153,7 @@ img{display:block;max-width:100%}
 /* 칸 사이 세로 괘선 — 위쪽 틈(28px)까지 올려 제목 아랫줄·윗줄 칸과 이어지게, 신문 단 나누기처럼 */
 .work::before{content:'';position:absolute;top:-29px;bottom:0;left:calc(var(--col-gap) / -2);border-left:1px solid var(--color-ink-black)}
 .work:nth-child(3n+1)::before{display:none}
-.work .th{position:relative;display:block}
+.work .th{position:relative;display:block;overflow:hidden}  /* 썸네일 시차(GSAP)로 커진 그림이 칸 밖으로 안 나가게 */
 /* 영상 길이 — 썸네일 오른쪽 아래 작은 먹 딱지 */
 .work .len{position:absolute;right:8px;bottom:8px;padding:4px 6px 3px;border-radius:var(--radius-tags);background:var(--color-ink-black);color:var(--color-parchment);font-style:normal;font-size:12px;line-height:1;letter-spacing:.02em;font-variant-numeric:tabular-nums}
 /* 마우스를 올리면 그 작업의 몇 초가 소리 없이 돈다(스크립트가 previews/<ID>.mp4 를 붙인다) */
@@ -251,6 +261,37 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
 .rv .reveal.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
 
+/* ── 움직임(GSAP) — 아래 모양은 스크립트가 켤 때만 걸린다 ── */
+/* 윤전기 인트로: 먹 롤러가 위에서 아래로 지나가며 덮어 둔 종이를 걷는다 → 지면이 찍혀 나온 듯 */
+#press{display:none}
+.intro #press{display:block;position:fixed;inset:0;z-index:100;pointer-events:none}
+#press .sheet{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:18px;background:var(--color-parchment);animation:pressWipe .9s cubic-bezier(.65,0,.35,1) .45s both}
+#press .sheet svg{width:min(120px,22vw);fill:var(--color-ink-black)}
+#press .sheet p{font-size:clamp(44px,8vw,120px)}
+#press .sheet small{font-size:14px;letter-spacing:.3em;color:var(--color-charcoal)}
+#press .roller{position:absolute;left:0;right:0;top:0;height:18px;background:var(--color-ink-black);border-bottom:2px solid var(--color-ember-orange);animation:pressRoll .9s cubic-bezier(.65,0,.35,1) .45s both}
+@keyframes pressWipe{from{clip-path:inset(0 0 0 0)}to{clip-path:inset(100% 0 0 0)}}
+@keyframes pressRoll{from{transform:translateY(-20px)}to{transform:translateY(calc(100vh - 20px))}}
+/* 쇼릴이 지면 사진으로 내려앉은 뒤의 테두리·사진 설명 */
+#front .frame{position:absolute;border:1px solid var(--color-ink-black);pointer-events:none}
+#front .frame>span{position:absolute;top:100%;left:0;right:0;margin-top:10px;display:flex;justify-content:space-between;gap:12px}
+#front .frame b{font-family:var(--font-domaine-display);font-weight:500;letter-spacing:.12em;color:var(--color-ink-black)}
+#front .frame em{font-style:normal}
+/* 검은 띠: 같은 낱말이 옆으로 흐른다(스크립트가 낱말을 여섯 번 깔고 반 칸씩 민다) */
+.banner p.flow{display:flex;width:max-content;text-align:left}
+.banner p.flow span{padding-right:.22em}
+/* 제작 과정 필름: 칸을 화면에 붙잡고 옆으로 넘긴다 */
+#process.film{overflow:hidden}
+.film #steps{display:flex;width:max-content;margin:0;border:0;position:relative;padding:30px 0;background:var(--color-ink-black);color:var(--color-parchment)}
+.film #steps::before,.film #steps::after{content:'';position:absolute;left:0;right:0;height:10px;background:repeating-linear-gradient(90deg,var(--color-parchment) 0 16px,transparent 16px 34px)}
+.film #steps::before{top:10px}
+.film #steps::after{bottom:10px}
+.film #steps li{flex:none;display:flex;flex-direction:column;justify-content:space-between;width:min(46vw,640px);height:min(52vh,460px);padding:28px 34px;border-left:2px solid var(--color-parchment)}
+.film #steps li:first-child{border-left:0;padding-left:34px}
+.film #steps i{font-size:clamp(120px,15vw,230px);margin:0}
+.film #steps b{font-size:clamp(28px,2.6vw,38px);margin-bottom:10px}
+.film #steps span{font-size:20px;color:var(--color-bone-cream)}
+
 /* ── 인쇄: 이 쪽을 인쇄하거나 PDF 로 저장하면 A4 회사 소개서가 된다 ──
    인쇄 쪽 폭(약 700px)에도 위의 좁은 화면 규칙이 걸리므로 여기서 다시 짠다. 움직이는 것·양식·검은 띠는 뺀다 */
 .print-only{display:none}
@@ -260,7 +301,7 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
   html{scroll-behavior:auto}
   body{background:#fff}
   .print-only{display:block}
-  .banner,#masthead nav,#masthead::after,#front canvas,#front video,.brief,#footLinks,#moreWorks,.work .th video,#reel,#fab{display:none!important}
+  .banner,#masthead nav,#masthead::after,#front canvas,#front video,#front .frame,#press,.brief,#footLinks,#moreWorks,.work .th video,#reel,#fab{display:none!important}
   .rv .reveal{opacity:1!important;transform:none!important;transition:none!important}
   /* 1쪽: 제목·소개·대표작·제작 과정 / 2쪽: 작업물 12편·연락처 — 제작 과정을 작업물 앞으로 올린다 */
   main{display:flex;flex-direction:column}
@@ -270,8 +311,7 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
   #masthead .page{grid-template-columns:1fr auto 1fr;height:auto;padding-bottom:2mm;font-size:10pt}
   #dateline{display:block!important}
   #masthead .pmeta{justify-self:end;font-size:9pt;color:var(--color-charcoal)}
-  #front{margin:0}
-  #front .stage{display:block;height:auto;min-height:0;padding:9mm 0 5mm;text-align:center;background:none}
+  #front .stage{margin:0;display:block;height:auto;min-height:0;padding:9mm 0 5mm;text-align:center;background:none}
   #front h2{font-size:50pt;text-shadow:none;-webkit-mask:none!important;mask:none!important;animation:none}
   #front .psub{margin-top:5mm;font-size:11pt;letter-spacing:.08em}
   #about{grid-template-columns:1fr 1fr;gap:8mm;padding:6mm 0;border-top:1px solid var(--color-ink-black)}
@@ -315,6 +355,7 @@ footer .r{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
 </style>
 </head>
 <body>
+<div id="press" aria-hidden="true"><div class="sheet"><i id="pressLogo"></i><p class="display">ROKIZ MEDIA</p><small>GET VISUALIZED</small></div><i class="roller"></i></div>
 
 <header id="masthead">
   <div class="page">
@@ -462,7 +503,11 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', 
 const LOGO_PATH = 'M125 0H360Q380 0 380 20V155Q380 175 360 175C310 178 300 185 280 215Q272 228 258 228H20Q0 228 0 208V72Q0 53 20 52C70 50 80 42 100 12Q108 0 125 0Z'
   + [72, 111, 150, 189].map(y => `M20 ${y}h24v22h-24z`).join('') + [15, 54, 93, 132].map(y => `M336 ${y}h24v22h-24z`).join('')
   + 'M545 22V144Q545 166 526 155L420 94Q402 83 420 72L526 11Q545 0 545 22Z';
-$('#mastLogo').outerHTML = `<svg viewBox="0 0 548 228" aria-hidden="true"><path fill-rule="evenodd" d="${LOGO_PATH}"/></svg>`;
+$('#mastLogo').outerHTML = $('#pressLogo').outerHTML = `<svg viewBox="0 0 548 228" aria-hidden="true"><path fill-rule="evenodd" d="${LOGO_PATH}"/></svg>`;
+// GSAP 이 켜지면 채우는 손잡이 — 카드 날아가기(fly)·더 보기 펼치기(more). 비어 있으면 원래대로 움직인다
+let fx = {};
+// 첫 화면 망점의 「제목 자리 옅게」 세기(1 → 0). 쇼릴이 지면 사진으로 내려앉으면 GSAP 이 0 으로 민다
+const HT = {band: 1, dirty: false};
 
 // 도장 무늬: 주홍 햇살 + 가운데 로고
 $('#stampSun').innerHTML = Array.from({length: 24}, (_, i) => {
@@ -561,7 +606,7 @@ function start(){
 $('#bPrev').onclick = () => tune(ch - 1, false, true);
 $('#bNext').onclick = () => tune(ch + 1, false, true);
 $('#bigPlay').onclick = start;
-const playWork = i => { tune(i, true, true); $('#reel').scrollIntoView({behavior: 'smooth', block: 'center'}); };
+const playWork = (i, card) => { if (fx.fly && fx.fly(i, card)) return; tune(i, true, true); $('#reel').scrollIntoView({behavior: 'smooth', block: 'center'}); };
 tune(0, false);
 // www.rokiz.net/#slug 로 들어오면(또는 주소의 # 뒤가 바뀌면) 그 작품을 쇼릴 칸에 띄우고 그리로 내려간다. #works 같은 구간 이름은 건드리지 않는다
 let jumped = null;  // #slug 로 내려간 자리
@@ -616,27 +661,124 @@ CONFIG.works.forEach((w, i) => {
   if (y) { b.dataset.pv = y.id; b.href = `/work/${keyOf(w)}/`; }
   b.innerHTML = `<span class="th">${t ? `<img loading="lazy" alt="" src="${t}">` : '<span class="blank"></span>'}${w.len ? `<i class="len">${esc(w.len)}</i>` : ''}</span>`
     + `<div><b>${esc(w.title)}</b><span class="cap">${esc(w.cat || '')} · ${String(i + 1).padStart(2, '0')}</span></div>`;
-  b.onclick = e => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; e.preventDefault(); playWork(i); };  // ⌘·Ctrl·Shift 누르고 누르면 브라우저 몫(새 탭·창)
+  b.onclick = e => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; e.preventDefault(); playWork(i, b); };  // ⌘·Ctrl·Shift 누르고 누르면 브라우저 몫(새 탭·창)
   b.onmouseenter = () => preview(b, true); b.onmouseleave = () => preview(b, false);
   $('#workList').append(b);
 });
 if (CONFIG.works.length - 1 > SHOW) {
   const m = $('#moreWorks'); m.hidden = false; m.textContent = `작업물 더 보기 (${CONFIG.works.length - 1 - SHOW}편) ↓`;
-  m.onclick = () => { const more = [...document.querySelectorAll('.work.more')]; more.forEach(e => e.classList.remove('more')); m.remove(); if (more[0]) more[0].focus(); };
+  m.onclick = () => { const more = [...document.querySelectorAll('.work.more')]; more.forEach(e => e.classList.remove('more')); m.remove(); if (fx.more) fx.more(more); if (more[0]) more[0].focus(); };
 }
 // 휴대폰(마우스 없음): 카드가 화면 한가운데 가는 띠에 걸리면 썸네일 색을 돌려준다(낮은 줄이 여러 개 함께 켜지지 않게 띠를 가늘게)
 if (matchMedia('(hover: none)').matches) {
   const io = new IntersectionObserver(es => es.forEach(e => { e.target.classList.toggle('lit', e.isIntersecting); preview(e.target, e.isIntersecting); }), {rootMargin: '-48% 0px -48% 0px'});
   document.querySelectorAll('.work').forEach(e => io.observe(e));
 }
-// 스크롤하면 떠오르기 — 「동작 줄이기」면 안 한다
-if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+// 스크롤하면 떠오르기 — GSAP 을 못 받았을 때 물러나는 길
+function reveal(){
+  if (!('IntersectionObserver' in window)) return;
   const els = document.querySelectorAll('.shead h2, #about h2, .banner p, #steps li');
   els.forEach(e => e.classList.add('reveal'));
   document.documentElement.classList.add('rv');
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), {threshold: .15});
   els.forEach(e => { if (e.matches('#steps li')) e.style.transitionDelay = [...e.parentNode.children].indexOf(e) * 90 + 'ms'; io.observe(e); });
 }
+
+// ── 움직임(GSAP) ──
+// 넓은 화면: ① 첫 화면 쇼릴이 스크롤하면 지면 사진으로 내려앉음 ③ 제작 과정을 붙잡고 필름처럼 옆으로 넘김 ⑧ 썸네일 시차
+// 모든 화면: ④ 검은 띠 낱말이 흐르고 빨리 내리면 빨라지며 기욺 ⑤ 구간 제목이 활자처럼 떨어져 박힘 ⑥ 누른 카드가 쇼릴 칸으로 날아감 ⑦ 더 보기 카드가 차례로 밀려 들어옴
+// (② 윤전기 인트로는 CDN 을 안 기다리게 CSS 로 — 맨 위 #press)
+// 인쇄할 땐 전부 걷었다가(소개서 모양 그대로) 끝나면 다시 건다
+let mm = null;
+function motion(){
+  const mh = () => 'top ' + $('#masthead').offsetHeight;  // 머리띠 바로 밑에 붙잡는다
+  mm = gsap.matchMedia();
+  mm.add({wide: '(min-width: 901px)', narrow: '(max-width: 900px)'}, ctx => {  // 조건 중 하나는 맞아야 돈다 — 둘 다 적는다
+    const undo = [];
+    // 붙잡는(pin) 것을 먼저 만든다 — 아래 것들이 붙잡힌 만큼 밀린 자리를 재게
+    if (ctx.conditions.wide) {
+      // ① 쇼릴 내려앉기: 화면 가득한 망점이 가운데 16:9 사진 칸으로 줄고, 제목은 그 위로 작아져 올라가며, 아래에 사진 설명이 붙는다
+      const stage = $('#front .stage'), h2 = $('#front h2'), shots = [...stage.querySelectorAll('canvas,video')];
+      const frame = document.createElement('i'); frame.className = 'frame'; frame.setAttribute('aria-hidden', 'true');
+      frame.innerHTML = '<span class="cap"><b>SHOWREEL</b><em>로키즈미디어 작업물에서 고른 장면 · 마우스를 올려 보세요</em></span>';
+      stage.append(frame); undo.push(() => frame.remove(), () => { HT.band = 1; HT.dirty = true; });
+      const geo = () => { const W = stage.clientWidth, H = stage.clientHeight, fw = Math.min(W * .58, H * .56 * 16 / 9), x = (W - fw) / 2, y = H * .36;
+        return {H, x, y, b: H - y - fw * 9 / 16}; };
+      gsap.timeline({defaults: {ease: 'none', duration: 1}, scrollTrigger: {trigger: '#front', start: mh, end: '+=80%', pin: true, scrub: .6, invalidateOnRefresh: true}})
+        .fromTo(shots, {clipPath: 'inset(0px 0px 0px 0px)'}, {clipPath: () => { const g = geo(); return `inset(${g.y}px ${g.x}px ${g.b}px ${g.x}px)`; }}, 0)
+        .fromTo(frame, {top: 0, left: 0, right: 0, bottom: 0, opacity: 0}, {top: () => geo().y, left: () => geo().x, right: () => geo().x, bottom: () => geo().b, opacity: 1}, 0)
+        .to(h2, {y: () => { const g = geo(); return g.y / 2 - g.H / 2; }, scale: .38}, 0)
+        .to(HT, {band: 0, onUpdate: () => { HT.dirty = true; }}, 0)
+        .from(frame.firstChild, {opacity: 0, y: -6, duration: .3}, .7);
+      // ③ 제작 과정 필름: 먹 필름 띠의 다섯 칸을 화면에 붙잡고 스크롤만큼 옆으로 넘긴다
+      const proc = $('#process'), steps = $('#steps');
+      proc.classList.add('film'); undo.push(() => proc.classList.remove('film'));
+      const dist = () => steps.scrollWidth - proc.clientWidth;
+      gsap.to(steps, {x: () => -dist(), ease: 'none', scrollTrigger: {trigger: proc, start: mh, end: () => '+=' + dist(), pin: true, scrub: .6, invalidateOnRefresh: true}});
+      // ⑧ 썸네일 시차: 칸 안의 그림이 스크롤보다 조금 느리게 흐른다
+      gsap.utils.toArray('.work img').forEach(im => gsap.fromTo(im, {yPercent: -6, scale: 1.14}, {yPercent: 6, ease: 'none', scrollTrigger: {trigger: im.parentNode, start: 'top bottom', end: 'bottom top', scrub: true}}));
+    } else {
+      gsap.from('#steps li', {y: 28, opacity: 0, duration: .8, ease: 'power3.out', stagger: .09, scrollTrigger: {trigger: '#steps', start: 'top 85%', once: true}});
+    }
+    // ⑤ 활자 제목: 글자가 위에서 떨어져 비뚤게 박혔다가 바로 선다
+    gsap.utils.toArray('.shead h2, #about h2').forEach(h => {
+      const s = SplitText.create(h, {type: 'words,chars'});
+      // 다 박히면 원래 글자로 되돌린다 — 쪼갠 채면 W·O 같은 글자 쌍 간격(커닝)이 풀려 벌어져 보인다
+      gsap.from(s.chars, {yPercent: -130, rotation: () => gsap.utils.random(-14, 14), opacity: 0, duration: .7, ease: 'back.out(2.2)', stagger: .035, onComplete: () => s.revert(), scrollTrigger: {trigger: h, start: 'top 85%', once: true}});
+    });
+    // ④ 흐르는 띠: 낱말을 여섯 번 깔고 반(세 낱말)만큼 밀기를 되풀이 — 이음매가 안 보인다. ROKIZ 는 왼쪽, MEDIA 는 오른쪽으로
+    const flows = gsap.utils.toArray('.banner p').map((p, k) => {
+      const word = p.textContent; p.classList.add('flow'); p.innerHTML = `<span>${word}</span>`.repeat(6);
+      undo.push(() => { p.classList.remove('flow'); p.textContent = word; });
+      const t = gsap.fromTo(p, {xPercent: k ? -50 : 0}, {xPercent: k ? 0 : -50, duration: 30, ease: 'none', repeat: -1, paused: true});
+      ScrollTrigger.create({trigger: p.parentNode, onToggle: s => s.isActive ? t.resume() : t.pause()});  // 화면 밖이면 쉰다
+      return {t, skew: gsap.quickTo(p, 'skewX', {duration: .5, ease: 'power3'})};
+    });
+    ScrollTrigger.create({onUpdate: s => {
+      const v = s.getVelocity(), boost = 1 + Math.min(Math.abs(v) / 400, 5);
+      flows.forEach(f => { gsap.to(f.t, {timeScale: boost, duration: .15, overwrite: true}); gsap.to(f.t, {timeScale: 1, duration: 1.2, delay: .15}); f.skew(gsap.utils.clamp(-8, 8, -v / 150)); });
+    }});
+    const settle = () => flows.forEach(f => f.skew(0));
+    ScrollTrigger.addEventListener('scrollEnd', settle); undo.push(() => ScrollTrigger.removeEventListener('scrollEnd', settle));
+    // ⑥ 카드 → 쇼릴: 누른 카드의 썸네일이 쇼릴 칸 자리로 날아가 커지고, 닿으면 영상이 튼다(페이지도 같이 내려간다)
+    fx.fly = (i, card) => {
+      const th = card && card.querySelector('.th img'); if (!th) return false;
+      const a = th.parentNode.getBoundingClientRect(), r = tv.getBoundingClientRect(), root = document.documentElement;
+      const y0 = scrollY, y1 = Math.max(0, Math.min(root.scrollHeight - innerHeight, y0 + r.top + r.height / 2 - innerHeight / 2));
+      const g = new Image(); g.src = th.currentSrc || th.src; g.alt = ''; g.setAttribute('aria-hidden', 'true');
+      Object.assign(g.style, {position: 'fixed', zIndex: 60, left: a.left + 'px', top: a.top + 'px', width: a.width + 'px', height: a.height + 'px', objectFit: 'cover', background: '#1d1d1b', pointerEvents: 'none'});
+      document.body.append(g); tune(i, false, true);
+      root.style.scrollBehavior = 'auto';  // CSS 부드러운 스크롤이 매 프레임 scrollTo 를 늦추지 않게
+      const s = {y: y0};
+      gsap.timeline({defaults: {duration: .9, ease: 'power3.inOut'}, onComplete: () => { root.style.scrollBehavior = ''; start(); gsap.to(g, {opacity: 0, duration: .3, onComplete: () => g.remove()}); }})
+        .to(s, {y: y1, onUpdate: () => scrollTo(0, s.y)}, 0)
+        .to(g, {left: r.left, top: r.top - (y1 - y0), width: r.width, height: r.height}, 0);
+      return true;
+    };
+    // ⑦ 더 보기: 새 카드가 위에서부터 한 칸씩 조판되듯 내려앉는다(세로 괘선이 잘리지 않게 위·옆을 조금 넓게 연다)
+    fx.more = els => {
+      gsap.fromTo(els, {opacity: 0, y: 36, clipPath: 'inset(-40px -20px 100% -20px)'}, {opacity: 1, y: 0, clipPath: 'inset(-40px -20px 0% -20px)', duration: .7, ease: 'power3.out', stagger: .07, clearProps: 'opacity,transform,clipPath'});
+      ScrollTrigger.refresh();  // 목록이 길어졌으니 아래 필름 붙잡는 자리를 다시 잰다
+    };
+    undo.push(() => { fx = {}; });
+    return () => undo.forEach(f => f());
+  });
+}
+document.addEventListener('DOMContentLoaded', () => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!(window.gsap && window.ScrollTrigger && window.SplitText)) return reveal();
+  gsap.registerPlugin(ScrollTrigger, SplitText);
+  motion();
+  addEventListener('beforeprint', () => mm.revert());
+  addEventListener('afterprint', motion);
+  document.fonts.ready.then(() => ScrollTrigger.refresh());  // 글꼴이 늦게 와서 높이가 바뀌면 다시 잰다
+  // 작품 주소(#slug)로 와서 쇼릴로 내려갔던 자리는 붙잡기 자리·늦게 온 글꼴만큼 밀린다. 손으로 움직이기 전까지는 다시 잴 때마다 맞춘다
+  // (스크롤 값으로 판단하면 안 된다 — 크롬이 위쪽이 늘어난 만큼 스크롤을 알아서 옮기기도, 안 옮기기도 한다)
+  let hold = jumped !== null;
+  ['wheel', 'touchstart', 'keydown', 'pointerdown'].forEach(n => addEventListener(n, () => { hold = false; }, {passive: true, once: true}));
+  const realign = () => { if (hold && !tv.classList.contains('embed')) { $('#reel').scrollIntoView({block: 'center', behavior: 'instant'}); jumped = scrollY; } };
+  ScrollTrigger.addEventListener('refresh', realign); realign();
+});
 
 // 글자판: ← → 영상 넘기기. 한글 입력 상태에서도 먹도록 e.code 로 본다.
 addEventListener('keydown', e => {
@@ -673,7 +815,7 @@ $('#dateline').textContent = '서울, KR · ' + new Date().toLocaleDateString('k
   const gl = cv.getContext('webgl', {alpha: false, antialias: false});
   if (!gl) cv.remove();
   else {
-    const fs = `precision mediump float;varying vec2 uv;uniform sampler2D t;uniform vec2 res,vid;uniform float cell;uniform vec3 lens;
+    const fs = `precision mediump float;varying vec2 uv;uniform sampler2D t;uniform vec2 res,vid;uniform float cell,band;uniform vec3 lens;
     const vec3 PAPER=vec3(.886,.871,.859),INK=vec3(.114,.114,.106);
     float h(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
     void main(){
@@ -683,14 +825,14 @@ $('#dateline').textContent = '서울, KR · ' + new Date().toLocaleDateString('k
       vec2 cuv=(ri*(c*cell))/res;                                      // 칸 가운데에서 밝기를 읽는다
       float L=dot(texture2D(t,clamp((cuv-.5)/sc+.5,0.,1.)).rgb,vec3(.299,.587,.114));
       float e=length((uv-.5)*vec2(.8,1.9));                           // 제목 자리(가운데 가로 띠)
-      float dark=(1.-clamp((L-.06)/.86,0.,1.))*mix(.14,1.,smoothstep(.15,.62,e));
+      float dark=(1.-clamp((L-.06)/.86,0.,1.))*mix(1.,mix(.14,1.,smoothstep(.15,.62,e)),band);  // band 0 이면 가운데도 고르게
       float rad=sqrt(dark)*.6,d=length(g-c),aa=1.2/cell;
       float ink=1.-smoothstep(rad-aa,rad+aa,d);
       vec3 col=mix(PAPER,INK,ink*.9);
       if(lens.z>.5){                                                   // 돋보기 안은 점 대신 영상 그대로(같은 먹 농도)
         float dl=length(px-lens.xy);
         float Lp=dot(texture2D(t,clamp((uv-.5)/sc+.5,0.,1.)).rgb,vec3(.299,.587,.114));
-        float dp=(1.-clamp((Lp-.06)/.86,0.,1.))*mix(.4,1.,smoothstep(.15,.62,e));
+        float dp=(1.-clamp((Lp-.06)/.86,0.,1.))*mix(1.,mix(.4,1.,smoothstep(.15,.62,e)),band);
         col=mix(col,mix(PAPER,INK,dp*.9),1.-smoothstep(lens.z-cell*.4,lens.z,dl));
         col=mix(col,INK,(1.-smoothstep(0.,cell*.16,abs(dl-lens.z)))*.85); // 가는 테
       }
@@ -726,12 +868,13 @@ $('#dateline').textContent = '서울, KR · ' + new Date().toLocaleDateString('k
         const dpr = Math.min(devicePixelRatio, 2), w = cv.clientWidth * dpr | 0, h = cv.clientHeight * dpr | 0;
         const resized = cv.width !== w || cv.height !== h;
         if (lens.r !== lens.to) { lens.r = Math.abs(lens.to - lens.r) < 1 ? lens.to : lens.r + (lens.to - lens.r) * .22; dirty = true; }  // 돋보기가 부드럽게 커지고 작아진다
+        if (HT.dirty) { HT.dirty = false; dirty = true; }
         if (!resized && v.currentTime === lastT && !dirty) return;  // 새 장면도 손놀림도 없으면 다시 안 그린다
         dirty = false;
         if (resized) { cv.width = w; cv.height = h; gl.viewport(0, 0, w, h); }
         lastT = v.currentTime;
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, v);
-        gl.uniform2f(U('res'), w, h); gl.uniform2f(U('vid'), v.videoWidth, v.videoHeight); gl.uniform1f(U('cell'), 7 * dpr); gl.uniform3f(U('lens'), lens.x, lens.y, lens.r);
+        gl.uniform2f(U('res'), w, h); gl.uniform2f(U('vid'), v.videoWidth, v.videoHeight); gl.uniform1f(U('cell'), 7 * dpr); gl.uniform1f(U('band'), HT.band); gl.uniform3f(U('lens'), lens.x, lens.y, lens.r);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       };
       frame();
